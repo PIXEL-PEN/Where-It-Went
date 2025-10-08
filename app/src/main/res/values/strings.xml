@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Expense Tracker</string>
+    <!-- Launcher label (default) -->
+    <string name="app_name">WhereItWent</string>
+
+    <!-- Optional alternates you can switch to anytime -->
+    <string name="app_name_legacy">Where It Went</string>
+    <string name="app_name_short">WhereIt</string>
+    <string name="app_name_symbolic">Where $$</string>
+    <string name="app_name_fun">Where-it?</string>
+
     <string name="category_prompt">Select Category</string>
 
     <string name="about_text">
