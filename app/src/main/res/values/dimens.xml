@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Banners / headers -->
+    <dimen name="banner_height">96dp</dimen>
+    <dimen name="banner_text_size">20sp</dimen>
+
+    <!-- Buttons -->
+    <dimen name="button_height">72dp</dimen>
+    <dimen name="button_text_size">18sp</dimen>
+
+    <!-- Labels and body text -->
+    <dimen name="label_text_size">16sp</dimen>
+    <dimen name="small_text_size">14sp</dimen>
+
+    <!-- Margins / padding -->
+    <dimen name="default_margin">16dp</dimen>
+    <dimen name="small_margin">8dp</dimen>
+</resources>

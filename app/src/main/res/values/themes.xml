@@ -1,0 +1,26 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Base application theme -->
+    <style name="Theme.ExpenseTracker" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary branding color -->
+        <item name="colorPrimary">#607D8B</item> <!-- Blue-gray -->
+        <item name="colorPrimaryVariant">#546E7A</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+
+        <!-- Secondary color (optional) -->
+        <item name="colorSecondary">#B0BEC5</item>
+        <item name="colorSecondaryVariant">#90A4AE</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+
+        <!-- Remove default Material button tint -->
+        <item name="materialButtonStyle">@style/BlueGrayButton</item>
+    </style>
+
+    <!-- Custom button style -->
+    <style name="BlueGrayButton" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/colorPrimary</item>
+        <item name="cornerRadius">16dp</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+</resources>

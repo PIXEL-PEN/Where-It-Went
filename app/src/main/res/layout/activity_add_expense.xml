@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ECEFF1">
+
+    <!-- Top bar -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="96dp"
+        android:gravity="center_vertical|start"
+        android:paddingStart="16dp"
+        android:paddingTop="32dp"
+        android:text="Add Expense"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:background="#455A64" />
+
+    <!-- Form container -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="24dp"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="135dp">
+
+        <!-- Category spinner -->
+        <androidx.appcompat.widget.AppCompatSpinner
+            android:id="@+id/spinner_category"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_marginBottom="16dp"
+            android:spinnerMode="dropdown"
+            android:popupBackground="#FFFFFF"
+            android:background="@drawable/spinner_background_salmon"
+            android:paddingStart="12dp"
+            android:paddingEnd="44dp"
+            android:elevation="4dp"
+            android:translationZ="2dp"/>
+
+
+        <!-- Description -->
+        <EditText
+            android:id="@+id/edit_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Item"
+            android:inputType="textCapSentences"
+            android:layout_marginBottom="16dp" />
+
+
+        <!-- Amount -->
+        <EditText
+            android:id="@+id/edit_amount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Amount"
+            android:inputType="numberDecimal"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Date -->
+        <TextView
+            android:id="@+id/text_date"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:text="Select Date"
+            android:paddingStart="12dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:includeFontPadding="false"
+            android:background="@drawable/field_gradient_salmon"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp"
+            android:gravity="center_vertical|start"
+            android:elevation="4dp"
+            android:translationZ="2dp"/>
+
+        <!-- Save button -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_save"
+            android:layout_width="200dp"
+            android:layout_height="46dp"
+            android:background="@drawable/rounded_button"
+            android:backgroundTint="@null"
+            android:text="Save"
+            android:textColor="#FFFFFF"
+            android:textSize="19sp"
+            android:textAllCaps="false"
+            android:layout_marginTop="16dp"
+            android:elevation="4dp"
+            android:translationZ="2dp"/>
+
+
+
+    </LinearLayout>
+</LinearLayout>

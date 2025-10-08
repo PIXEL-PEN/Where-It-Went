@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Base salmon gradient -->
+    <item android:drawable="@drawable/field_gradient_salmon" />
+
+    <!-- Custom black arrow -->
+    <item
+        android:gravity="end|center_vertical"
+        android:right="12dp"
+        android:width="34dp"
+        android:height="34dp"
+        android:drawable="@drawable/ic_arrow_drop_down" />
+
+</layer-list>

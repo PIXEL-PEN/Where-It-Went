@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ECEFF1">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Top bar (unchanged for consistency) -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="96dp"
+            android:gravity="center_vertical|start"
+            android:paddingStart="16dp"
+            android:paddingTop="32dp"
+            android:text="Settings"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:background="#455A64" />
+
+        <!-- Select Currency -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:text="Select Currency"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:background="#CFD8DC" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="6dp"
+            android:background="#FFFFFF"
+            android:elevation="2dp"
+            android:padding="2dp">
+
+            <Spinner
+                android:id="@+id/spinner_currency"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_margin="6dp"
+                android:background="@drawable/field_gradient_bluegray"
+                android:paddingStart="12dp"
+                android:paddingEnd="44dp" />
+        </LinearLayout>
+
+        <!-- Date Format -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:text="Date Format"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:background="#CFD8DC" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="6dp"
+            android:background="#FFFFFF"
+            android:elevation="2dp"
+            android:padding="2dp">
+
+            <Spinner
+                android:id="@+id/spinner_date_format"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_margin="6dp"
+                android:background="@drawable/field_gradient_bluegray"
+                android:paddingStart="12dp"
+                android:paddingEnd="44dp" />
+        </LinearLayout>
+
+        <!-- Export Database -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:text="Export Database"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:background="#CFD8DC" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_export"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Export"
+            android:layout_margin="16dp"
+            android:background="@drawable/rounded_button_dark"
+            android:backgroundTint="@null"
+            android:textColor="@android:color/white"
+            android:textAllCaps="false" />
+
+        <!-- Reset Database -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:text="Reset Database"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:background="#CFD8DC" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_reset"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Reset"
+            android:layout_margin="16dp"
+            android:background="@drawable/rounded_button_dark"
+            android:backgroundTint="@null"
+            android:textColor="@android:color/white"
+            android:textAllCaps="false" />
+        <!-- About header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:text="About"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:background="#CFD8DC" />
+
+        <!-- About body -->
+        <TextView
+            android:id="@+id/text_about"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="24dp"
+            android:text="@string/about_text"
+            android:textSize="16sp"
+            android:gravity="top|start"
+            android:linksClickable="true"
+            android:focusable="true"
+            android:clickable="true" />
+
+
+    </LinearLayout>
+</ScrollView>

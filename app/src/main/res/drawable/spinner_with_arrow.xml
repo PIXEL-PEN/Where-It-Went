@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background box -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#FFDDC1"/> <!-- pale salmon -->
+        </shape>
+    </item>
+
+    <!-- Custom black arrow -->
+    <item
+        android:drawable="@drawable/ic_arrow_drop_down_black"
+        android:gravity="end|center_vertical"
+        android:right="12dp"/>
+</layer-list>

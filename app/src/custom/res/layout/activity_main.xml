@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ECEFF1"
+    android:gravity="center_horizontal"
+    android:clipToPadding="false"
+    android:clipChildren="false">
+
+    <!-- Top bar with title + settings -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="96dp"
+        android:background="#455A64"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <!-- App Title -->
+        <TextView
+            android:id="@+id/app_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Expense Tracker"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:layout_centerVertical="true" />
+
+        <!-- Gear icon -->
+        <ImageView
+            android:id="@+id/gear_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_gear_custom"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:contentDescription="@string/settings" />
+
+        <!-- Settings label beside gear icon -->
+        <TextView
+            android:id="@+id/settings_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings"
+            android:textSize="14sp"
+            android:textColor="@android:color/white"
+            android:layout_toStartOf="@id/gear_icon"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="8dp"/>
+    </RelativeLayout>
+
+    <!-- Body content goes here -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="200dp">
+
+        <!-- Example button row -->
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/btnAdd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Add Expense" />
+
+            <Button
+                android:id="@+id/btnView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View Expenses" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

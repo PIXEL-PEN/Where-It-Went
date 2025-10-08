@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingVertical="8dp"
+    android:paddingHorizontal="12dp"
+    android:background="@android:color/white">
+
+    <!-- Category (bold, left) -->
+    <TextView
+        android:id="@+id/text_category"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="start"
+        android:text="Category"
+        android:textStyle="bold"
+        android:textSize="15sp"
+        android:textColor="#000000" />
+
+    <!-- Date (center) -->
+    <TextView
+        android:id="@+id/text_date"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="15 Sep 2025"
+        android:textSize="15sp"
+        android:textColor="#000000" />
+
+    <!-- Price (right, bold red) -->
+    <TextView
+        android:id="@+id/text_amount"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="end"
+        android:text="$50"
+        android:textStyle="bold"
+        android:textSize="15sp"
+        android:textColor="@android:color/holo_red_dark" />
+</LinearLayout>

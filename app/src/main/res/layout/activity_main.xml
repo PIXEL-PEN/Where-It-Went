@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ECEFF1"
+    android:gravity="center_horizontal"
+    android:clipToPadding="false"
+    android:clipChildren="false">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="96dp"
+        android:background="#455A64"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <TextView
+            android:id="@+id/topBarTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical|start"
+            android:paddingTop="32dp"
+            android:text="Expense Tracker"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/settingsLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Settings"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_alignBaseline="@id/topBarTitle"
+            android:layout_toStartOf="@id/btnGear"
+            android:layout_marginEnd="8dp" />
+
+        <LinearLayout
+            android:id="@+id/btnGear"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="40dp"
+            android:layout_marginEnd="12dp"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:src="@drawable/ic_gear_custom"
+                android:contentDescription="Settings" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3" />
+
+    <LinearLayout
+        android:id="@+id/btnView"
+        android:orientation="horizontal"
+        android:layout_width="200dp"
+        android:layout_height="46dp"
+        android:gravity="center"
+        android:background="@drawable/rounded_button"
+        android:padding="10dp"
+        android:layout_marginBottom="20dp"
+        android:elevation="6dp"
+        android:translationZ="3dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="View Expenses"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginEnd="6dp" />
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_eye"
+            android:tint="@android:color/white"
+            android:layout_marginStart="4dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/btnAdd"
+        android:orientation="horizontal"
+        android:layout_width="200dp"
+        android:layout_height="46dp"
+        android:gravity="center"
+        android:background="@drawable/rounded_button"
+        android:padding="10dp"
+        android:elevation="6dp"
+        android:translationZ="3dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Expense"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginEnd="6dp" />
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_plus"
+            android:tint="@android:color/white"
+            android:layout_marginStart="18dp" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="4" />
+</LinearLayout>
