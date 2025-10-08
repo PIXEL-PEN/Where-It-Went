@@ -1,4 +1,4 @@
-package com.example.expensetracker;
+package com.pixelpen.whereitwent;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;

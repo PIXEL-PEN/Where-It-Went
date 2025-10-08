@@ -1,4 +1,4 @@
-package com.example.expensetracker;
+package com.pixelpen.whereitwent;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;

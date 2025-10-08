@@ -1,4 +1,4 @@
-package com.example.expensetracker;
+package com.pixelpen.whereitwent;
 
 import java.util.HashMap;
 import java.util.Map;

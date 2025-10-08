@@ -3,124 +3,116 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#ECEFF1"
-    android:gravity="center_horizontal"
-    android:clipToPadding="false"
-    android:clipChildren="false">
+    android:background="#ECEFF1">
 
-    <RelativeLayout
+    <!-- Top bar -->
+    <TextView
+        android:id="@+id/top_bar"
         android:layout_width="match_parent"
         android:layout_height="96dp"
-        android:background="#455A64"
+        android:gravity="center_vertical|start"
         android:paddingStart="16dp"
-        android:paddingEnd="16dp">
+        android:paddingTop="32dp"
+        android:text="Where It Went"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:background="#455A64" />
 
-        <TextView
-            android:id="@+id/topBarTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical|start"
-            android:paddingTop="32dp"
-            android:text="Expense Tracker"
-            android:textColor="@android:color/white"
-            android:textSize="20sp"
-            android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/settingsLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Settings"
-            android:textColor="@android:color/white"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:layout_alignBaseline="@id/topBarTitle"
-            android:layout_toStartOf="@id/btnGear"
-            android:layout_marginEnd="8dp" />
-
-        <LinearLayout
-            android:id="@+id/btnGear"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="40dp"
-            android:layout_marginEnd="12dp"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true">
-
-            <ImageView
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:src="@drawable/ic_gear_custom"
-                android:contentDescription="Settings" />
-        </LinearLayout>
-    </RelativeLayout>
-
+    <!-- Spacer pushes buttons downward -->
     <View
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3" />
+        android:layout_weight="11"/>
 
+    <!-- Buttons container -->
     <LinearLayout
-        android:id="@+id/btnView"
-        android:orientation="horizontal"
-        android:layout_width="200dp"
-        android:layout_height="46dp"
-        android:gravity="center"
-        android:background="@drawable/rounded_button"
-        android:padding="10dp"
-        android:layout_marginBottom="20dp"
-        android:elevation="6dp"
-        android:translationZ="3dp">
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:paddingHorizontal="32dp"
+        android:layout_marginBottom="48dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnViewAll"
+            android:layout_width="220dp"
             android:layout_height="wrap_content"
-            android:text="View Expenses"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginEnd="6dp" />
+            android:background="@drawable/rounded_button"
+            android:backgroundTint="@null"
+            android:text="View All Expenses"
+            android:textColor="#FFFFFF"
+            android:textAllCaps="false"
+            android:textSize="19sp"
+            android:layout_marginBottom="16dp"
+            android:elevation="6dp"
+            android:translationZ="3dp"/>
 
-        <ImageView
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:src="@drawable/ic_eye"
-            android:tint="@android:color/white"
-            android:layout_marginStart="4dp" />
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnDateWise"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_button"
+            android:backgroundTint="@null"
+            android:text="Expenses by Date"
+            android:textColor="#FFFFFF"
+            android:textAllCaps="false"
+            android:textSize="19sp"
+            android:layout_marginBottom="16dp"
+            android:elevation="6dp"
+            android:translationZ="3dp"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnMonthWise"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_button"
+            android:backgroundTint="@null"
+            android:text="Expenses by Month"
+            android:textColor="#FFFFFF"
+            android:textAllCaps="false"
+            android:textSize="19sp"
+            android:layout_marginBottom="16dp"
+            android:elevation="6dp"
+            android:translationZ="3dp"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnCategoryWise"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_button"
+            android:backgroundTint="@null"
+            android:text="Expenses by Category"
+            android:textColor="#FFFFFF"
+            android:textAllCaps="false"
+            android:textSize="19sp"
+            android:elevation="6dp"
+            android:translationZ="3dp"/>
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/btnAdd"
-        android:orientation="horizontal"
-        android:layout_width="200dp"
-        android:layout_height="46dp"
-        android:gravity="center"
-        android:background="@drawable/rounded_button"
-        android:padding="10dp"
-        android:elevation="6dp"
-        android:translationZ="3dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Add Expense"
-            android:textColor="@android:color/white"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginEnd="6dp" />
-
-        <ImageView
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:src="@drawable/ic_plus"
-            android:tint="@android:color/white"
-            android:layout_marginStart="18dp" />
-    </LinearLayout>
-
+    <!-- Bottom spacer -->
     <View
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="4" />
+        android:layout_weight="7"/>
+
+    <!-- Floating Add Expense button -->
+    <ImageButton
+        android:id="@+id/fab_add"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="end|bottom"
+        android:layout_marginEnd="25dp"
+        android:layout_marginBottom="90dp"
+        android:background="@drawable/fab_button_flat"
+        android:foreground="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_add_plus"
+        android:tint="@android:color/white"
+        android:contentDescription="Add Expense"
+        android:elevation="8dp"
+        android:padding="0dp"
+        android:stateListAnimator="@null"/>
+
+
 </LinearLayout>

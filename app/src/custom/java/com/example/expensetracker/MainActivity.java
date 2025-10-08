@@ -1,4 +1,4 @@
-package com.example.expensetracker;
+package com.example.whereitwent;
 
 import android.content.Intent;
 import android.os.Bundle;

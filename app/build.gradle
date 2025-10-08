@@ -3,7 +3,8 @@ plugins {
 }
 
 android {
-    namespace 'com.example.expensetracker'
+    namespace 'com.pixelpen.whereitwent'
+
     compileSdk 36
 
     defaultConfig {

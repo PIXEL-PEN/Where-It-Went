@@ -1,4 +1,4 @@
-package com.example.expensetracker;
+package com.pixelpen.whereitwent;
 
 import androidx.room.Dao;
 import androidx.room.Delete;

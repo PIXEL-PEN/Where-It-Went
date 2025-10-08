@@ -1,4 +1,4 @@
-package com.example.expensetracker;
+package com.pixelpen.whereitwent;
 
 import android.app.DatePickerDialog;
 import android.content.DialogInterface;
@@ -181,7 +181,7 @@ public class AddExpenseActivity extends AppCompatActivity {
                 Toast.makeText(this, "Expense added", Toast.LENGTH_SHORT).show();
             }
 
-            Intent intent = new Intent(this, ViewMenuActivity.class);
+            Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
             finish();
         });
