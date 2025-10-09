@@ -8,11 +8,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Neutral gray theme colors -->
-    <color name="colorPrimary">#9E9E9E</color>
-    <color name="colorPrimaryDark">#757575</color>
-    <color name="colorAccent">#607D8B</color>
-
+    <!-- Deep blue theme for top bar -->
+    <color name="colorPrimary">#024265</color>
+    <color name="colorPrimaryDark">#024265</color>
+    <color name="colorAccent">#0274B2</color>
     <color name="dividerGray">#C4C4C4</color>
-
 </resources>

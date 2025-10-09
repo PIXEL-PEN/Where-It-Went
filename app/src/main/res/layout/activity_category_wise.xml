@@ -7,13 +7,13 @@
 
     <!-- Top bar -->
     <RelativeLayout
+        android:id="@+id/top_bar_container"
         android:layout_width="match_parent"
         android:layout_height="96dp"
-        android:background="#455A64"
+        android:background="@color/colorPrimary"
         android:paddingStart="16dp"
         android:paddingEnd="8dp">
 
-        <!-- Title -->
         <TextView
             android:id="@+id/tv_title"
             android:layout_width="wrap_content"
@@ -25,7 +25,6 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
-        <!-- Filter icon button -->
         <ImageButton
             android:id="@+id/btn_filter"
             android:layout_width="48dp"
@@ -38,11 +37,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Filter"
             android:padding="10dp" />
-
-
-
     </RelativeLayout>
-
 
     <!-- Scrollable category container -->
     <ScrollView
