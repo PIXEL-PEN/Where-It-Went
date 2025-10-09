@@ -25,18 +25,22 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
-        <ImageButton
-            android:id="@+id/btn_filter"
+        <Spinner
+            android:id="@+id/spinner_nav"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="false"
+            android:layout_alignTop="@id/tv_title"
             android:layout_alignBottom="@id/tv_title"
-            android:layout_marginBottom="-6dp"
-            android:src="@drawable/ic_filter_list"
-            android:tint="@android:color/white"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Filter"
-            android:padding="10dp" />
+            android:layout_marginBottom="0dp"
+            android:layout_marginTop="0dp"
+            android:spinnerMode="dropdown"
+            android:dropDownVerticalOffset="8dp"
+            android:contentDescription="Navigation menu"
+            android:background="@drawable/spinner_hamburger" />
+
+
     </RelativeLayout>
 
     <!-- Scrollable category container -->

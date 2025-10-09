@@ -11,16 +11,18 @@
 
         <!-- Top bar (unchanged for consistency) -->
         <TextView
+            android:id="@+id/top_bar"
             android:layout_width="match_parent"
             android:layout_height="96dp"
             android:gravity="center_vertical|start"
             android:paddingStart="16dp"
             android:paddingTop="32dp"
-            android:text="Settings"
             android:textColor="@android:color/white"
+            android:text="Settings"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:background="#455A64" />
+            android:background="@color/colorPrimary" />
+
 
         <!-- Select Currency -->
         <TextView

@@ -17,6 +17,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
+
+
         // View All
         AppCompatButton btnViewAll = findViewById(R.id.btnViewAll);
         if (btnViewAll != null) {

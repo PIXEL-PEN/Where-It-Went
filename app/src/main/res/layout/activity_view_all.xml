@@ -6,17 +6,18 @@
     android:background="#ECEFF1">
 
     <TextView
-        android:id="@+id/topBar"
+        android:id="@+id/top_bar"
         android:layout_width="match_parent"
         android:layout_height="96dp"
-        android:gravity="bottom|start"
+        android:gravity="center_vertical|start"
         android:paddingStart="16dp"
-        android:paddingBottom="16dp"
-        android:text="All Expenses"
+        android:paddingTop="32dp"
         android:textColor="@android:color/white"
+        android:text="View All"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:background="#455A64" />
+        android:background="@color/colorPrimary" />
+
 
     <LinearLayout
         android:layout_width="match_parent"

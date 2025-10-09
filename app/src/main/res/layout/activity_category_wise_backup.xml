@@ -5,17 +5,39 @@
     android:layout_height="match_parent"
     android:background="#ECEFF1">
 
-    <TextView
+    <RelativeLayout
+        android:id="@+id/top_bar_container"
         android:layout_width="match_parent"
         android:layout_height="96dp"
-        android:gravity="center_vertical|start"
+        android:background="@color/colorPrimary"
         android:paddingStart="16dp"
-        android:paddingTop="32dp"
-        android:text="Expenses by Category"
-        android:textColor="@android:color/white"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:background="#455A64" />
+        android:paddingEnd="8dp">
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="16dp"
+            android:text="Expenses by Category"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/spinner_nav"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignBottom="@id/tv_title"
+            android:layout_marginBottom="-6dp"
+            android:spinnerMode="dropdown"
+            android:dropDownVerticalOffset="8dp"
+            android:paddingEnd="4dp"
+            android:contentDescription="Navigation menu"
+            android:backgroundTint="@android:color/white" />
+
+    </RelativeLayout>
 
     <ScrollView
         android:layout_width="match_parent"

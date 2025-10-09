@@ -15,6 +15,8 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.view.ViewGroup;
+
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -50,8 +52,100 @@ public class CategoryWiseActivity extends AppCompatActivity {
         expensesContainer = findViewById(R.id.categorywise_container);
         inflater = LayoutInflater.from(this);
 
-        ImageButton btnFilter = findViewById(R.id.btn_filter);
-        btnFilter.setOnClickListener(v -> showSimpleFilterDialog());
+// === new top-bar spinner setup ===
+        Spinner spinnerNav = findViewById(R.id.spinner_nav);
+        List<String> navItems = new ArrayList<>();
+        Collections.addAll(navItems,
+                "Settings",
+                "Category Filter",
+                "Distribution View",
+                "About");
+
+// Adapter: hide selected text so spinner looks like an icon-only button
+        ArrayAdapter<String> navAdapter = new ArrayAdapter<String>(
+                this,
+                android.R.layout.simple_spinner_item,
+                navItems
+        ) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View v = super.getView(position, convertView, parent);
+                if (v instanceof TextView) {
+                    ((TextView) v).setText(""); // keep the bar icon-only
+                }
+                return v;
+            }
+        };
+        navAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerNav.setAdapter(navAdapter);
+
+// icon background; keep a valid selection (text is hidden by getView override)
+        spinnerNav.setBackgroundResource(R.drawable.spinner_hamburger);
+        spinnerNav.setPrompt("");
+
+// Ensure a neutral non-action item exists at index 0 so "Settings" (index 1) will always trigger
+        if (navItems.isEmpty() || !"Menu ▾".equals(navItems.get(0))) {
+            navItems.add(0, "Menu ▾");
+            navAdapter.notifyDataSetChanged();
+        }
+
+// Default to neutral item; adapter getView hides its text so the bar stays icon-only
+        spinnerNav.setSelection(0, false);
+
+// Handle only real user selections (avoid initial/resume auto-calls)
+        final boolean[] userTapped = {false};
+        spinnerNav.setOnTouchListener((v, e) -> { userTapped[0] = true; return false; });
+
+        spinnerNav.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                // Always scrub any residual text from the selected view so no "menu/Menu ▾" shows
+                spinnerNav.post(() -> {
+                    View sv = spinnerNav.getSelectedView();
+                    if (sv instanceof android.widget.TextView) {
+                        android.widget.TextView tv = (android.widget.TextView) sv;
+                        tv.setText("");
+                        tv.setAlpha(0f);
+                        tv.setMinWidth(0);
+                    }
+                });
+
+                // Ignore framework auto-selects; act only on real taps
+                if (!userTapped[0]) return;
+                userTapped[0] = false;
+
+                if (position == 0) {
+                    // Neutral — do nothing
+                } else {
+                    // Safer than hard-coding indices: switch by label
+                    String item = String.valueOf(parent.getItemAtPosition(position));
+                    if ("Category Filter".equals(item)) {
+                        showCategoryFilterDialog();
+                    } else if ("Distribution View".equals(item)) {
+                        startActivity(new android.content.Intent(CategoryWiseActivity.this, DistributionViewActivity.class));
+                    } else if ("Settings".equals(item)) {
+                        startActivity(new android.content.Intent(CategoryWiseActivity.this, SettingsActivity.class));
+                    } else if ("About".equals(item)) {
+                        startActivity(new android.content.Intent(CategoryWiseActivity.this, AboutActivity.class));
+                    }
+                }
+
+                // Reset to neutral icon-only after handling
+                spinnerNav.setSelection(0, false);
+                spinnerNav.post(() -> {
+                    View sv2 = spinnerNav.getSelectedView();
+                    if (sv2 instanceof android.widget.TextView) {
+                        android.widget.TextView tv2 = (android.widget.TextView) sv2;
+                        tv2.setText("");
+                        tv2.setAlpha(0f);
+                        tv2.setMinWidth(0);
+                    }
+                });
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) { }
+        });
 
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         String code = prefs.getString("currency_code", "THB");
