@@ -1,46 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/slider_drawer"
-    android:orientation="vertical"
     android:layout_width="240dp"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="#ECEFF1"
-    android:padding="16dp">
+    android:paddingTop="24dp"
+    android:paddingBottom="24dp"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp">
 
-    <!-- Header -->
+    <!-- Header bar -->
     <TextView
-        android:id="@+id/drawer_title"
+        android:id="@+id/sliderHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Menu"
-        android:textColor="#000000"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:layout_marginBottom="12dp" />
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:textColor="#37474F"
+        android:background="#CFD8DC" />
 
-    <!-- Links -->
+    <!-- Settings -->
     <Button
         android:id="@+id/linkSettings"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Settings" />
+        android:text="Settings"
+        android:textAllCaps="false"
+        android:layout_marginTop="16dp" />
 
+    <!-- Category Filter -->
     <Button
         android:id="@+id/linkCategoryFilter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Category Filter" />
+        android:text="Category Filter"
+        android:textAllCaps="false"
+        android:layout_marginTop="12dp" />
 
+    <!-- Distribution -->
     <Button
         android:id="@+id/linkDistribution"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Distribution" />
+        android:text="Distribution"
+        android:textAllCaps="false"
+        android:layout_marginTop="12dp" />
 
+    <!-- Tutorial -->
     <Button
         android:id="@+id/linkTutorial"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tutorial" />
+        android:text="Tutorial"
+        android:textAllCaps="false"
+        android:layout_marginTop="12dp" />
 
 </LinearLayout>

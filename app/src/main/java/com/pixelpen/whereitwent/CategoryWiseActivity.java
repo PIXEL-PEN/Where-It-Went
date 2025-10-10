@@ -31,6 +31,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import android.widget.Toast;
+
 
 public class CategoryWiseActivity extends AppCompatActivity {
 
@@ -46,36 +48,25 @@ public class CategoryWiseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category_wise);
-// === Side Drawer Setup ===
+
+        // === Side Drawer Setup ===
         View drawer = findViewById(R.id.include_drawer);
         ImageButton btnHamburger = findViewById(R.id.btn_filter);
 
-        drawer.setVisibility(View.GONE);
-
-// Wait until layout is done to get width
-        drawer.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
-            drawer.setTranslationX(-drawer.getWidth());
-        });
-
+        // Toggle drawer visibility with animation
         btnHamburger.setOnClickListener(v -> {
             if (drawer.getVisibility() == View.GONE) {
                 drawer.setVisibility(View.VISIBLE);
-                drawer.animate()
-                        .translationX(0)
-                        .setDuration(250)
-                        .start();
+                drawer.setTranslationX(-drawer.getWidth());
+                drawer.animate().translationX(0).setDuration(200);
             } else {
-                drawer.animate()
-                        .translationX(-drawer.getWidth())
-                        .setDuration(250)
-                        .withEndAction(() -> drawer.setVisibility(View.GONE))
-                        .start();
+                drawer.animate().translationX(-drawer.getWidth())
+                        .setDuration(200)
+                        .withEndAction(() -> drawer.setVisibility(View.GONE));
             }
         });
 
-
-
-        // Drawer menu link handlers
+        // Drawer link placeholders
         drawer.findViewById(R.id.linkSettings).setOnClickListener(v ->
                 startActivity(new Intent(CategoryWiseActivity.this, SettingsActivity.class)));
 
@@ -83,12 +74,12 @@ public class CategoryWiseActivity extends AppCompatActivity {
                 showSimpleFilterDialog());
 
         drawer.findViewById(R.id.linkDistribution).setOnClickListener(v ->
-                startActivity(new Intent(CategoryWiseActivity.this, DistributionViewActivity.class)));
+                Toast.makeText(this, "Distribution placeholder", Toast.LENGTH_SHORT).show());
 
         drawer.findViewById(R.id.linkTutorial).setOnClickListener(v ->
-                startActivity(new Intent(CategoryWiseActivity.this, TutorialActivity.class)));
+                Toast.makeText(this, "Tutorial placeholder", Toast.LENGTH_SHORT).show());
 
-        // === Existing setup ===
+        // Continue with regular view setup
         expensesContainer = findViewById(R.id.categorywise_container);
         inflater = LayoutInflater.from(this);
 
@@ -103,6 +94,7 @@ public class CategoryWiseActivity extends AppCompatActivity {
 
         rebuildExpenseView(allExpenses);
     }
+
 
     private void rebuildExpenseView(List<Expense> expenseList) {
         expensesContainer.removeAllViews();
