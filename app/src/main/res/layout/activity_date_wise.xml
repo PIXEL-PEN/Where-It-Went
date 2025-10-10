@@ -17,7 +17,8 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:textColor="@android:color/white"
-        android:background="#455A64" />
+        android:background="@color/colorPrimary"
+        />
 
     <!-- Scrollable expenses list -->
     <ScrollView

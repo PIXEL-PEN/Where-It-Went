@@ -20,7 +20,7 @@
             android:textColor="@android:color/white"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:background="#455A64" />
+            android:background="@color/colorPrimary" />
 
         <!-- Select Currency -->
         <TextView
