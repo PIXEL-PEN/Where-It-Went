@@ -1,62 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/slider_drawer"
-    android:layout_width="240dp"
-    android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#ECEFF1"
-    android:paddingTop="24dp"
-    android:paddingBottom="24dp"
-    android:paddingStart="12dp"
-    android:paddingEnd="12dp">
+    android:layout_width="200dp"
+    android:layout_height="match_parent"
+    android:background="#0B4B6E"
+    android:padding="0dp">
 
-    <!-- Header bar -->
-    <TextView
-        android:id="@+id/sliderHeader"
+    <!-- Top accent bar -->
+    <View
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Menu"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:gravity="center_vertical"
-        android:padding="12dp"
-        android:textColor="#37474F"
-        android:background="#CFD8DC" />
+        android:layout_height="100dp"
+        android:background="#0D5D8A" />
 
-    <!-- Settings -->
-    <Button
-        android:id="@+id/linkSettings"
+    <!-- Spacer / logo area -->
+    <View
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Settings"
-        android:textAllCaps="false"
-        android:layout_marginTop="16dp" />
+        android:layout_height="80dp"
+        android:background="#ECEFF1" />
 
-    <!-- Category Filter -->
-    <Button
-        android:id="@+id/linkCategoryFilter"
+    <!-- Bottom accent bar -->
+    <View
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Category Filter"
-        android:textAllCaps="false"
-        android:layout_marginTop="12dp" />
+        android:layout_height="25dp"
+        android:background="#0D5D8A" />
 
-    <!-- Distribution -->
-    <Button
-        android:id="@+id/linkDistribution"
+    <!-- Menu links -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Distribution"
-        android:textAllCaps="false"
-        android:layout_marginTop="12dp" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:background="#ECEFF1">
 
-    <!-- Tutorial -->
-    <Button
-        android:id="@+id/linkTutorial"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Tutorial"
-        android:textAllCaps="false"
-        android:layout_marginTop="12dp" />
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="20dp"
+            android:paddingBottom="40dp"
+            android:gravity="center_horizontal">
 
+            <TextView
+                android:id="@+id/linkSettings"
+                android:layout_width="160dp"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="6dp"
+                android:paddingVertical="10dp"
+                android:gravity="center"
+                android:text="⚙  Settings"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:background="#024265" />
+
+            <TextView
+                android:id="@+id/linkCategoryFilter"
+                android:layout_width="160dp"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="6dp"
+                android:paddingVertical="10dp"
+                android:gravity="center"
+                android:text="🏷  Category Filter"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:background="#024265" />
+
+            <TextView
+                android:id="@+id/linkDistribution"
+                android:layout_width="160dp"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="6dp"
+                android:paddingVertical="10dp"
+                android:gravity="center"
+                android:text="📊  Distribution"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:background="#024265" />
+
+            <TextView
+                android:id="@+id/linkTutorial"
+                android:layout_width="160dp"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="6dp"
+                android:paddingVertical="10dp"
+                android:gravity="center"
+                android:text="💡  Tutorial"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:background="#024265" />
+
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>
