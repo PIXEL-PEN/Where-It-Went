@@ -46,12 +46,51 @@ public class CategoryWiseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category_wise);
+// === Side Drawer Setup ===
+        View drawer = findViewById(R.id.include_drawer);
+        ImageButton btnHamburger = findViewById(R.id.btn_filter);
 
+        drawer.setVisibility(View.GONE);
+
+// Wait until layout is done to get width
+        drawer.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            drawer.setTranslationX(-drawer.getWidth());
+        });
+
+        btnHamburger.setOnClickListener(v -> {
+            if (drawer.getVisibility() == View.GONE) {
+                drawer.setVisibility(View.VISIBLE);
+                drawer.animate()
+                        .translationX(0)
+                        .setDuration(250)
+                        .start();
+            } else {
+                drawer.animate()
+                        .translationX(-drawer.getWidth())
+                        .setDuration(250)
+                        .withEndAction(() -> drawer.setVisibility(View.GONE))
+                        .start();
+            }
+        });
+
+
+
+        // Drawer menu link handlers
+        drawer.findViewById(R.id.linkSettings).setOnClickListener(v ->
+                startActivity(new Intent(CategoryWiseActivity.this, SettingsActivity.class)));
+
+        drawer.findViewById(R.id.linkCategoryFilter).setOnClickListener(v ->
+                showSimpleFilterDialog());
+
+        drawer.findViewById(R.id.linkDistribution).setOnClickListener(v ->
+                startActivity(new Intent(CategoryWiseActivity.this, DistributionViewActivity.class)));
+
+        drawer.findViewById(R.id.linkTutorial).setOnClickListener(v ->
+                startActivity(new Intent(CategoryWiseActivity.this, TutorialActivity.class)));
+
+        // === Existing setup ===
         expensesContainer = findViewById(R.id.categorywise_container);
         inflater = LayoutInflater.from(this);
-
-        ImageButton btnFilter = findViewById(R.id.btn_filter);
-        btnFilter.setOnClickListener(v -> showSimpleFilterDialog());
 
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         String code = prefs.getString("currency_code", "THB");
