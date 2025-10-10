@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- === Main content layer === -->
+    <!-- Main screen content (unchanged look) -->
     <LinearLayout
+        android:id="@+id/main_content"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -40,11 +42,11 @@
                 android:src="@drawable/ic_filter_list"
                 android:tint="@android:color/white"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Filter"
+                android:contentDescription="Filter / Menu"
                 android:padding="10dp" />
         </RelativeLayout>
 
-        <!-- Scrollable content -->
+        <!-- Scrollable category container (THIS id is required by your Activity) -->
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -60,13 +62,18 @@
         </ScrollView>
     </LinearLayout>
 
-    <!-- === Overlay drawer layer === -->
+    <!-- Scrim overlay (tap to dismiss slider) -->
+    <View
+        android:id="@+id/scrim_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#66000000"
+        android:visibility="gone" />
+
+    <!-- Slider drawer include (kept hidden until opened) -->
     <include
         android:id="@+id/include_drawer"
         layout="@layout/activity_slider_drawer"
-        android:visibility="gone"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:translationZ="20dp"/>
+        android:visibility="gone" />
 
 </FrameLayout>
