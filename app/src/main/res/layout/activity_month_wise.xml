@@ -7,18 +7,16 @@
 
     <!-- Top bar -->
     <TextView
-        android:id="@+id/top_bar"
         android:layout_width="match_parent"
         android:layout_height="96dp"
-        android:gravity="center_vertical|start"
+        android:gravity="bottom|start"
         android:paddingStart="16dp"
-        android:paddingTop="32dp"
-        android:textColor="@android:color/white"
+        android:paddingBottom="16dp"
         android:text="Expenses by Month"
+        android:textColor="@android:color/white"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:background="@color/colorPrimary" />
-
+        android:background="#455A64" />
 
     <!-- Scrollable container that Java populates -->
     <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"

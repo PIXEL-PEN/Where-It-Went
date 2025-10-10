@@ -7,18 +7,17 @@
 
     <!-- Top banner bar (matches other screens) -->
     <TextView
-        android:id="@+id/top_bar"
+        android:id="@+id/datewise_banner"
         android:layout_width="match_parent"
         android:layout_height="96dp"
-        android:gravity="center_vertical|start"
+        android:gravity="bottom|start"
         android:paddingStart="16dp"
-        android:paddingTop="32dp"
-        android:textColor="@android:color/white"
+        android:paddingBottom="16dp"
         android:text="Expenses by Date"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:background="@color/colorPrimary" />
-
+        android:textColor="@android:color/white"
+        android:background="#455A64" />
 
     <!-- Scrollable expenses list -->
     <ScrollView

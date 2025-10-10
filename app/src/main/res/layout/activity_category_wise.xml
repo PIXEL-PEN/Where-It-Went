@@ -25,22 +25,18 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
+        <!-- Spinner hamburger replaces old filter button -->
         <Spinner
             android:id="@+id/spinner_nav"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_alignParentEnd="true"
-            android:layout_centerVertical="false"
-            android:layout_alignTop="@id/tv_title"
             android:layout_alignBottom="@id/tv_title"
-            android:layout_marginBottom="0dp"
-            android:layout_marginTop="0dp"
+            android:layout_marginBottom="-6dp"
+            android:background="@drawable/spinner_hamburger"
             android:spinnerMode="dropdown"
             android:dropDownVerticalOffset="8dp"
-            android:contentDescription="Navigation menu"
-            android:background="@drawable/spinner_hamburger" />
-
-
+            android:contentDescription="Navigation Menu" />
     </RelativeLayout>
 
     <!-- Scrollable category container -->
@@ -56,6 +52,5 @@
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
-
     </ScrollView>
 </LinearLayout>

@@ -4,7 +4,6 @@ plugins {
 
 android {
     namespace 'com.pixelpen.whereitwent'
-
     compileSdk 36
 
     defaultConfig {
@@ -20,14 +19,13 @@ android {
         release {
             minifyEnabled false
             shrinkResources false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
-                    'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             // signingConfig signingConfigs.release
         }
         debug { }
     }
 
-    // ✅ Flavors (single copy!)
+    // ✅ Flavors
     flavorDimensions "mode"
 
     productFlavors {
@@ -43,8 +41,7 @@ android {
         }
     }
 
-
-        dependenciesInfo {
+    dependenciesInfo {
         includeInApk = false
         includeInBundle = false
     }
