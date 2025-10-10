@@ -120,7 +120,8 @@ public class CategoryWiseActivity extends AppCompatActivity {
                     // Safer than hard-coding indices: switch by label
                     String item = String.valueOf(parent.getItemAtPosition(position));
                     if ("Category Filter".equals(item)) {
-                        showCategoryFilterDialog();
+                        showSimpleFilterDialog();
+
                     } else if ("Distribution View".equals(item)) {
                         startActivity(new android.content.Intent(CategoryWiseActivity.this, DistributionViewActivity.class));
                     } else if ("Settings".equals(item)) {
