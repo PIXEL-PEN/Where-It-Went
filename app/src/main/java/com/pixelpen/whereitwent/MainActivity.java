@@ -3,19 +3,21 @@ package com.pixelpen.whereitwent;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageButton;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 
 /**
  * Main launcher screen — formerly ViewMenuActivity.
  * Displays navigation buttons for all expense views and the Add FAB.
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // ✅ Enable right-side slider (global BaseActivity behavior)
+        initDrawer();
 
         // View All
         AppCompatButton btnViewAll = findViewById(R.id.btnViewAll);
