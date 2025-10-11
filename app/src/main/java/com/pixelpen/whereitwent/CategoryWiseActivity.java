@@ -56,6 +56,15 @@ public class CategoryWiseActivity extends AppCompatActivity {
             btnFilter.setOnClickListener(v -> showSimpleFilterDialog());
         }
 
+        // 🔹 Optionally show dialog automatically if launched from slider
+        if (getIntent().getBooleanExtra("show_filter_dialog", false)) {
+            if (btnFilter != null) {
+                btnFilter.post(this::showSimpleFilterDialog);
+            } else {
+                showSimpleFilterDialog();
+            }
+        }
+
         // ✅ Continue with regular category logic
         expensesContainer = findViewById(R.id.categorywise_container);
         inflater = LayoutInflater.from(this);
@@ -71,6 +80,7 @@ public class CategoryWiseActivity extends AppCompatActivity {
 
         rebuildExpenseView(allExpenses);
     }
+
 
     private void rebuildExpenseView(List<Expense> expenseList) {
         expensesContainer.removeAllViews();

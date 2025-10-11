@@ -1,21 +1,14 @@
 package com.pixelpen.whereitwent;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.widget.ImageButton;
 import android.view.View;
+import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
-/**
- * BaseActivity
- * ------------------------------------------------------
- * Central superclass providing global right-side slider
- * behavior controlled by the current screen’s hamburger button.
- * Any Activity extending this class will automatically
- * inherit a working drawer system.
- */
 public abstract class BaseActivity extends AppCompatActivity {
 
     protected DrawerLayout drawerLayout;
@@ -24,27 +17,57 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Note: actual layout is set in each subclass (via setContentView)
     }
 
-    /**
-     * Initialize the drawer components after setContentView() is called.
-     * Safe to call from any Activity that includes a drawer layout.
-     */
     protected void initDrawer() {
         drawerLayout = findViewById(R.id.drawer_layout);
-        btnHamburger  = findViewById(R.id.btn_filter);
+        btnHamburger = findViewById(R.id.btn_filter);
 
-        if (drawerLayout == null || btnHamburger == null) {
-            // Activity doesn't include a drawer; silently skip.
-            return;
+        if (btnHamburger != null) {
+            btnHamburger.setOnClickListener(v -> toggleDrawer());
         }
 
-        btnHamburger.setOnClickListener(v -> toggleDrawer());
+        wireMenuItems();
     }
 
-    /** Opens or closes the right-side drawer with animation */
+    private void wireMenuItems() {
+        View linkSettings = findViewById(R.id.linkSettings);
+        if (linkSettings != null) {
+            linkSettings.setOnClickListener(v -> {
+                startActivity(new Intent(this, SettingsActivity.class));
+                closeDrawer();
+            });
+        }
+
+        View linkCategoryFilter = findViewById(R.id.linkCategoryFilter);
+        if (linkCategoryFilter != null) {
+            linkCategoryFilter.setOnClickListener(v -> {
+                Intent i = new Intent(this, CategoryWiseActivity.class);
+                i.putExtra("show_filter_dialog", true);
+                startActivity(i);
+                closeDrawer();
+            });
+        }
+
+        View linkDistribution = findViewById(R.id.linkDistribution);
+        if (linkDistribution != null) {
+            linkDistribution.setOnClickListener(v -> {
+                startActivity(new Intent(this, DistributionActivity.class));
+                closeDrawer();
+            });
+        }
+
+        View linkTutorial = findViewById(R.id.linkTutorial);
+        if (linkTutorial != null) {
+            linkTutorial.setOnClickListener(v -> {
+                startActivity(new Intent(this, TutorialActivity.class));
+                closeDrawer();
+            });
+        }
+    }
+
     protected void toggleDrawer() {
+        if (drawerLayout == null) return;
         if (drawerLayout.isDrawerOpen(GravityCompat.END)) {
             drawerLayout.closeDrawer(GravityCompat.END);
         } else {
@@ -52,13 +75,18 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
-    /** Force-close drawer when back pressed */
+    protected void closeDrawer() {
+        if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.END)) {
+            drawerLayout.closeDrawer(GravityCompat.END);
+        }
+    }
+
     @Override
     public void onBackPressed() {
         if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.END)) {
             drawerLayout.closeDrawer(GravityCompat.END);
-        } else {
-            super.onBackPressed();
+            return;
         }
+        super.onBackPressed();
     }
 }
