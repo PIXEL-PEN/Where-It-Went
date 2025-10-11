@@ -43,30 +43,44 @@ public class CategoryWiseActivity extends AppCompatActivity {
     // Display & conversion formats
     private final SimpleDateFormat FRIENDLY = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH); // e.g., "07 Oct. 2025"
     private final SimpleDateFormat ISO      = new SimpleDateFormat("yyyy-MM-dd",  Locale.ENGLISH); // e.g., "2025-10-07"
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category_wise);
 
-        // === Side Drawer Setup ===
+        // Drawer and overlay
         View drawer = findViewById(R.id.include_drawer);
+        View scrim = findViewById(R.id.scrim_overlay);
         ImageButton btnHamburger = findViewById(R.id.btn_filter);
 
-        // Toggle drawer visibility with animation
+        // Toggle drawer open/close
         btnHamburger.setOnClickListener(v -> {
-            if (drawer.getVisibility() == View.GONE) {
+            boolean isHidden = drawer.getVisibility() == View.GONE;
+
+            if (isHidden) {
                 drawer.setVisibility(View.VISIBLE);
+                scrim.setVisibility(View.VISIBLE);
                 drawer.setTranslationX(-drawer.getWidth());
                 drawer.animate().translationX(0).setDuration(200);
             } else {
-                drawer.animate().translationX(-drawer.getWidth())
-                        .setDuration(200)
-                        .withEndAction(() -> drawer.setVisibility(View.GONE));
+                drawer.animate().translationX(-drawer.getWidth()).setDuration(200)
+                        .withEndAction(() -> {
+                            drawer.setVisibility(View.GONE);
+                            scrim.setVisibility(View.GONE);
+                        });
             }
         });
 
-        // Drawer link placeholders
+        // Tap outside to dismiss
+        scrim.setOnClickListener(v -> {
+            drawer.animate().translationX(-drawer.getWidth()).setDuration(200)
+                    .withEndAction(() -> {
+                        drawer.setVisibility(View.GONE);
+                        scrim.setVisibility(View.GONE);
+                    });
+        });
+
+        // Drawer link handlers
         drawer.findViewById(R.id.linkSettings).setOnClickListener(v ->
                 startActivity(new Intent(CategoryWiseActivity.this, SettingsActivity.class)));
 

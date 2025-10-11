@@ -2,30 +2,26 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/slider_drawer"
     android:orientation="vertical"
-    android:layout_width="200dp"
+    android:layout_width="230dp"
     android:layout_height="match_parent"
     android:background="#0B4B6E"
     android:padding="0dp">
 
-    <!-- Top accent bar -->
     <View
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="110dp"
         android:background="#0D5D8A" />
 
-    <!-- Spacer / logo area -->
     <View
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="70dp"
         android:background="#ECEFF1" />
 
-    <!-- Bottom accent bar -->
     <View
         android:layout_width="match_parent"
-        android:layout_height="25dp"
+        android:layout_height="20dp"
         android:background="#0D5D8A" />
 
-    <!-- Menu links -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -37,56 +33,56 @@
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="20dp"
-            android:paddingBottom="40dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="32dp"
             android:gravity="center_horizontal">
 
             <TextView
                 android:id="@+id/linkSettings"
-                android:layout_width="160dp"
+                android:layout_width="110dp"
                 android:layout_height="wrap_content"
-                android:layout_marginVertical="6dp"
-                android:paddingVertical="10dp"
+                android:layout_marginVertical="8dp"
+                android:paddingVertical="6dp"
                 android:gravity="center"
-                android:text="⚙  Settings"
+                android:text="Settings"
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:background="#024265" />
 
             <TextView
                 android:id="@+id/linkCategoryFilter"
-                android:layout_width="160dp"
+                android:layout_width="110dp"
                 android:layout_height="wrap_content"
-                android:layout_marginVertical="6dp"
-                android:paddingVertical="10dp"
+                android:layout_marginVertical="8dp"
+                android:paddingVertical="6dp"
                 android:gravity="center"
-                android:text="🏷  Category Filter"
+                android:text="Category Filter"
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:background="#024265" />
 
             <TextView
                 android:id="@+id/linkDistribution"
-                android:layout_width="160dp"
+                android:layout_width="110dp"
                 android:layout_height="wrap_content"
-                android:layout_marginVertical="6dp"
-                android:paddingVertical="10dp"
+                android:layout_marginVertical="8dp"
+                android:paddingVertical="6dp"
                 android:gravity="center"
-                android:text="📊  Distribution"
+                android:text="Distribution"
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:background="#024265" />
 
             <TextView
                 android:id="@+id/linkTutorial"
-                android:layout_width="160dp"
+                android:layout_width="110dp"
                 android:layout_height="wrap_content"
-                android:layout_marginVertical="6dp"
-                android:paddingVertical="10dp"
+                android:layout_marginVertical="8dp"
+                android:paddingVertical="6dp"
                 android:gravity="center"
-                android:text="💡  Tutorial"
+                android:text="Tutorial"
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:background="#024265" />
 
         </LinearLayout>
