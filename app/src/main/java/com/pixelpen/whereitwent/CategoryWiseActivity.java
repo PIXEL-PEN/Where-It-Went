@@ -15,6 +15,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,8 +32,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import android.widget.Toast;
-
 
 public class CategoryWiseActivity extends AppCompatActivity {
 
@@ -41,59 +40,25 @@ public class CategoryWiseActivity extends AppCompatActivity {
     private String symbol;
 
     // Display & conversion formats
-    private final SimpleDateFormat FRIENDLY = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH); // e.g., "07 Oct. 2025"
-    private final SimpleDateFormat ISO      = new SimpleDateFormat("yyyy-MM-dd",  Locale.ENGLISH); // e.g., "2025-10-07"
+    private final SimpleDateFormat FRIENDLY =
+            new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
+    private final SimpleDateFormat ISO =
+            new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category_wise);
 
-        // Drawer and overlay
-        View drawer = findViewById(R.id.include_drawer);
-        View scrim = findViewById(R.id.scrim_overlay);
+        // ✅ Keep hamburger visible, detached from any slider
         ImageButton btnHamburger = findViewById(R.id.btn_filter);
+        if (btnHamburger != null) {
+            btnHamburger.setOnClickListener(v -> {
+                // Reserved for future right-side slider hookup
+            });
+        }
 
-        // Toggle drawer open/close
-        btnHamburger.setOnClickListener(v -> {
-            boolean isHidden = drawer.getVisibility() == View.GONE;
-
-            if (isHidden) {
-                drawer.setVisibility(View.VISIBLE);
-                scrim.setVisibility(View.VISIBLE);
-                drawer.setTranslationX(-drawer.getWidth());
-                drawer.animate().translationX(0).setDuration(200);
-            } else {
-                drawer.animate().translationX(-drawer.getWidth()).setDuration(200)
-                        .withEndAction(() -> {
-                            drawer.setVisibility(View.GONE);
-                            scrim.setVisibility(View.GONE);
-                        });
-            }
-        });
-
-        // Tap outside to dismiss
-        scrim.setOnClickListener(v -> {
-            drawer.animate().translationX(-drawer.getWidth()).setDuration(200)
-                    .withEndAction(() -> {
-                        drawer.setVisibility(View.GONE);
-                        scrim.setVisibility(View.GONE);
-                    });
-        });
-
-        // Drawer link handlers
-        drawer.findViewById(R.id.linkSettings).setOnClickListener(v ->
-                startActivity(new Intent(CategoryWiseActivity.this, SettingsActivity.class)));
-
-        drawer.findViewById(R.id.linkCategoryFilter).setOnClickListener(v ->
-                showSimpleFilterDialog());
-
-        drawer.findViewById(R.id.linkDistribution).setOnClickListener(v ->
-                Toast.makeText(this, "Distribution placeholder", Toast.LENGTH_SHORT).show());
-
-        drawer.findViewById(R.id.linkTutorial).setOnClickListener(v ->
-                Toast.makeText(this, "Tutorial placeholder", Toast.LENGTH_SHORT).show());
-
-        // Continue with regular view setup
+        // ✅ Continue with regular category logic
         expensesContainer = findViewById(R.id.categorywise_container);
         inflater = LayoutInflater.from(this);
 
@@ -109,7 +74,6 @@ public class CategoryWiseActivity extends AppCompatActivity {
         rebuildExpenseView(allExpenses);
     }
 
-
     private void rebuildExpenseView(List<Expense> expenseList) {
         expensesContainer.removeAllViews();
 
@@ -121,27 +85,24 @@ public class CategoryWiseActivity extends AppCompatActivity {
             return;
         }
 
-        // Group by category
         Map<String, List<Expense>> grouped = new LinkedHashMap<>();
         for (Expense e : expenseList) {
             grouped.computeIfAbsent(e.category, k -> new ArrayList<>()).add(e);
         }
 
-        // Sort categories by latest expense date (newest first)
-        List<Map.Entry<String, List<Expense>>> categories = new ArrayList<>(grouped.entrySet());
-        Collections.sort(categories, (a, b) -> latestDate(b.getValue()).compareTo(latestDate(a.getValue())));
+        List<Map.Entry<String, List<Expense>>> categories =
+                new ArrayList<>(grouped.entrySet());
+        Collections.sort(categories, (a, b) ->
+                latestDate(b.getValue()).compareTo(latestDate(a.getValue())));
 
         for (Map.Entry<String, List<Expense>> entry : categories) {
             String category = entry.getKey();
             List<Expense> items = entry.getValue();
             Collections.sort(items, Comparator.comparing(e -> e.date));
 
-            // Category banner
             TextView banner = new TextView(this);
             banner.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    dp(29)
-            ));
+                    LinearLayout.LayoutParams.MATCH_PARENT, dp(29)));
             banner.setBackgroundColor(0xFFE1C699);
             banner.setText(category);
             banner.setTextSize(16);
@@ -157,10 +118,9 @@ public class CategoryWiseActivity extends AppCompatActivity {
                 catTotal += e.amount;
 
                 View row = inflater.inflate(R.layout.item_expense_date_row, expensesContainer, false);
-
                 TextView textDescription = row.findViewById(R.id.text_description);
-                TextView textCategory   = row.findViewById(R.id.text_category);
-                TextView textAmount     = row.findViewById(R.id.text_amount);
+                TextView textCategory = row.findViewById(R.id.text_category);
+                TextView textAmount = row.findViewById(R.id.text_amount);
 
                 textDescription.setText(e.description);
                 textCategory.setText(formatFullDate(e.date));
@@ -168,10 +128,10 @@ public class CategoryWiseActivity extends AppCompatActivity {
                 String formatted = String.format(Locale.ENGLISH, "%.2f %s", e.amount, symbol);
                 SpannableString display = new SpannableString(formatted);
                 int start = formatted.length() - symbol.length();
-                display.setSpan(new RelativeSizeSpan(0.85f), start, formatted.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                display.setSpan(new RelativeSizeSpan(0.85f), start, formatted.length(),
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 textAmount.setText(display);
 
-                // Detail dialog
                 row.setOnClickListener(v -> {
                     String details = "Category: " + e.category + "\n"
                             + "Date: " + formatFullDate(e.date) + "\n"
@@ -184,8 +144,7 @@ public class CategoryWiseActivity extends AppCompatActivity {
                             .setNegativeButton("CLOSE", (d, which) -> d.dismiss())
                             .setNeutralButton("DELETE", (d, which) -> {
                                 ExpenseDatabase.getDatabase(CategoryWiseActivity.this)
-                                        .expenseDao()
-                                        .delete(e);
+                                        .expenseDao().delete(e);
                                 recreate();
                             })
                             .setPositiveButton("EDIT", (d, which) -> {
@@ -198,7 +157,6 @@ public class CategoryWiseActivity extends AppCompatActivity {
 
                 expensesContainer.addView(row);
 
-                // Divider
                 View divider = new View(this);
                 divider.setLayoutParams(new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT, 1));
@@ -206,7 +164,6 @@ public class CategoryWiseActivity extends AppCompatActivity {
                 expensesContainer.addView(divider);
             }
 
-            // TOTAL row
             LinearLayout totalRow = new LinearLayout(this);
             totalRow.setOrientation(LinearLayout.HORIZONTAL);
             totalRow.setPadding(dp(12), dp(12), dp(12), dp(12));
@@ -228,7 +185,8 @@ public class CategoryWiseActivity extends AppCompatActivity {
             String totalFormatted = df.format(catTotal) + " " + symbol;
             SpannableString totalDisplay = new SpannableString(totalFormatted);
             int start = totalFormatted.length() - symbol.length();
-            totalDisplay.setSpan(new RelativeSizeSpan(0.85f), start, totalFormatted.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            totalDisplay.setSpan(new RelativeSizeSpan(0.85f), start, totalFormatted.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             amountTv.setText(totalDisplay);
 
             totalRow.addView(label);
@@ -237,15 +195,12 @@ public class CategoryWiseActivity extends AppCompatActivity {
         }
     }
 
-    // === Filter dialog with category separator ===
     private void showSimpleFilterDialog() {
         List<Expense> all = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
 
-        // Hardwired defaults in required order
         List<String> defaults = new ArrayList<>();
         Collections.addAll(defaults, "Groceries", "Rent", "Utilities", "Bills", "Transport", "Other");
 
-        // Custom categories appended after defaults
         List<String> customs = new ArrayList<>();
         for (Expense e : all) {
             if (e.category != null && !e.category.trim().isEmpty()
@@ -262,12 +217,8 @@ public class CategoryWiseActivity extends AppCompatActivity {
             categories.addAll(customs);
         }
 
-        // Adapter with disabled divider + subtle gray tint
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                this,
-                android.R.layout.simple_spinner_item,
-                categories
-        ) {
+                this, android.R.layout.simple_spinner_item, categories) {
             @Override
             public boolean isEnabled(int position) {
                 String item = getItem(position);
@@ -275,12 +226,12 @@ public class CategoryWiseActivity extends AppCompatActivity {
             }
 
             @Override
-            public android.view.View getDropDownView(int position, android.view.View convertView, android.view.ViewGroup parent) {
-                android.view.View view = super.getDropDownView(position, convertView, parent);
+            public View getDropDownView(int position, View convertView, android.view.ViewGroup parent) {
+                View view = super.getDropDownView(position, convertView, parent);
                 TextView tv = (TextView) view;
                 String item = getItem(position);
                 if ("⋯".equals(item)) {
-                    tv.setTextColor(0xFF777777); // consistent divider color
+                    tv.setTextColor(0xFF777777);
                 } else {
                     tv.setTextColor(0xFF000000);
                 }
@@ -289,7 +240,6 @@ public class CategoryWiseActivity extends AppCompatActivity {
         };
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        // Build layout
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(dp(20), dp(12), dp(20), dp(8));
@@ -339,7 +289,9 @@ public class CategoryWiseActivity extends AppCompatActivity {
                     txtAvailable.setText("Available: (no data)");
                 }
             }
-            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) { }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) { }
         });
 
         View.OnClickListener pickDate = v -> {
@@ -365,7 +317,7 @@ public class CategoryWiseActivity extends AppCompatActivity {
                 .setPositiveButton("Apply", (d, which) -> {
                     String cat = spinner.getSelectedItem().toString();
                     String startFriendly = txtStart.getText().toString().replace("▶ Start Date: ", "");
-                    String endFriendly   = txtEnd.getText().toString().replace("▶ End Date: ", "");
+                    String endFriendly = txtEnd.getText().toString().replace("▶ End Date: ", "");
 
                     if (startFriendly.contains("(") || endFriendly.contains("(")) {
                         String availLine = txtAvailable.getText().toString();
@@ -373,13 +325,13 @@ public class CategoryWiseActivity extends AppCompatActivity {
                             String[] parts = availLine.substring("Available: ".length()).split("–");
                             if (parts.length == 2) {
                                 startFriendly = parts[0].trim();
-                                endFriendly   = parts[1].trim();
+                                endFriendly = parts[1].trim();
                             }
                         }
                     }
 
                     String startIso = friendlyToIso(startFriendly);
-                    String endIso   = friendlyToIso(endFriendly);
+                    String endIso = friendlyToIso(endFriendly);
 
                     List<Expense> filtered = ExpenseDatabase
                             .getDatabase(CategoryWiseActivity.this)
@@ -396,8 +348,6 @@ public class CategoryWiseActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", (d, which) -> d.dismiss())
                 .show();
     }
-
-    // --- Helpers ---
 
     private Date tryParseDbText(String text) {
         try { return FRIENDLY.parse(text); }
