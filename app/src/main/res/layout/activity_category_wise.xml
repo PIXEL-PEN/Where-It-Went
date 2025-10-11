@@ -39,7 +39,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_alignBottom="@id/tv_title"
                 android:layout_marginBottom="-6dp"
-                android:src="@drawable/ic_filter_list"
+                android:src="@drawable/ic_filter_funnel"
                 android:tint="@android:color/white"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Filter / Menu"

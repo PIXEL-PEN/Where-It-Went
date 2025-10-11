@@ -50,12 +50,10 @@ public class CategoryWiseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category_wise);
 
-        // ✅ Keep hamburger visible, detached from any slider
-        ImageButton btnHamburger = findViewById(R.id.btn_filter);
-        if (btnHamburger != null) {
-            btnHamburger.setOnClickListener(v -> {
-                // Reserved for future right-side slider hookup
-            });
+        // 🔹 Filter icon — opens Category Filter dialog
+        ImageButton btnFilter = findViewById(R.id.btn_filter);
+        if (btnFilter != null) {
+            btnFilter.setOnClickListener(v -> showSimpleFilterDialog());
         }
 
         // ✅ Continue with regular category logic
