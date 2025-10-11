@@ -10,6 +10,10 @@
     <string name="app_name_fun">Where-it?</string>
 
     <string name="category_prompt">Select Category</string>
+    <string name="all_expenses">All Expenses</string>
+
+    <string name="back">Back</string>
+
 
     <string name="about_text">
     Expense Tracker v1.0\n\n© 2025 PIXEL-PEN\n\nDesigned for daily use as a simple, offline budgeting tool.\n\nFeatures: quick expense entry, multiple views, export to CSV and HTML, and database reset.\n\nFeedback: &lt;a href="https://github.com/PIXEL-PEN/Expense-Tracker/discussions"&gt;GitHub Discussions&lt;/a&gt;

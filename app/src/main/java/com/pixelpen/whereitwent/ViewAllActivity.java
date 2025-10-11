@@ -1,22 +1,24 @@
 package com.pixelpen.whereitwent;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.RelativeSizeSpan;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.text.DecimalFormat;
 
 public class ViewAllActivity extends AppCompatActivity {
 
@@ -24,6 +26,16 @@ public class ViewAllActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_all);
+
+        ImageButton btnBack = findViewById(R.id.btn_back);
+
+
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+            });
+        }
 
         RecyclerView recyclerView = findViewById(R.id.recycler_expenses);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
