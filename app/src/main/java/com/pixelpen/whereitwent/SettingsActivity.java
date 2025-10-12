@@ -25,7 +25,7 @@ import android.widget.ImageButton;
 public class SettingsActivity extends AppCompatActivity {
 
     private Spinner spinnerCurrency;
-    private Spinner spinnerDateFormat;
+
 
     // SAF request code
     private static final int CREATE_CSV_FILE = 2001;
@@ -104,31 +104,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
         });
 
-        // ---------------- Date Format Spinner ----------------
-        spinnerDateFormat = findViewById(R.id.spinner_date_format);
-        final List<String> formats = Arrays.asList(
-                "dd MMM yyyy","dd/MM/yyyy","MM/dd/yyyy",
-                "yyyy-MM-dd","EEE, dd MMM yyyy","dd.MM.yyyy"
-        );
-        ArrayAdapter<String> formatAdapter = new ArrayAdapter<>(
-                this,
-                R.layout.spinner_item_selected,
-                formats
-        );
-        formatAdapter.setDropDownViewResource(R.layout.spinner_item_dropdown);
-        spinnerDateFormat.setAdapter(formatAdapter);
 
-        String savedFormat = prefs.getString("date_format", formats.get(0));
-        int restoredFmtIndex = formats.indexOf(savedFormat);
-        if (restoredFmtIndex >= 0) spinnerDateFormat.setSelection(restoredFmtIndex, false);
-
-        spinnerDateFormat.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
-                prefs.edit().putString("date_format", formats.get(position)).apply();
-            }
-            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
-        });
 
         // ---------------- Export Button ----------------
         findViewById(R.id.btn_export).setOnClickListener(v -> {
