@@ -60,6 +60,7 @@ public class SettingsActivity extends AppCompatActivity {
         // ---------------- Currency Spinner ----------------
         spinnerCurrency = findViewById(R.id.spinner_currency);
         final List<String> currencies = Arrays.asList(
+
                 "USD — US Dollar ($)",
                 "EUR — Euro (€)",
                 "GBP — British Pound (£)",
@@ -71,8 +72,11 @@ public class SettingsActivity extends AppCompatActivity {
                 "CAD — Canadian Dollar ($)",
                 "SGD — Singapore Dollar ($)",
                 "HKD — Hong Kong Dollar ($)",
-                "MYR — Malaysian Ringgit (RM)"
+                "MYR — Malaysian Ringgit (RM)",
+                "VND — Vietnamese Dong (₫)"
         );
+
+
         ArrayAdapter<String> currencyAdapter = new ArrayAdapter<>(
                 this,
                 R.layout.spinner_item_selected,

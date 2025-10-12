@@ -68,8 +68,8 @@
 
             <Spinner
                 android:id="@+id/spinner_currency"
-                android:layout_width="185dp"
-                android:layout_height="40dp"
+                android:layout_width="190dp"
+                android:layout_height="38dp"
                 android:layout_marginStart="5dp"
                 android:layout_gravity="start"
                 android:spinnerMode="dropdown"
