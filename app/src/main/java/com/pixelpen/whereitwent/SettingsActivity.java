@@ -19,6 +19,8 @@ import java.io.FileWriter;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
+import android.widget.ImageButton;
+
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -34,6 +36,16 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+
+        ImageButton btnForward = findViewById(R.id.btn_forward);
+        if (btnForward != null) {
+            btnForward.setOnClickListener(v -> {
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+            });
+        }
+
+
 
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
 
