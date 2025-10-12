@@ -6,14 +6,17 @@
     android:background="#ECEFF1">
 
     <RelativeLayout
+        android:id="@+id/top_bar_container"
         android:layout_width="match_parent"
         android:layout_height="96dp"
         android:background="@color/colorPrimary"
         android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="12dp">  <!-- lowered slightly -->
+        android:paddingEnd="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="3dp">
 
-    <LinearLayout
+
+        <LinearLayout
         android:id="@+id/title_row"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -23,25 +26,34 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-    <ImageButton
-        android:id="@+id/btn_back"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:src="@drawable/ic_arrow_back_white"
-        android:contentDescription="Back"
-        android:padding="8dp" />
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:background="@null"
+            android:src="@drawable/ic_arrow_back_white"
+            android:contentDescription="@string/back"
+            android:translationY="1dp"
+            android:tint="@android:color/white" />
 
-    <TextView
-        android:id="@+id/topBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:text="All Expenses"
-        android:textColor="@android:color/white"
-        android:textSize="20sp"
-        android:textStyle="bold" />
-</LinearLayout>
+        <TextView
+            android:id="@+id/topBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/btn_back"
+            android:layout_marginStart="8dp"
+            android:layout_centerVertical="true"
+            android:text="All Expenses"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:translationY="1dp"
+            android:includeFontPadding="false" />
+
+
+    </LinearLayout>
     </RelativeLayout>
 
 
