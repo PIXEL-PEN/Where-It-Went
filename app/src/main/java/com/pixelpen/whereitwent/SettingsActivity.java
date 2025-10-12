@@ -21,15 +21,12 @@ import java.util.Arrays;
 import java.util.List;
 import android.widget.ImageButton;
 
-
 public class SettingsActivity extends AppCompatActivity {
 
     private Spinner spinnerCurrency;
 
-
     // SAF request code
     private static final int CREATE_CSV_FILE = 2001;
-
     private String csvContent = null;
 
     @Override
@@ -37,15 +34,14 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        ImageButton btnForward = findViewById(R.id.btn_forward);
+        ImageButton btnForward = findViewById(R.id.arrow_forward);
+
         if (btnForward != null) {
             btnForward.setOnClickListener(v -> {
                 startActivity(new Intent(this, MainActivity.class));
                 finish();
             });
         }
-
-
 
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
 
@@ -104,10 +100,8 @@ public class SettingsActivity extends AppCompatActivity {
             @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
         });
 
-
-
         // ---------------- Export Button ----------------
-        findViewById(R.id.btn_export).setOnClickListener(v -> {
+        findViewById(R.id.button_export).setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("Export Data")
                     .setMessage("Choose export method:")
@@ -118,7 +112,7 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         // ---------------- Reset Button ----------------
-        findViewById(R.id.btn_reset).setOnClickListener(v -> {
+        findViewById(R.id.button_reset).setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("Reset Database")
                     .setMessage("This will delete all expenses. Are you sure?")
@@ -129,7 +123,7 @@ public class SettingsActivity extends AppCompatActivity {
                     .setNegativeButton("Cancel", null)
                     .show();
         });
-    }
+    } // ✅ properly closes onCreate()
 
     // ---------------- CSV Export (SAF) ----------------
     private void exportToStorage() {
