@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.text.DecimalFormat;
+import android.widget.ImageButton;
+
 
 public class MonthWiseActivity extends AppCompatActivity {
 
@@ -33,6 +35,17 @@ public class MonthWiseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_month_wise);
+
+        ImageButton btnBack = findViewById(R.id.btn_back);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+            });
+        }
+
+
+
 
         expensesContainer = findViewById(R.id.monthwise_container);
         LayoutInflater inflater = LayoutInflater.from(this);

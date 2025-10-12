@@ -32,6 +32,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import android.widget.ImageButton;
+
+
 
 public class CategoryWiseActivity extends AppCompatActivity {
 
@@ -49,6 +52,16 @@ public class CategoryWiseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category_wise);
+
+        ImageButton btnBack = findViewById(R.id.btn_back);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+            });
+        }
+
+
 
         // 🔹 Filter icon — opens Category Filter dialog
         ImageButton btnFilter = findViewById(R.id.btn_filter);
