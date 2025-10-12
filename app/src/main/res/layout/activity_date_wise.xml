@@ -46,7 +46,7 @@
                 android:layout_toEndOf="@id/btn_back"
                 android:layout_marginStart="8dp"
                 android:layout_centerVertical="true"
-                android:text="All Expenses"
+                android:text="Expenses by Date"
                 android:textColor="@android:color/white"
                 android:textSize="20sp"
                 android:textStyle="bold"
