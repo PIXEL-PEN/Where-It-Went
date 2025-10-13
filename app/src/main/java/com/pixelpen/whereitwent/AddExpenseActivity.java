@@ -43,7 +43,6 @@ public class AddExpenseActivity extends AppCompatActivity {
         textDate = findViewById(R.id.text_date);
         btnSave = findViewById(R.id.btn_save);
 
-        // ✅ Load categories dynamically with a separator between defaults and user-added ones
         List<String> defaults = new ArrayList<>();
         defaults.add("Groceries");
         defaults.add("Rent");
@@ -61,7 +60,7 @@ public class AddExpenseActivity extends AppCompatActivity {
         categories = new ArrayList<>();
         categories.addAll(defaults);
         if (!custom.isEmpty()) {
-            categories.add("⋯"); // subtle, light divider
+            categories.add("⋯");
             categories.addAll(custom);
         }
         categories.add("➕ Manage Categories");
@@ -83,9 +82,9 @@ public class AddExpenseActivity extends AppCompatActivity {
                 TextView tv = (TextView) view;
                 String item = getItem(position);
                 if (item.equals("⋯")) {
-                    tv.setTextColor(0xFF777777); // medium-dark gray divider
+                    tv.setTextColor(0xFF777777);
                 } else {
-                    tv.setTextColor(0xFF000000); // normal text
+                    tv.setTextColor(0xFF000000);
                 }
                 return view;
             }
@@ -94,7 +93,6 @@ public class AddExpenseActivity extends AppCompatActivity {
         categoryAdapter.setDropDownViewResource(R.layout.spinner_item_dropdown);
         spinnerCategory.setAdapter(categoryAdapter);
 
-        // Handle category management
         spinnerCategory.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
@@ -107,7 +105,6 @@ public class AddExpenseActivity extends AppCompatActivity {
             public void onNothingSelected(android.widget.AdapterView<?> parent) {}
         });
 
-        // Date picker
         textDate.setOnClickListener(v -> {
             final Calendar calendar = Calendar.getInstance();
             DatePickerDialog dialog = new DatePickerDialog(this,
@@ -125,7 +122,6 @@ public class AddExpenseActivity extends AppCompatActivity {
             dialog.show();
         });
 
-        // ✅ Edit mode check
         int expenseId = getIntent().getIntExtra("expense_id", -1);
         if (expenseId != -1) {
             editingExpense = ExpenseDatabase.getDatabase(this).expenseDao().getById(expenseId);
@@ -138,13 +134,11 @@ public class AddExpenseActivity extends AppCompatActivity {
                 if (pos >= 0) spinnerCategory.setSelection(pos);
             }
         } else {
-            // ✅ Auto-seed today's date
             Calendar today = Calendar.getInstance();
             SimpleDateFormat sdf = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
             textDate.setText(sdf.format(today.getTime()));
         }
 
-        // ✅ Save button
         btnSave.setOnClickListener(v -> {
             String description = editDescription.getText().toString().trim();
             String amountStr = editAmount.getText().toString().trim();
@@ -187,10 +181,6 @@ public class AddExpenseActivity extends AppCompatActivity {
         });
     }
 
-    // ----------------------------------------------------------
-    // Category Management
-    // ----------------------------------------------------------
-
     private void showManageCategoriesDialog() {
         String[] options = {"Add Category", "Delete Category", "Reset Defaults"};
         new AlertDialog.Builder(this)
@@ -209,18 +199,40 @@ public class AddExpenseActivity extends AppCompatActivity {
     }
 
     private void showAddCategoryDialog() {
-        final EditText input = new EditText(this);
-        input.setHint("New category");
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_category, null);
+
+        EditText input = dialogView.findViewById(R.id.edit_category_name);
+        Spinner tagSpinner = dialogView.findViewById(R.id.spinner_tag);
+
+        String[] tags = {"Fixed", "Basic", "Discretionary"};
+        ArrayAdapter<String> tagAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_dropdown_item, tags);
+        tagSpinner.setAdapter(tagAdapter);
+
         new AlertDialog.Builder(this)
                 .setTitle("Add Category")
-                .setView(input)
-                .setPositiveButton("Add", (d, w) -> {
+                .setView(dialogView)
+                .setPositiveButton("Add", (dialog, which) -> {
                     String newCat = input.getText().toString().trim();
-                    if (!newCat.isEmpty() && !categories.contains(newCat)) {
-                        categories.add(categories.size() - 1, newCat);
-                        CategoryManager.saveCategories(this, categories.subList(0, categories.size() - 1));
-                        categoryAdapter.notifyDataSetChanged();
+                    String selectedTag = tagSpinner.getSelectedItem().toString();
+
+                    if (newCat.isEmpty()) {
+                        Toast.makeText(this, "Enter category name", Toast.LENGTH_SHORT).show();
+                        return;
                     }
+
+                    if (categories.contains(newCat)) {
+                        Toast.makeText(this, "Category already exists", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    categories.add(categories.size() - 1, newCat);
+                    CategoryManager.saveCategories(this, categories.subList(0, categories.size() - 1));
+                    categoryAdapter.notifyDataSetChanged();
+
+                    Toast.makeText(this,
+                            "Added \"" + newCat + "\" (" + selectedTag + ")", Toast.LENGTH_SHORT).show();
+                    // TODO: future persistence for tags
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -240,7 +252,7 @@ public class AddExpenseActivity extends AppCompatActivity {
     }
 
     private void reloadCategories() {
-        categories = new ArrayList<>(CategoryManager.getCategories(this));
+        categories = new ArrayList<>(CategoryManager.getOrderedCategories(this));
         categories.add("➕ Manage Categories");
         categoryAdapter.clear();
         categoryAdapter.addAll(categories);
