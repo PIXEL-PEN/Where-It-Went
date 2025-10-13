@@ -15,5 +15,11 @@
     <color name="dividerGray">#C4C4C4</color>
     <color name="colorAccent2">#0D5D8A</color>
 
+    <color name="tag_fixed">#607D8B</color>          <!-- blue-gray -->
+    <color name="tag_basic">#FFC107</color>          <!-- amber -->
+    <color name="tag_discretionary">#FF7043</color>  <!-- coral/orange -->
+
+
+
 
 </resources>

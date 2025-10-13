@@ -156,6 +156,8 @@ public class CategoryManager {
         return list;
     }
 
+
+
     // -------------------------------
     // Inner data holder
     // -------------------------------
