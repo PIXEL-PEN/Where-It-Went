@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -77,16 +78,15 @@ public class AddExpenseActivity extends AppCompatActivity {
             }
 
             @Override
-            public android.view.View getDropDownView(int position, android.view.View convertView, android.view.ViewGroup parent) {
-                android.view.View view = super.getDropDownView(position, convertView, parent);
+            public View getDropDownView(int position, View convertView, android.view.ViewGroup parent) {
+                View view = super.getDropDownView(position, convertView, parent);
                 TextView tv = (TextView) view;
                 String item = getItem(position);
                 if (item.equals("⋯")) {
-                    tv.setTextColor(0xFF777777); // medium-dark gray divider for better contrast
+                    tv.setTextColor(0xFF777777); // medium-dark gray divider
                 } else {
                     tv.setTextColor(0xFF000000); // normal text
                 }
-
                 return view;
             }
         };
@@ -97,7 +97,7 @@ public class AddExpenseActivity extends AppCompatActivity {
         // Handle category management
         spinnerCategory.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
                 if (position == categories.size() - 1) {
                     showManageCategoriesDialog();
                 }
@@ -186,6 +186,10 @@ public class AddExpenseActivity extends AppCompatActivity {
             finish();
         });
     }
+
+    // ----------------------------------------------------------
+    // Category Management
+    // ----------------------------------------------------------
 
     private void showManageCategoriesDialog() {
         String[] options = {"Add Category", "Delete Category", "Reset Defaults"};
