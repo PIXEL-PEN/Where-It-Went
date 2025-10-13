@@ -11,7 +11,7 @@
         android:text="Filter by Category and Date Range"
         android:textStyle="bold"
         android:textSize="15sp"
-        android:textColor="#212121"
+        android:textColor="#0D5D8A"
         android:layout_marginBottom="12dp" />
 
     <Spinner

@@ -14,13 +14,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 import java.util.Locale;
-import android.graphics.Color;
-import android.util.Log;
 
 public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseViewHolder> {
 
@@ -46,29 +43,8 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
         holder.textCategory.setText(expense.category);
         holder.textDate.setText(expense.date);
 
-        // temporary visible background for testing
-        holder.viewTagDot.setVisibility(View.VISIBLE);
-        holder.viewTagDot.setBackgroundColor(Color.MAGENTA);
-        Log.d("ExpenseAdapter", "✅ set magenta background for position " + position);
-
-        // 🎨 Shape logic for tag indicators
+        // 🏷 Retrieve tag for this category
         String tag = CategoryManager.getTagForCategory(context, expense.category);
-        View dot = holder.viewTagDot;
-        if (dot != null) {
-            switch (tag) {
-                case "Basic":
-                    dot.setVisibility(View.VISIBLE);
-                    dot.setBackground(ContextCompat.getDrawable(context, R.drawable.tag_basic_square));
-                    break;
-                case "Discretionary":
-                    dot.setVisibility(View.VISIBLE);
-                    dot.setBackground(ContextCompat.getDrawable(context, R.drawable.tag_discretionary_triangle));
-                    break;
-                default:
-                    dot.setVisibility(View.INVISIBLE); // hide Fixed
-                    break;
-            }
-        }
 
         // 💰 Load user’s selected currency
         SharedPreferences prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE);
@@ -79,15 +55,15 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
         String formatted = String.format(Locale.ENGLISH, "%.2f %s", expense.amount, symbol);
         SpannableString display = new SpannableString(formatted);
         int start = formatted.length() - symbol.length();
-        display.setSpan(new RelativeSizeSpan(0.85f), start, formatted.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        display.setSpan(new RelativeSizeSpan(0.85f), start, formatted.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         holder.textAmount.setText(display);
 
         // ✅ Row click → details dialog
         holder.itemView.setOnClickListener(v -> {
             new AlertDialog.Builder(context)
                     .setTitle("Expense Details")
-                    .setMessage("Category: " + expense.category + "\n"
-                            + "Tag: " + tag + "\n"
+                    .setMessage("Category: " + expense.category + " (" + tag + ")" + "\n"
                             + "Date: " + expense.date + "\n"
                             + "Item: " + expense.description + "\n"
                             + "Amount: " + formatted)
@@ -114,14 +90,12 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
 
     static class ExpenseViewHolder extends RecyclerView.ViewHolder {
         TextView textCategory, textDate, textAmount;
-        View viewTagDot;
 
         ExpenseViewHolder(@NonNull View itemView) {
             super(itemView);
             textCategory = itemView.findViewById(R.id.text_category);
             textDate = itemView.findViewById(R.id.text_date);
             textAmount = itemView.findViewById(R.id.text_amount);
-            viewTagDot = itemView.findViewById(R.id.view_tag_dot);
         }
     }
 }
