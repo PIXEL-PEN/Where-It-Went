@@ -22,14 +22,14 @@ import java.util.Locale;
 
 public class ViewAllActivity extends AppCompatActivity {
 
+    private ExpenseAdapter adapter;   // 🔄 holds adapter reference for refresh
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_all);
 
         ImageButton btnBack = findViewById(R.id.btn_back);
-
-
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> {
                 startActivity(new Intent(this, MainActivity.class));
@@ -62,8 +62,8 @@ public class ViewAllActivity extends AppCompatActivity {
             return Integer.compare(e2.id, e1.id);
         });
 
-        // Adapter
-        ExpenseAdapter adapter = new ExpenseAdapter(expenses);
+        // Adapter (keep reference for later refresh)
+        adapter = new ExpenseAdapter(expenses);
         recyclerView.setAdapter(adapter);
 
         // Crisp 1dp gray dividers
@@ -109,5 +109,14 @@ public class ViewAllActivity extends AppCompatActivity {
             } catch (Exception ignore) {}
         }
         return null;
+    }
+
+    // 🔁 Refresh list after editing category tag in AddExpenseActivity
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (adapter != null) {
+            adapter.handleActivityResult(this, requestCode, resultCode);
+        }
     }
 }

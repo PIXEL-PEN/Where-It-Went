@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -71,17 +73,18 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
                     + "Date: " + expense.date + "\n"
                     + "Item: " + expense.description + "\n"
                     + "Amount: " + String.format(Locale.ENGLISH, "%.2f", expense.amount);
-
             textDetails.setText(details);
 
-            // Small inline [Edit] beside category tag
-            editCategoryLink.setText("[Edit]");
+            // 🔹 Inline bold [Edit Category Tag] link
+            SpannableString label = new SpannableString("[Edit Category Tag]");
+            label.setSpan(new StyleSpan(Typeface.BOLD), 0, label.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            editCategoryLink.setText(label);
+
             editCategoryLink.setOnClickListener(x -> {
                 Intent intent = new Intent(context, AddExpenseActivity.class);
                 intent.putExtra("open_category_editor", true);
                 intent.putExtra("category_name", expense.category);
 
-                // Launch via activity for result so caller can refresh afterward
                 if (context instanceof AppCompatActivity) {
                     AppCompatActivity activity = (AppCompatActivity) context;
                     activity.startActivityForResult(intent, 9001);
@@ -109,12 +112,19 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
         });
     }
 
+    // 🔁 Called when returning from AddExpenseActivity to refresh tags
+    public void handleActivityResult(Context context, int requestCode, int resultCode) {
+        if (requestCode == 9001 && resultCode == AppCompatActivity.RESULT_OK) {
+            notifyDataSetChanged();
+        }
+    }
+
     @Override
     public int getItemCount() {
         return expenses.size();
     }
 
-    // 🔄 Optional helper for live refresh
+    // Optional helper for data reload
     public void updateData(List<Expense> newData) {
         expenses.clear();
         expenses.addAll(newData);
