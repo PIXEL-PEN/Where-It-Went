@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import android.widget.RadioGroup;
+import android.widget.RadioButton;
+
 
 public class AddExpenseActivity extends AppCompatActivity {
 
@@ -199,22 +202,21 @@ public class AddExpenseActivity extends AppCompatActivity {
     }
 
     private void showAddCategoryDialog() {
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_category, null);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_category_tagged, null);
 
         EditText input = dialogView.findViewById(R.id.edit_category_name);
-        Spinner tagSpinner = dialogView.findViewById(R.id.spinner_tag);
-
-        String[] tags = {"Fixed", "Basic", "Discretionary"};
-        ArrayAdapter<String> tagAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_dropdown_item, tags);
-        tagSpinner.setAdapter(tagAdapter);
+        RadioGroup tagGroup = dialogView.findViewById(R.id.radio_tag_group);
 
         new AlertDialog.Builder(this)
                 .setTitle("Add Category")
                 .setView(dialogView)
                 .setPositiveButton("Add", (dialog, which) -> {
                     String newCat = input.getText().toString().trim();
-                    String selectedTag = tagSpinner.getSelectedItem().toString();
+
+                    int checkedId = tagGroup.getCheckedRadioButtonId();
+                    String selectedTag = "Fixed";
+                    if (checkedId == R.id.radio_basic) selectedTag = "Basic";
+                    else if (checkedId == R.id.radio_discretionary) selectedTag = "Discretionary";
 
                     if (newCat.isEmpty()) {
                         Toast.makeText(this, "Enter category name", Toast.LENGTH_SHORT).show();
@@ -226,13 +228,12 @@ public class AddExpenseActivity extends AppCompatActivity {
                         return;
                     }
 
-                    // ✅ Add new category just before “Manage Categories” item
+                    // ✅ Add new category just before “Manage Categories”
                     categories.add(categories.size() - 1, newCat);
 
-                    // ✅ Persist using the new unified method
+                    // ✅ Save tag with persistence
                     CategoryManager.saveCategoryWithTag(this, newCat, selectedTag);
 
-                    // ✅ Refresh adapter
                     categoryAdapter.notifyDataSetChanged();
 
                     Toast.makeText(this,
@@ -240,7 +241,6 @@ public class AddExpenseActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
-
     }
 
     private void showDeleteCategoryDialog() {

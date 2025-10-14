@@ -1,38 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="20dp"
-    android:background="#ECEFF1">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/white">
 
-    <!-- Category name -->
     <EditText
         android:id="@+id/edit_category_name"
+        android:hint="Enter category name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Category name"
         android:inputType="textCapWords"
-        android:textSize="16sp"
-        android:padding="10dp"
-        android:background="@android:color/white"
-        android:elevation="2dp" />
+        android:padding="8dp" />
 
-    <!-- Space -->
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="12dp" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select tag:"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp" />
 
-    <!-- Tag type spinner -->
-    <Spinner
-        android:id="@+id/spinner_tag_type"
+    <RadioGroup
+        android:id="@+id/radio_tag_group"
         android:layout_width="match_parent"
-        android:layout_height="42dp"
-        android:background="@drawable/spinner_background_salmon"
-        android:paddingStart="10dp"
-        android:paddingEnd="10dp"
-        android:spinnerMode="dropdown"
-        android:popupBackground="@android:color/white"
-        android:elevation="2dp" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="8dp">
+
+        <RadioButton
+            android:id="@+id/radio_fixed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fixed"
+            android:checked="true" />
+
+        <RadioButton
+            android:id="@+id/radio_basic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Basic" />
+
+        <RadioButton
+            android:id="@+id/radio_discretionary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Discretionary" />
+    </RadioGroup>
 
 </LinearLayout>
