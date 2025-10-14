@@ -93,13 +93,13 @@ public class DayDetailActivity extends AppCompatActivity {
                 AlertDialog dialog = new AlertDialog.Builder(DayDetailActivity.this)
                         .setTitle("Expense Details")
                         .setMessage(details)
-                        .setNegativeButton("CLOSE", (d, which) -> d.dismiss())
-                        .setNeutralButton("DELETE", (d, which) -> {
+                        .setNegativeButton("DELETE", (d, which) -> {
                             ExpenseDatabase.getDatabase(DayDetailActivity.this)
                                     .expenseDao()
                                     .delete(e);
                             recreate();
                         })
+                        .setNeutralButton("CLOSE", (d, which) -> d.dismiss())
                         .setPositiveButton("EDIT", (d, which) -> {
                             Intent intent = new Intent(DayDetailActivity.this, AddExpenseActivity.class);
                             intent.putExtra("expense_id", e.id);
@@ -108,6 +108,7 @@ public class DayDetailActivity extends AppCompatActivity {
                         .create();
 
                 dialog.show();
+
             });
 
             expensesContainer.addView(row);
