@@ -226,16 +226,21 @@ public class AddExpenseActivity extends AppCompatActivity {
                         return;
                     }
 
+                    // ✅ Add new category just before “Manage Categories” item
                     categories.add(categories.size() - 1, newCat);
-                    CategoryManager.saveCategories(this, categories.subList(0, categories.size() - 1));
+
+                    // ✅ Persist using the new unified method
+                    CategoryManager.saveCategoryWithTag(this, newCat, selectedTag);
+
+                    // ✅ Refresh adapter
                     categoryAdapter.notifyDataSetChanged();
 
                     Toast.makeText(this,
                             "Added \"" + newCat + "\" (" + selectedTag + ")", Toast.LENGTH_SHORT).show();
-                    // TODO: future persistence for tags
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
+
     }
 
     private void showDeleteCategoryDialog() {
@@ -245,7 +250,15 @@ public class AddExpenseActivity extends AppCompatActivity {
                 .setItems(cats, (d, which) -> {
                     String toRemove = cats[which];
                     categories.remove(toRemove);
-                    CategoryManager.saveCategories(this, categories.subList(0, categories.size() - 1));
+
+                    // ✅ Re-persist categories using new tag logic
+                    for (String name : categories.subList(0, categories.size() - 1)) {
+                        String tag = CategoryManager.isDefaultCategory(name)
+                                ? "Fixed"
+                                : CategoryManager.getTagForCategory(this, name);
+                        CategoryManager.saveCategoryWithTag(this, name, tag);
+                    }
+
                     categoryAdapter.notifyDataSetChanged();
                 })
                 .show();
