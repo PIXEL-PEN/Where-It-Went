@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
@@ -43,8 +44,8 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
         holder.textCategory.setText(expense.category);
         holder.textDate.setText(expense.date);
 
-        // 🏷 Retrieve tag for this category
-        String tag = CategoryManager.getTagForCategory(context, expense.category);
+        // 🏷 Retrieve category tag
+        String catTag = CategoryManager.getTagForCategory(context, expense.category);
 
         // 💰 Load user’s selected currency
         SharedPreferences prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE);
@@ -61,12 +62,37 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
 
         // ✅ Row click → details dialog
         holder.itemView.setOnClickListener(v -> {
+
+            View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_expense_details, null);
+            TextView textDetails = dialogView.findViewById(R.id.text_details);
+            TextView editCategoryLink = dialogView.findViewById(R.id.text_edit_category);
+
+            String details = "Category: " + expense.category + " (" + catTag + ")\n"
+                    + "Date: " + expense.date + "\n"
+                    + "Item: " + expense.description + "\n"
+                    + "Amount: " + String.format(Locale.ENGLISH, "%.2f", expense.amount);
+
+            textDetails.setText(details);
+
+            // Small inline [Edit] beside category tag
+            editCategoryLink.setText("[Edit]");
+            editCategoryLink.setOnClickListener(x -> {
+                Intent intent = new Intent(context, AddExpenseActivity.class);
+                intent.putExtra("open_category_editor", true);
+                intent.putExtra("category_name", expense.category);
+
+                // Launch via activity for result so caller can refresh afterward
+                if (context instanceof AppCompatActivity) {
+                    AppCompatActivity activity = (AppCompatActivity) context;
+                    activity.startActivityForResult(intent, 9001);
+                } else {
+                    context.startActivity(intent);
+                }
+            });
+
             new AlertDialog.Builder(context)
                     .setTitle("Expense Details")
-                    .setMessage("Category: " + expense.category + " (" + tag + ")" + "\n"
-                            + "Date: " + expense.date + "\n"
-                            + "Item: " + expense.description + "\n"
-                            + "Amount: " + formatted)
+                    .setView(dialogView)
                     .setNegativeButton("Delete", (dialog, which) -> {
                         ExpenseDatabase.getDatabase(context).expenseDao().delete(expense);
                         expenses.remove(position);
@@ -81,12 +107,18 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
                     })
                     .show();
         });
-
     }
 
     @Override
     public int getItemCount() {
         return expenses.size();
+    }
+
+    // 🔄 Optional helper for live refresh
+    public void updateData(List<Expense> newData) {
+        expenses.clear();
+        expenses.addAll(newData);
+        notifyDataSetChanged();
     }
 
     static class ExpenseViewHolder extends RecyclerView.ViewHolder {

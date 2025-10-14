@@ -118,18 +118,23 @@ public class CategoryManager {
         if (DEFAULTS.containsKey(name)) return;
 
         List<CategoryItem> list = getCategoryItems(context);
-        boolean exists = false;
+        boolean updated = false;
 
         for (CategoryItem item : list) {
-            if (item.name.equals(name)) {
+            if (item.name.equalsIgnoreCase(name.trim())) {
                 item.tag = tag;
-                exists = true;
+                updated = true;
                 break;
             }
         }
-        if (!exists) list.add(new CategoryItem(name, tag));
+
+        if (!updated) {
+            list.add(new CategoryItem(name.trim(), tag));
+        }
+
         saveCategoryList(context, list);
     }
+
 
     // -------------------------------
 // Reset everything to defaults
@@ -141,6 +146,27 @@ public class CategoryManager {
         }
         saveCategoryList(context, list);
     }
+
+    // -------------------------------
+// Remove a category completely (by name, case-insensitive)
+// -------------------------------
+    public static void removeCategory(Context context, String name) {
+        List<CategoryItem> list = getCategoryItems(context);
+        List<CategoryItem> updated = new ArrayList<>();
+
+        for (CategoryItem item : list) {
+            if (!item.name.equalsIgnoreCase(name.trim())) {
+                updated.add(item);
+            }
+        }
+        saveCategoryList(context, updated);
+    }
+
+
+
+
+
+
 
     // -------------------------------
 // Check if category is a built-in Fixed one

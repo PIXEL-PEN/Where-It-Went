@@ -21,8 +21,6 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import android.widget.RadioGroup;
-import android.widget.RadioButton;
-
 
 public class AddExpenseActivity extends AppCompatActivity {
 
@@ -45,6 +43,14 @@ public class AddExpenseActivity extends AppCompatActivity {
         editAmount = findViewById(R.id.edit_amount);
         textDate = findViewById(R.id.text_date);
         btnSave = findViewById(R.id.btn_save);
+
+        // ✅ Launch directly into tag edit mode if called with editor intent
+        boolean openCategoryEditor = getIntent().getBooleanExtra("open_category_editor", false);
+        String categoryToEdit = getIntent().getStringExtra("category_name");
+        if (openCategoryEditor && categoryToEdit != null) {
+            showEditCategoryTagDialog(categoryToEdit);
+            return;
+        }
 
         List<String> defaults = new ArrayList<>();
         defaults.add("Groceries");
@@ -228,18 +234,76 @@ public class AddExpenseActivity extends AppCompatActivity {
                         return;
                     }
 
-                    // ✅ Add new category just before “Manage Categories”
                     categories.add(categories.size() - 1, newCat);
-
-                    // ✅ Save tag with persistence
                     CategoryManager.saveCategoryWithTag(this, newCat, selectedTag);
-
                     categoryAdapter.notifyDataSetChanged();
 
                     Toast.makeText(this,
                             "Added \"" + newCat + "\" (" + selectedTag + ")", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void showEditCategoryTagDialog(String categoryName) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_category_tagged, null);
+
+        EditText input = dialogView.findViewById(R.id.edit_category_name);
+        RadioGroup tagGroup = dialogView.findViewById(R.id.radio_tag_group);
+
+        input.setText(categoryName);
+        String currentTag = CategoryManager.getTagForCategory(this, categoryName);
+        if ("Basic".equals(currentTag)) tagGroup.check(R.id.radio_basic);
+        else if ("Discretionary".equals(currentTag)) tagGroup.check(R.id.radio_discretionary);
+        else tagGroup.check(R.id.radio_fixed);
+
+        final boolean isDefault = CategoryManager.isDefaultCategory(categoryName);
+        if (isDefault) {
+            input.setEnabled(false);
+            dialogView.findViewById(R.id.radio_fixed).setEnabled(true);
+            dialogView.findViewById(R.id.radio_basic).setEnabled(false);
+            dialogView.findViewById(R.id.radio_discretionary).setEnabled(false);
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle(isDefault ? "View Category" : "Edit Category")
+                .setView(dialogView)
+                .setPositiveButton(isDefault ? "OK" : "Save", (dialog, which) -> {
+                    if (isDefault) {
+                        setResult(RESULT_CANCELED);
+                        finish();
+                        return;
+                    }
+
+                    String newCat = input.getText().toString().trim();
+                    if (newCat.isEmpty()) {
+                        Toast.makeText(this, "Enter category name", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    int checkedId = tagGroup.getCheckedRadioButtonId();
+                    String selectedTag = "Fixed";
+                    if (checkedId == R.id.radio_basic) selectedTag = "Basic";
+                    else if (checkedId == R.id.radio_discretionary) selectedTag = "Discretionary";
+
+                    CategoryManager.saveCategoryWithTag(this, newCat, selectedTag);
+
+                    if (!newCat.equals(categoryName) && categories != null) {
+                        int idx = categories.indexOf(categoryName);
+                        if (idx >= 0) categories.set(idx, newCat);
+                    }
+
+                    if (categoryAdapter != null) {
+                        categoryAdapter.notifyDataSetChanged();
+                    }
+
+                    Toast.makeText(this,
+                            "Updated \"" + newCat + "\" (" + selectedTag + ")", Toast.LENGTH_SHORT).show();
+
+                    setResult(RESULT_OK);
+                    finish();
+                })
+                .setNegativeButton(isDefault ? null : "Cancel", null)
                 .show();
     }
 
@@ -251,7 +315,6 @@ public class AddExpenseActivity extends AppCompatActivity {
                     String toRemove = cats[which];
                     categories.remove(toRemove);
 
-                    // ✅ Re-persist categories using new tag logic
                     for (String name : categories.subList(0, categories.size() - 1)) {
                         String tag = CategoryManager.isDefaultCategory(name)
                                 ? "Fixed"
