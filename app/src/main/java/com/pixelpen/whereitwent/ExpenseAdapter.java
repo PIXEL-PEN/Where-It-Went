@@ -67,11 +67,6 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
                             + "Date: " + expense.date + "\n"
                             + "Item: " + expense.description + "\n"
                             + "Amount: " + formatted)
-                    .setPositiveButton("Edit", (dialog, which) -> {
-                        Intent intent = new Intent(context, AddExpenseActivity.class);
-                        intent.putExtra("expense_id", expense.id);
-                        context.startActivity(intent);
-                    })
                     .setNegativeButton("Delete", (dialog, which) -> {
                         ExpenseDatabase.getDatabase(context).expenseDao().delete(expense);
                         expenses.remove(position);
@@ -79,8 +74,14 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
                         Toast.makeText(context, "Expense deleted", Toast.LENGTH_SHORT).show();
                     })
                     .setNeutralButton("Close", null)
+                    .setPositiveButton("Edit", (dialog, which) -> {
+                        Intent intent = new Intent(context, AddExpenseActivity.class);
+                        intent.putExtra("expense_id", expense.id);
+                        context.startActivity(intent);
+                    })
                     .show();
         });
+
     }
 
     @Override
