@@ -16,7 +16,6 @@
         android:paddingTop="4dp"
         android:paddingBottom="3dp">
 
-
         <LinearLayout
             android:id="@+id/title_row"
             android:layout_width="wrap_content"
@@ -31,8 +30,6 @@
                 android:id="@+id/btn_back"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
                 android:background="@null"
                 android:src="@drawable/ic_arrow_back_white"
                 android:contentDescription="@string/back"
@@ -43,33 +40,24 @@
                 android:id="@+id/topBar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/btn_back"
                 android:layout_marginStart="8dp"
-                android:layout_centerVertical="true"
                 android:text="Expenses by Date"
                 android:textColor="@android:color/white"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:translationY="1dp"
                 android:includeFontPadding="false" />
-
-
         </LinearLayout>
     </RelativeLayout>
 
-    <!-- Scrollable expenses list -->
-    <ScrollView
+    <!-- RecyclerView replaces the old ScrollView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_expenses"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:fillViewport="true">
-
-        <LinearLayout
-            android:id="@+id/datewise_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingBottom="60dp" />
-    </ScrollView>
+        android:padding="8dp"
+        android:clipToPadding="false"
+        android:scrollbars="vertical" />
 
 </LinearLayout>
