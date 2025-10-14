@@ -82,7 +82,10 @@ public class DayDetailActivity extends AppCompatActivity {
 
             // Click → edit/delete dialog
             row.setOnClickListener(v -> {
-                String details = "Category: " + e.category + "\n"
+                // 🏷 Retrieve tag for this category
+                String tag = CategoryManager.getTagForCategory(DayDetailActivity.this, e.category);
+
+                String details = "Category: " + e.category + " (" + tag + ")" + "\n"
                         + "Date: " + formatFullDate(e.date) + "\n"
                         + "Item: " + e.description + "\n"
                         + "Amount: " + String.format(Locale.ENGLISH, "%.2f %s", e.amount, symbol);
