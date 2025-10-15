@@ -181,58 +181,67 @@ public class AddExpenseActivity extends AppCompatActivity {
         });
     }
 
+    // -----------------------------------
+    // Manage Categories (Add / Edit / Delete / Reset)
+    // -----------------------------------
     private void showManageCategoriesDialog() {
-        String[] options = {"Add Category", "Delete Category", "Reset Defaults"};
+        String[] options = {"Add Category", "Edit Tag", "Delete Category", "Reset Defaults"};
         new AlertDialog.Builder(this)
                 .setTitle("Manage Categories")
                 .setItems(options, (DialogInterface dialog, int which) -> {
-                    if (which == 0) {
-                        showAddCategoryDialog();
-                    } else if (which == 1) {
-                        showDeleteCategoryDialog();
-                    } else {
-                        CategoryManager.resetToDefault(this);
-                        reloadCategories();
+                    switch (which) {
+                        case 0:
+                            showAddCategoryDialog();
+                            break;
+                        case 1:
+                            showEditCategoryDialog();
+                            break;
+                        case 2:
+                            showDeleteCategoryDialog();
+                            break;
+                        case 3:
+                            CategoryManager.resetToDefault(this);
+                            reloadCategories();
+                            break;
                     }
                 })
                 .show();
     }
 
+    // -----------------------------------
+    // Add Category (Radio buttons)
+    // -----------------------------------
     private void showAddCategoryDialog() {
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_category, null);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_category_tagged, null);
 
         EditText input = dialogView.findViewById(R.id.edit_category_name);
-        Spinner tagSpinner = dialogView.findViewById(R.id.spinner_tag);
-
-        String[] tags = {"Fixed", "Basic", "Discretionary"};
-        ArrayAdapter<String> tagAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_dropdown_item, tags);
-        tagSpinner.setAdapter(tagAdapter);
+        android.widget.RadioGroup radioGroup = dialogView.findViewById(R.id.radio_tag_group);
 
         new AlertDialog.Builder(this)
                 .setTitle("Add Category")
                 .setView(dialogView)
                 .setPositiveButton("Add", (dialog, which) -> {
                     String newCat = input.getText().toString().trim();
-                    String selectedTag = tagSpinner.getSelectedItem().toString();
-
                     if (newCat.isEmpty()) {
                         Toast.makeText(this, "Enter category name", Toast.LENGTH_SHORT).show();
                         return;
                     }
+
+                    int selectedId = radioGroup.getCheckedRadioButtonId();
+                    if (selectedId == -1) {
+                        Toast.makeText(this, "Select a tag", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    android.widget.RadioButton selectedButton = dialogView.findViewById(selectedId);
+                    String selectedTag = selectedButton.getText().toString();
 
                     if (categories.contains(newCat)) {
                         Toast.makeText(this, "Category already exists", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
-                    // ✅ Add new category just before “Manage Categories” item
                     categories.add(categories.size() - 1, newCat);
-
-                    // ✅ Persist using the new unified method
                     CategoryManager.saveCategoryWithTag(this, newCat, selectedTag);
-
-                    // ✅ Refresh adapter
                     categoryAdapter.notifyDataSetChanged();
 
                     Toast.makeText(this,
@@ -240,9 +249,68 @@ public class AddExpenseActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
-
     }
 
+    // -----------------------------------
+    // Edit Category Tag
+    // -----------------------------------
+    private void showEditCategoryDialog() {
+        List<String> editable = new ArrayList<>();
+        for (String c : categories) {
+            if (!CategoryManager.isDefaultCategory(c) && !c.equals("➕ Manage Categories") && !c.equals("⋯")) {
+                editable.add(c);
+            }
+        }
+
+        if (editable.isEmpty()) {
+            Toast.makeText(this, "No editable categories found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String[] cats = editable.toArray(new String[0]);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Edit Tag")
+                .setItems(cats, (dialog, which) -> {
+                    String selected = cats[which];
+                    showTagChangeDialog(selected);
+                })
+                .show();
+    }
+
+    private void showTagChangeDialog(String categoryName) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_category_tagged, null);
+        android.widget.RadioGroup radioGroup = dialogView.findViewById(R.id.radio_tag_group);
+        EditText editName = dialogView.findViewById(R.id.edit_category_name);
+
+        editName.setText(categoryName);
+        editName.setEnabled(false);
+
+        String currentTag = CategoryManager.getTagForCategory(this, categoryName);
+
+        if (currentTag.equals("Fixed")) radioGroup.check(R.id.radio_fixed);
+        else if (currentTag.equals("Basic")) radioGroup.check(R.id.radio_basic);
+        else radioGroup.check(R.id.radio_discretionary);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Change Tag")
+                .setView(dialogView)
+                .setPositiveButton("Save", (d, w) -> {
+                    int selectedId = radioGroup.getCheckedRadioButtonId();
+                    android.widget.RadioButton selected = dialogView.findViewById(selectedId);
+                    String newTag = selected.getText().toString();
+
+                    CategoryManager.saveCategoryWithTag(this, categoryName, newTag);
+                    reloadCategories();
+                    Toast.makeText(this, "Updated tag for \"" + categoryName + "\" → " + newTag, Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    // -----------------------------------
+    // Delete Category
+    // -----------------------------------
     private void showDeleteCategoryDialog() {
         String[] cats = categories.subList(0, categories.size() - 1).toArray(new String[0]);
         new AlertDialog.Builder(this)
@@ -251,7 +319,6 @@ public class AddExpenseActivity extends AppCompatActivity {
                     String toRemove = cats[which];
                     categories.remove(toRemove);
 
-                    // ✅ Re-persist categories using new tag logic
                     for (String name : categories.subList(0, categories.size() - 1)) {
                         String tag = CategoryManager.isDefaultCategory(name)
                                 ? "Fixed"
@@ -264,14 +331,22 @@ public class AddExpenseActivity extends AppCompatActivity {
                 .show();
     }
 
+    // -----------------------------------
+    // Reload Categories
+    // -----------------------------------
     private void reloadCategories() {
         categories = new ArrayList<>(CategoryManager.getOrderedCategories(this));
-        categories.add("➕ Manage Categories");
+        if (!categories.contains("➕ Manage Categories")) {
+            categories.add("➕ Manage Categories");
+        }
         categoryAdapter.clear();
         categoryAdapter.addAll(categories);
         categoryAdapter.notifyDataSetChanged();
     }
 
+    // -----------------------------------
+    // Date Formatting
+    // -----------------------------------
     private String getMonthAbbreviation(int monthIndex) {
         String[] months = {"Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.",
                 "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."};

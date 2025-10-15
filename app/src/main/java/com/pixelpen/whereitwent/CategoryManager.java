@@ -132,8 +132,8 @@ public class CategoryManager {
     }
 
     // -------------------------------
-// Reset everything to defaults
-// -------------------------------
+    // Reset everything to defaults
+    // -------------------------------
     public static void resetToDefault(Context context) {
         List<CategoryItem> list = new ArrayList<>();
         for (Map.Entry<String, String> e : DEFAULTS.entrySet()) {
@@ -143,8 +143,23 @@ public class CategoryManager {
     }
 
     // -------------------------------
-// Check if category is a built-in Fixed one
-// -------------------------------
+    // Remove a category completely (by name, case-insensitive)
+    // -------------------------------
+    public static void removeCategory(Context context, String name) {
+        List<CategoryItem> list = getCategoryItems(context);
+        List<CategoryItem> updated = new ArrayList<>();
+
+        for (CategoryItem item : list) {
+            if (!item.name.equalsIgnoreCase(name.trim())) {
+                updated.add(item);
+            }
+        }
+        saveCategoryList(context, updated);
+    }
+
+    // -------------------------------
+    // Check if category is a built-in Fixed one
+    // -------------------------------
     public static boolean isDefaultCategory(String categoryName) {
         if (categoryName == null) return false;
         String[] defaults = {"Groceries", "Rent", "Utilities", "Bills", "Transport"};
@@ -157,8 +172,8 @@ public class CategoryManager {
     }
 
     // -------------------------------
-// Internal data holder
-// -------------------------------
+    // Internal data holder
+    // -------------------------------
     private static class CategoryItem {
         String name;
         String tag;
