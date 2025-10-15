@@ -49,15 +49,19 @@
                 android:includeFontPadding="false" />
         </LinearLayout>
     </RelativeLayout>
-
-    <!-- RecyclerView replaces the old ScrollView -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_expenses"
+    <!-- Scrollable expenses list -->
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp"
-        android:clipToPadding="false"
-        android:scrollbars="vertical" />
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:id="@+id/datewise_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="60dp" />
+    </ScrollView>
 
 </LinearLayout>
