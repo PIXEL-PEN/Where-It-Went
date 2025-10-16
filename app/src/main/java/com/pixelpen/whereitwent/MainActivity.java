@@ -47,6 +47,17 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
 
+            // Edit Categories (new direct link)
+            View linkManageCategories = drawer.findViewById(R.id.linkManageCategories);
+            if (linkManageCategories != null) {
+                linkManageCategories.setOnClickListener(v -> {
+                    Intent intent = new Intent(MainActivity.this, AddExpenseActivity.class);
+                    intent.putExtra("open_manager_direct", true);
+                    startActivity(intent);
+                    drawerLayout.closeDrawers();
+                });
+            }
+
             // Settings
             View linkSettings = drawer.findViewById(R.id.linkSettings);
             if (linkSettings != null) {

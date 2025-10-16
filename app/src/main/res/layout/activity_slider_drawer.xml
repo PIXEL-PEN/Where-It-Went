@@ -76,6 +76,19 @@
                 android:textSize="14sp"
                 android:background="#024265" />
 
+            <!-- New direct access button -->
+            <TextView
+                android:id="@+id/linkManageCategories"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="8dp"
+                android:paddingVertical="6dp"
+                android:gravity="center"
+                android:text="Edit Categories"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:background="#024265" />
+
             <TextView
                 android:id="@+id/linkDistribution"
                 android:layout_width="110dp"

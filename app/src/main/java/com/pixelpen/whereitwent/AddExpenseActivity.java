@@ -37,6 +37,16 @@ public class AddExpenseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_expense);
 
+        if (getIntent().getBooleanExtra("open_manager_direct", false)) {
+            // Delay opening manager until layout and spinner are fully ready
+            new android.os.Handler().postDelayed(() -> {
+                if (spinnerCategory != null) {
+                    showManageCategoriesDialog();
+                }
+            }, 300);
+        }
+
+
         spinnerCategory = findViewById(R.id.spinner_category);
         editDescription = findViewById(R.id.edit_description);
         editAmount = findViewById(R.id.edit_amount);
