@@ -339,8 +339,18 @@ public class AddExpenseActivity extends AppCompatActivity {
                             .setTitle("Confirm Delete")
                             .setMessage("Delete \"" + toRemove + "\" permanently?")
                             .setPositiveButton("Delete", (dd, w) -> {
+                                // Perform deletion and refresh
                                 CategoryManager.removeCategory(this, toRemove);
                                 reloadCategories();
+
+                                // Reset spinner to first visible category (Groceries)
+                                if (!categories.isEmpty()) {
+                                    spinnerCategory.setSelection(0, false);
+                                }
+
+                                // Close both dialogs and show confirmation
+                                dd.dismiss();
+                                d.dismiss();
                                 Toast.makeText(this,
                                         "Deleted \"" + toRemove + "\"",
                                         Toast.LENGTH_SHORT).show();
@@ -349,6 +359,7 @@ public class AddExpenseActivity extends AppCompatActivity {
                             .show();
                 })
                 .show();
+
     }
 
     // -----------------------------------
