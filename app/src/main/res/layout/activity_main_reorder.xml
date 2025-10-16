@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#ECEFF1">
+
+        <!-- Top bar -->
+        <RelativeLayout
+            android:id="@+id/top_bar_container"
+            android:layout_width="match_parent"
+            android:layout_height="96dp"
+            android:background="@color/colorPrimary"
+            android:paddingStart="16dp"
+            android:paddingEnd="8dp">
+
+            <TextView
+                android:id="@+id/top_bar_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="13dp"
+                android:text="Add Expense"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/btn_filter"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignBottom="@id/top_bar_title"
+                android:layout_marginBottom="-6dp"
+                android:src="@drawable/ic_hamburger"
+                android:tint="@android:color/white"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Menu"
+                android:padding="10dp" />
+        </RelativeLayout>
+
+        <!-- Spacer pushes input area downward -->
+        <View
+            android:id="@+id/form_spacer"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:layout_below="@id/top_bar_container" />
+
+        <!-- Add Expense Input Container -->
+        <LinearLayout
+            android:id="@+id/add_expense_container"
+            android:orientation="vertical"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/form_spacer"
+            android:layout_centerHorizontal="true"
+            android:padding="16dp"
+            android:gravity="center_horizontal"
+            android:background="#FFFFFF"
+            android:elevation="2dp">
+
+            <!-- (spinner placeholder) -->
+            <Spinner
+                android:id="@+id/spinner_category"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Item Line -->
+            <EditText
+                android:id="@+id/edit_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Item"
+                android:background="@android:color/transparent"
+                android:inputType="text"
+                android:textColor="#000000"
+                android:layout_marginBottom="2dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:singleLine="true"
+                android:textColorHint="#999999" />
+
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Amount Line -->
+            <EditText
+                android:id="@+id/edit_amount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Amount"
+                android:background="@android:color/transparent"
+                android:inputType="numberDecimal"
+                android:textColor="#000000"
+                android:layout_marginBottom="2dp"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:singleLine="true"
+                android:textColorHint="#999999" />
+
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Date Line -->
+            <TextView
+                android:id="@+id/text_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Date: (auto-filled)"
+                android:textColor="#000000"
+                android:gravity="center_vertical"
+                android:paddingVertical="8dp"
+                android:textColorHint="#999999" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Done Button -->
+            <Button
+                android:id="@+id/btn_save"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DONE"
+                android:textStyle="bold"
+                android:textColor="@color/colorPrimary"
+                android:layout_gravity="end"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="6dp"
+                android:background="@android:color/transparent" />
+        </LinearLayout>
+
+        <!-- Compact 4-button cluster at lower right -->
+        <LinearLayout
+            android:id="@+id/viewButtonsContainer"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="60dp"
+            android:gravity="end">
+
+            <TextView
+                android:id="@+id/btnViewAll"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:paddingVertical="6dp"
+                android:gravity="center"
+                android:text="All"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:background="#024265" />
+
+            <TextView
+                android:id="@+id/btnDateWise"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:paddingVertical="6dp"
+                android:gravity="center"
+                android:text="Date"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:background="#024265" />
+
+            <TextView
+                android:id="@+id/btnMonthWise"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:paddingVertical="6dp"
+                android:gravity="center"
+                android:text="Month"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:background="#024265" />
+
+            <TextView
+                android:id="@+id/btnCategoryWise"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:paddingVertical="6dp"
+                android:gravity="center"
+                android:text="Category"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:background="#024265" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <!-- Right-side slider -->
+    <include
+        android:id="@+id/include_drawer"
+        layout="@layout/activity_slider_drawer"
+        android:layout_width="235dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end" />
+</androidx.drawerlayout.widget.DrawerLayout>
