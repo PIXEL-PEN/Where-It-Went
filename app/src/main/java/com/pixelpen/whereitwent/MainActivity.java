@@ -9,6 +9,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+
+
 
 
 public class MainActivity extends AppCompatActivity {
@@ -20,6 +27,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_reorder);
+
+        TextView textDate = findViewById(R.id.text_date);
+        if (textDate != null) {
+            String currentDate = new SimpleDateFormat("d MMM. yyyy", Locale.getDefault())
+                    .format(new Date());
+            textDate.setText(currentDate);
+        }
+
+
 
         Spinner spinnerCategory = findViewById(R.id.spinner_category);
         if (spinnerCategory != null) {
