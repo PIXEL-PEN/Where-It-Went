@@ -312,21 +312,41 @@ public class AddExpenseActivity extends AppCompatActivity {
     // Delete Category
     // -----------------------------------
     private void showDeleteCategoryDialog() {
-        String[] cats = categories.subList(0, categories.size() - 1).toArray(new String[0]);
+        // Build list of deletable categories (exclude defaults and the last "➕ Manage Categories")
+        List<String> deletable = new ArrayList<>();
+        for (String c : categories) {
+            if (!CategoryManager.isDefaultCategory(c)
+                    && !c.equals("⋯")
+                    && !c.equals("➕ Manage Categories")) {
+                deletable.add(c);
+            }
+        }
+
+        if (deletable.isEmpty()) {
+            Toast.makeText(this, "No deletable categories found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String[] cats = deletable.toArray(new String[0]);
+
         new AlertDialog.Builder(this)
                 .setTitle("Delete Category")
                 .setItems(cats, (d, which) -> {
                     String toRemove = cats[which];
-                    categories.remove(toRemove);
 
-                    for (String name : categories.subList(0, categories.size() - 1)) {
-                        String tag = CategoryManager.isDefaultCategory(name)
-                                ? "Fixed"
-                                : CategoryManager.getTagForCategory(this, name);
-                        CategoryManager.saveCategoryWithTag(this, name, tag);
-                    }
-
-                    categoryAdapter.notifyDataSetChanged();
+                    // Confirm deletion
+                    new AlertDialog.Builder(this)
+                            .setTitle("Confirm Delete")
+                            .setMessage("Delete \"" + toRemove + "\" permanently?")
+                            .setPositiveButton("Delete", (dd, w) -> {
+                                CategoryManager.removeCategory(this, toRemove);
+                                reloadCategories();
+                                Toast.makeText(this,
+                                        "Deleted \"" + toRemove + "\"",
+                                        Toast.LENGTH_SHORT).show();
+                            })
+                            .setNegativeButton("Cancel", null)
+                            .show();
                 })
                 .show();
     }
