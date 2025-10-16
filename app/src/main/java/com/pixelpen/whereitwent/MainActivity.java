@@ -7,6 +7,9 @@ import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -17,6 +20,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_reorder);
+
+        Spinner spinnerCategory = findViewById(R.id.spinner_category);
+        if (spinnerCategory != null) {
+            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                    this,
+                    R.array.category_names,
+                    R.layout.spinner_item_selected
+            );
+            adapter.setDropDownViewResource(R.layout.spinner_item_dropdown);
+            spinnerCategory.setAdapter(adapter);
+            spinnerCategory.setSelection(0, false);
+        }
 
 
         // Drawer setup
