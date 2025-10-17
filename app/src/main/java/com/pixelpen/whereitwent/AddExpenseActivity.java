@@ -20,9 +20,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.widget.Toolbar;
 
 public class AddExpenseActivity extends AppCompatActivity {
 
@@ -35,46 +32,19 @@ public class AddExpenseActivity extends AppCompatActivity {
     private ArrayAdapter<String> categoryAdapter;
     private List<String> categories;
 
-    private DrawerLayout drawerLayout;
-    private ActionBarDrawerToggle drawerToggle;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_expense);
 
-        // --- DrawerLayout initialization (fix MeasureSpec.EXACTLY crash) ---
-        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
-        androidx.appcompat.app.ActionBarDrawerToggle drawerToggle =
-                new androidx.appcompat.app.ActionBarDrawerToggle(
-                        this,
-                        drawerLayout,
-                        R.string.drawer_open,
-                        R.string.drawer_close
-                );
-        drawerLayout.addDrawerListener(drawerToggle);
-        drawerToggle.syncState();
-
-        // Optional: connect your hamburger button manually
-        findViewById(R.id.btn_filter).setOnClickListener(v -> {
-            if (drawerLayout.isDrawerOpen(android.view.Gravity.END)) {
-                drawerLayout.closeDrawer(android.view.Gravity.END);
-            } else {
-                drawerLayout.openDrawer(android.view.Gravity.END);
-            }
-        });
-
-        // -------------------------------------------------------------
-
         if (getIntent().getBooleanExtra("open_manager_direct", false)) {
+            // Delay opening manager until layout and spinner are fully ready
             new android.os.Handler().postDelayed(() -> {
                 if (spinnerCategory != null) {
                     showManageCategoriesDialog();
                 }
             }, 300);
         }
-
 
 
         spinnerCategory = findViewById(R.id.spinner_category);
