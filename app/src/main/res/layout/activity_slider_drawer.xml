@@ -7,11 +7,28 @@
     android:background="#0B4B6E"
     android:padding="0dp">
 
-    <!-- Top blue bar -->
-    <View
+    <!-- Top blue bar with title inside -->
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="110dp"
-        android:background="#0D5D8A" />
+        android:background="#0D5D8A">
+
+        <TextView
+            android:id="@+id/drawer_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Where It Went"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="12dp" />
+
+    </RelativeLayout>
+
+
+
 
     <!-- White spacer containing the plane icon -->
     <LinearLayout
