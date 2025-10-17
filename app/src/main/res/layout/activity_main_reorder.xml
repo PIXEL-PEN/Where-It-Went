@@ -3,14 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#ECEFF1">
 
     <RelativeLayout
+        android:id="@+id/main_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#ECEFF1">
 
-        <!-- Top bar -->
         <RelativeLayout
             android:id="@+id/top_bar_container"
             android:layout_width="match_parent"
@@ -44,14 +45,12 @@
                 android:padding="10dp" />
         </RelativeLayout>
 
-        <!-- Spacer pushes input area downward -->
         <View
             android:id="@+id/form_spacer"
             android:layout_width="match_parent"
             android:layout_height="150dp"
             android:layout_below="@id/top_bar_container" />
 
-        <!-- Add Expense Input Container -->
         <LinearLayout
             android:id="@+id/add_expense_container"
             android:orientation="vertical"
@@ -62,16 +61,19 @@
             android:padding="16dp"
             android:gravity="center_horizontal"
             android:background="#FFFFFF"
-            android:elevation="2dp">
+            android:elevation="2dp"
+            android:focusableInTouchMode="true"
+            android:descendantFocusability="beforeDescendants">
 
-            <!-- (spinner placeholder) -->
             <Spinner
                 android:id="@+id/spinner_category"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true" />
 
-            <!-- Category Tag Placeholder -->
             <TextView
                 android:id="@+id/text_category_tag"
                 android:layout_width="match_parent"
@@ -83,10 +85,6 @@
                 android:layout_marginTop="2dp"
                 android:layout_marginBottom="8dp" />
 
-
-
-
-            <!-- Item Line -->
             <EditText
                 android:id="@+id/edit_description"
                 android:layout_width="match_parent"
@@ -101,14 +99,12 @@
                 android:singleLine="true"
                 android:textColorHint="#999999" />
 
-
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="#CCCCCC"
                 android:layout_marginBottom="12dp" />
 
-            <!-- Amount Line -->
             <EditText
                 android:id="@+id/edit_amount"
                 android:layout_width="match_parent"
@@ -123,14 +119,12 @@
                 android:singleLine="true"
                 android:textColorHint="#999999" />
 
-
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="#CCCCCC"
                 android:layout_marginBottom="12dp" />
 
-            <!-- Date Line -->
             <TextView
                 android:id="@+id/text_date"
                 android:layout_width="match_parent"
@@ -143,6 +137,9 @@
                 android:paddingBottom="0dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="2dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:textColorHint="#999999" />
 
             <View
@@ -151,7 +148,6 @@
                 android:background="#CCCCCC"
                 android:layout_marginBottom="16dp" />
 
-            <!-- Done Button -->
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_save"
                 android:layout_width="28dp"
@@ -164,11 +160,8 @@
                 android:backgroundTint="@color/colorAccent"
                 android:background="@drawable/ok_button_solid"
                 android:elevation="4dp" />
-
-
         </LinearLayout>
 
-        <!-- Compact 4-button cluster at lower right -->
         <LinearLayout
             android:id="@+id/viewButtonsContainer"
             android:orientation="vertical"
@@ -227,16 +220,13 @@
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:background="@drawable/rounded_button_accent2" />
-
         </LinearLayout>
-
     </RelativeLayout>
 
-    <!-- Right-side slider -->
     <include
-        android:id="@+id/include_drawer"
         layout="@layout/activity_slider_drawer"
         android:layout_width="235dp"
         android:layout_height="match_parent"
         android:layout_gravity="end" />
+
 </androidx.drawerlayout.widget.DrawerLayout>
