@@ -26,7 +26,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_reorder);
+        setContentView(R.layout.activity_main);
+
 
         TextView textDate = findViewById(R.id.text_date);
         if (textDate != null) {

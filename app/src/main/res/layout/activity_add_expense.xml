@@ -1,9 +1,225 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".AddExpenseActivity">
 
-    ...[paste full XML you posted above]...
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#ECEFF1">
+
+        <!-- Top bar -->
+        <RelativeLayout
+            android:id="@+id/top_bar_container"
+            android:layout_width="match_parent"
+            android:layout_height="96dp"
+            android:background="@color/colorPrimary"
+            android:paddingStart="16dp"
+            android:paddingEnd="8dp">
+
+            <TextView
+                android:id="@+id/top_bar_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="13dp"
+                android:text="Add Expense"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/btn_filter"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignBottom="@id/top_bar_title"
+                android:layout_marginBottom="-6dp"
+                android:src="@drawable/ic_hamburger"
+                android:tint="@android:color/white"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Menu"
+                android:padding="10dp" />
+        </RelativeLayout>
+
+        <!-- Spacer pushes form downward -->
+        <View
+            android:id="@+id/form_spacer"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:layout_below="@id/top_bar_container" />
+
+        <!-- Add Expense form container -->
+        <LinearLayout
+            android:id="@+id/add_expense_container"
+            android:orientation="vertical"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/form_spacer"
+            android:layout_centerHorizontal="true"
+            android:padding="16dp"
+            android:gravity="center_horizontal"
+            android:background="#FFFFFF"
+            android:elevation="2dp">
+
+            <Spinner
+                android:id="@+id/spinner_category"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:id="@+id/text_category_tag"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="➤ (auto insert)"
+                android:textSize="10sp"
+                android:textColor="#888888"
+                android:gravity="end"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/edit_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Item"
+                android:background="@android:color/transparent"
+                android:inputType="text"
+                android:textColor="#000000"
+                android:singleLine="true"
+                android:textColorHint="#999999"
+                android:layout_marginBottom="2dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC"
+                android:layout_marginBottom="12dp" />
+
+            <EditText
+                android:id="@+id/edit_amount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Amount"
+                android:background="@android:color/transparent"
+                android:inputType="numberDecimal"
+                android:textColor="#000000"
+                android:singleLine="true"
+                android:textColorHint="#999999"
+                android:layout_marginBottom="2dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC"
+                android:layout_marginBottom="12dp" />
+
+            <TextView
+                android:id="@+id/text_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#000000"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:gravity="center_vertical"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="2dp"
+                android:textColorHint="#999999" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#CCCCCC"
+                android:layout_marginBottom="16dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_save"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:text="OK"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:textSize="11sp"
+                android:layout_gravity="end"
+                android:background="@drawable/ok_button_solid"
+                android:elevation="4dp" />
+        </LinearLayout>
+
+        <!-- Lower-right button cluster -->
+        <LinearLayout
+            android:id="@+id/viewButtonsContainer"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="60dp"
+            android:gravity="end">
+
+            <TextView
+                android:id="@+id/btnViewAll"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:paddingVertical="6dp"
+                android:gravity="center"
+                android:text="All"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:background="@drawable/rounded_button_accent2" />
+
+            <TextView
+                android:id="@+id/btnDateWise"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:paddingVertical="6dp"
+                android:gravity="center"
+                android:text="Date"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:background="@drawable/rounded_button_accent2" />
+
+            <TextView
+                android:id="@+id/btnMonthWise"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:paddingVertical="6dp"
+                android:gravity="center"
+                android:text="Month"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:background="@drawable/rounded_button_accent2" />
+
+            <TextView
+                android:id="@+id/btnCategoryWise"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4dp"
+                android:paddingVertical="6dp"
+                android:gravity="center"
+                android:text="Category"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:background="@drawable/rounded_button_accent2" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <!-- Drawer include -->
+    <include
+        android:id="@+id/include_drawer"
+        layout="@layout/activity_slider_drawer"
+        android:layout_width="235dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end" />
+
 </androidx.drawerlayout.widget.DrawerLayout>
