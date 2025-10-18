@@ -163,53 +163,77 @@
             android:layout_marginBottom="60dp"
             android:gravity="end">
 
-            <TextView
-                android:id="@+id/btnViewAll"
-                android:layout_width="110dp"
+            <LinearLayout
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginVertical="4dp"
-                android:paddingVertical="6dp"
-                android:gravity="center"
-                android:text="All"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:background="@drawable/rounded_button_accent2" />
+                android:layout_gravity="center_horizontal"
+                android:orientation="vertical"
+                android:gravity="start">
 
-            <TextView
-                android:id="@+id/btnDateWise"
-                android:layout_width="110dp"
-                android:layout_height="wrap_content"
-                android:layout_marginVertical="4dp"
-                android:paddingVertical="6dp"
-                android:gravity="center"
-                android:text="Date"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:background="@drawable/rounded_button_accent2" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:gravity="start">
 
-            <TextView
-                android:id="@+id/btnMonthWise"
-                android:layout_width="110dp"
-                android:layout_height="wrap_content"
-                android:layout_marginVertical="4dp"
-                android:paddingVertical="6dp"
-                android:gravity="center"
-                android:text="Month"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:background="@drawable/rounded_button_accent2" />
 
-            <TextView
-                android:id="@+id/btnCategoryWise"
-                android:layout_width="110dp"
-                android:layout_height="wrap_content"
-                android:layout_marginVertical="4dp"
-                android:paddingVertical="6dp"
-                android:gravity="center"
-                android:text="Category"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:background="@drawable/rounded_button_accent2" />
+                    <TextView
+                        android:id="@+id/btnViewAll"
+                        android:layout_width="110dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="4dp"
+                        android:paddingVertical="6dp"
+                        android:gravity="center"
+                        android:text="View All"
+                        android:textColor="@color/colorAccent2"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:background="#E0E0E0" />
+
+                    <TextView
+                        android:id="@+id/btnDateWise"
+                        android:layout_width="110dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="4dp"
+                        android:paddingVertical="6dp"
+                        android:gravity="center"
+                        android:text="Date"
+                        android:textColor="@color/colorAccent2"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:background="#E0E0E0" />
+
+                    <TextView
+                        android:id="@+id/btnMonthWise"
+                        android:layout_width="110dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="4dp"
+                        android:paddingVertical="6dp"
+                        android:gravity="center"
+                        android:text="Month"
+                        android:textColor="@color/colorAccent2"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:background="#E0E0E0" />
+
+                    <TextView
+                        android:id="@+id/btnCategoryWise"
+                        android:layout_width="110dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="4dp"
+                        android:paddingVertical="6dp"
+                        android:gravity="center"
+                        android:text="Category"
+                        android:textColor="@color/colorAccent2"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:background="#E0E0E0" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
         </LinearLayout>
 
     </RelativeLayout>
