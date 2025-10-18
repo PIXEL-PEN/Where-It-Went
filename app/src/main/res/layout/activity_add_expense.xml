@@ -197,7 +197,8 @@
                 android:text="Month"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
-                android:background="@drawable/rounded_button_accent2" />
+                android:background="#FF7043" />   <!-- temporary coral/orange -->
+
 
             <TextView
                 android:id="@+id/btnCategoryWise"
