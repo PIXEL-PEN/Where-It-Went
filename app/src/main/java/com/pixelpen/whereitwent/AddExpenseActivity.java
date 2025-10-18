@@ -53,6 +53,30 @@ public class AddExpenseActivity extends AppCompatActivity {
         textDate = findViewById(R.id.text_date);
         btnSave = findViewById(R.id.btn_save);
 
+        // ---- View navigation buttons ----
+        findViewById(R.id.btnViewAll).setOnClickListener(v -> {
+            Intent intent = new Intent(AddExpenseActivity.this, ViewAllActivity.class);
+            startActivity(intent);
+        });
+
+        findViewById(R.id.btnDateWise).setOnClickListener(v -> {
+            Intent intent = new Intent(AddExpenseActivity.this, DateWiseActivity.class);
+            startActivity(intent);
+        });
+
+        findViewById(R.id.btnMonthWise).setOnClickListener(v -> {
+            Intent intent = new Intent(AddExpenseActivity.this, MonthWiseActivity.class);
+            startActivity(intent);
+        });
+
+        findViewById(R.id.btnCategoryWise).setOnClickListener(v -> {
+            Intent intent = new Intent(AddExpenseActivity.this, CategoryWiseActivity.class);
+            startActivity(intent);
+        });
+
+
+
+
         List<String> defaults = new ArrayList<>();
         defaults.add("Groceries");
         defaults.add("Rent");
