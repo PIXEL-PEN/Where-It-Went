@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import android.widget.AdapterView;
+
 
 public class AddExpenseActivity extends AppCompatActivity {
 
@@ -27,6 +29,10 @@ public class AddExpenseActivity extends AppCompatActivity {
     private EditText editDescription, editAmount;
     private TextView textDate;
     private Button btnSave;
+
+
+    private String currentCategoryTag;
+
 
     private Expense editingExpense = null;
     private ArrayAdapter<String> categoryAdapter;
@@ -52,6 +58,36 @@ public class AddExpenseActivity extends AppCompatActivity {
         editAmount = findViewById(R.id.edit_amount);
         textDate = findViewById(R.id.text_date);
         btnSave = findViewById(R.id.btn_save);
+
+
+// --- Auto-tagging behavior only ---
+        spinnerCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selected = parent.getItemAtPosition(position).toString();
+
+                // skip "+ Manage Categories" since it’s already handled elsewhere
+                if (!selected.equals("+ Manage Categories")) {
+                    currentCategoryTag = selected;
+
+                    if (!selected.equals("+ Manage Categories") && !selected.equals("⋯")) {
+                        currentCategoryTag = selected;   // ✅ auto-tag from spinner
+                    }
+
+
+
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                currentCategoryTag = null;
+            }
+        });
+
+
+
+
 
         // ---- View navigation buttons ----
         findViewById(R.id.btnViewAll).setOnClickListener(v -> {
@@ -173,46 +209,55 @@ public class AddExpenseActivity extends AppCompatActivity {
             textDate.setText(sdf.format(today.getTime()));
         }
 
-        btnSave.setOnClickListener(v -> {
-            String description = editDescription.getText().toString().trim();
-            String amountStr = editAmount.getText().toString().trim();
-            String date = textDate.getText().toString();
-            String category = spinnerCategory.getSelectedItem().toString();
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String description = editDescription.getText().toString().trim();
+                String amountStr   = editAmount.getText().toString().trim();
+                String date        = textDate.getText().toString();
+                String category    = spinnerCategory.getSelectedItem().toString();
 
-            if (category.equals("➕ Manage Categories") || category.equals("⋯")) {
-                Toast.makeText(this, "Please select a valid category", Toast.LENGTH_SHORT).show();
-                return;
+                if (category.equals("➕ Manage Categories") || category.equals("⋯")) {
+                    Toast.makeText(AddExpenseActivity.this, "Please select a valid category", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (description.isEmpty() || amountStr.isEmpty() || date.isEmpty()) {
+                    Toast.makeText(AddExpenseActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                double amount = Double.parseDouble(amountStr);
+                ExpenseDatabase db = ExpenseDatabase.getDatabase(AddExpenseActivity.this);
+
+                // Prefer the auto-tag if the spinner listener set it; otherwise use the spinner string
+                String finalCategory = (currentCategoryTag != null && !currentCategoryTag.isEmpty())
+                        ? currentCategoryTag
+                        : category;
+
+                if (editingExpense != null) {
+                    editingExpense.description = description;
+                    editingExpense.amount = amount;
+                    editingExpense.date = date;
+                    editingExpense.category = finalCategory;
+                    db.expenseDao().update(editingExpense);
+                    Toast.makeText(AddExpenseActivity.this, "Expense updated", Toast.LENGTH_SHORT).show();
+                } else {
+                    Expense newExpense = new Expense();
+                    newExpense.category = finalCategory;
+                    newExpense.date = date;
+                    newExpense.description = description;
+                    newExpense.amount = amount;
+                    db.expenseDao().insert(newExpense);
+                    Toast.makeText(AddExpenseActivity.this, "Expense added", Toast.LENGTH_SHORT).show();
+                }
+
+                Intent intent = new Intent(AddExpenseActivity.this, MainActivity.class);
+                startActivity(intent);
+                finish();
             }
-
-            if (description.isEmpty() || amountStr.isEmpty() || date.isEmpty()) {
-                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            double amount = Double.parseDouble(amountStr);
-            ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
-
-            if (editingExpense != null) {
-                editingExpense.description = description;
-                editingExpense.amount = amount;
-                editingExpense.date = date;
-                editingExpense.category = category;
-                db.expenseDao().update(editingExpense);
-                Toast.makeText(this, "Expense updated", Toast.LENGTH_SHORT).show();
-            } else {
-                Expense newExpense = new Expense();
-                newExpense.category = category;
-                newExpense.date = date;
-                newExpense.description = description;
-                newExpense.amount = amount;
-                db.expenseDao().insert(newExpense);
-                Toast.makeText(this, "Expense added", Toast.LENGTH_SHORT).show();
-            }
-
-            Intent intent = new Intent(this, MainActivity.class);
-            startActivity(intent);
-            finish();
         });
+
     }
 
     // -----------------------------------
