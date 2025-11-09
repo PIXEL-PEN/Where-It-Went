@@ -34,8 +34,8 @@ public class AddExpenseActivity extends AppCompatActivity {
     private Expense editingExpense = null;
     private ArrayAdapter<String> categoryAdapter;
     private List<String> categories = new ArrayList<>();
-
     private boolean suppressSpinnerCallback = false;
+    private String lastSelectedCategory = "Groceries";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,25 +48,22 @@ public class AddExpenseActivity extends AppCompatActivity {
         textDate = findViewById(R.id.text_date);
         btnSave = findViewById(R.id.btn_save);
 
-        loadCategoriesIntoSpinner(true);
+        loadCategoriesIntoSpinner("Groceries");
 
         spinnerCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (suppressSpinnerCallback) return;
-
                 String selected = categories.get(position);
-
                 if (selected.equals("➕ Manage Categories")) {
                     showManageCategoriesDialog();
                     return;
                 }
-
                 if (!selected.equals("⋯")) {
                     currentCategoryTag = selected;
+                    lastSelectedCategory = selected;
                 }
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 currentCategoryTag = null;
@@ -97,9 +94,17 @@ public class AddExpenseActivity extends AppCompatActivity {
                 editDescription.setText(editingExpense.description);
                 editAmount.setText(String.valueOf(editingExpense.amount));
                 textDate.setText(editingExpense.date);
-
-                int pos = categoryAdapter.getPosition(editingExpense.category);
-                if (pos >= 0) spinnerCategory.setSelection(pos);
+                int pos = -1;
+                if (editingExpense.category != null) {
+                    pos = categories.indexOf(editingExpense.category);
+                }
+                if (pos >= 0) {
+                    suppressSpinnerCallback = true;
+                    spinnerCategory.setSelection(pos);
+                    suppressSpinnerCallback = false;
+                    currentCategoryTag = editingExpense.category;
+                    lastSelectedCategory = editingExpense.category;
+                }
             }
         } else {
             Calendar today = Calendar.getInstance();
@@ -117,7 +122,6 @@ public class AddExpenseActivity extends AppCompatActivity {
                 Toast.makeText(AddExpenseActivity.this, "Please select a valid category", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             if (description.isEmpty() || amountStr.isEmpty() || date.isEmpty()) {
                 Toast.makeText(AddExpenseActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                 return;
@@ -158,7 +162,7 @@ public class AddExpenseActivity extends AppCompatActivity {
         findViewById(R.id.btnCategoryWise).setOnClickListener(v -> startActivity(new Intent(this, CategoryWiseActivity.class)));
     }
 
-    private void loadCategoriesIntoSpinner(boolean selectGroceries) {
+    private void loadCategoriesIntoSpinner(String desiredSelection) {
         List<String> ordered = CategoryManager.getOrderedCategories(this);
 
         List<String> defaults = new ArrayList<>();
@@ -187,27 +191,42 @@ public class AddExpenseActivity extends AppCompatActivity {
         categoryAdapter.setDropDownViewResource(R.layout.spinner_item_dropdown);
         spinnerCategory.setAdapter(categoryAdapter);
 
-        if (selectGroceries) {
-            suppressSpinnerCallback = true;
-            spinnerCategory.setSelection(0);
-            suppressSpinnerCallback = false;
+        int idx = categories.indexOf(desiredSelection);
+        if (idx < 0) idx = categories.indexOf("Groceries");
+        if (idx < 0) idx = 0;
+        suppressSpinnerCallback = true;
+        spinnerCategory.setSelection(idx);
+        suppressSpinnerCallback = false;
+        if (!categories.get(idx).equals("⋯") && !categories.get(idx).equals("➕ Manage Categories")) {
+            lastSelectedCategory = categories.get(idx);
         }
     }
 
-    private void reloadCategories() {
-        loadCategoriesIntoSpinner(true);
+    private void reloadCategories(String desiredSelection) {
+        loadCategoriesIntoSpinner(desiredSelection);
     }
 
-    private void showManageCategoriesDialog() {
+    private AlertDialog showManageCategoriesDialog() {
         String[] options = {"Add Category", "Edit Tag", "Delete Category", "Reset Defaults"};
-        new AlertDialog.Builder(this)
+        return new AlertDialog.Builder(this)
                 .setTitle("Manage Categories")
                 .setItems(options, (DialogInterface dialog, int which) -> {
                     switch (which) {
-                        case 0: showAddCategoryDialog(); break;
-                        case 1: showEditCategoryDialog(); break;
-                        case 2: showDeleteCategoryDialog(); break;
-                        case 3: CategoryManager.resetToDefault(this); reloadCategories(); break;
+                        case 0:
+                            showAddCategoryDialog();
+                            break;
+                        case 1:
+                            showEditCategoryDialog();
+                            break;
+                        case 2:
+                            showDeleteCategoryDialog();
+                            break;
+                        case 3:
+                            CategoryManager.resetToDefault(this);
+                            reloadCategories("Groceries");
+                            lastSelectedCategory = "Groceries";
+                            Toast.makeText(this, "Defaults restored", Toast.LENGTH_SHORT).show();
+                            break;
                     }
                 })
                 .show();
@@ -227,7 +246,6 @@ public class AddExpenseActivity extends AppCompatActivity {
                         Toast.makeText(this, "Enter category name", Toast.LENGTH_SHORT).show();
                         return;
                     }
-
                     int selectedId = radioGroup.getCheckedRadioButtonId();
                     if (selectedId == -1) {
                         Toast.makeText(this, "Select a tag", Toast.LENGTH_SHORT).show();
@@ -243,7 +261,8 @@ public class AddExpenseActivity extends AppCompatActivity {
                     }
 
                     CategoryManager.saveCategoryWithTag(this, newCat, selectedTag);
-                    reloadCategories();
+                    lastSelectedCategory = newCat;
+                    reloadCategories(newCat);
                     Toast.makeText(this, "Added \"" + newCat + "\" (" + selectedTag + ")", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancel", null)
@@ -255,12 +274,10 @@ public class AddExpenseActivity extends AppCompatActivity {
         for (String c : CategoryManager.getOrderedCategories(this)) {
             if (!CategoryManager.isDefaultCategory(c)) editable.add(c);
         }
-
         if (editable.isEmpty()) {
             Toast.makeText(this, "No editable categories found", Toast.LENGTH_SHORT).show();
             return;
         }
-
         Collections.sort(editable, String.CASE_INSENSITIVE_ORDER);
         String[] cats = editable.toArray(new String[0]);
 
@@ -292,7 +309,8 @@ public class AddExpenseActivity extends AppCompatActivity {
                     String newTag = selected.getText().toString();
 
                     CategoryManager.saveCategoryWithTag(this, categoryName, newTag);
-                    reloadCategories();
+                    lastSelectedCategory = categoryName;
+                    reloadCategories(categoryName);
                     Toast.makeText(this, "Updated tag for \"" + categoryName + "\" → " + newTag, Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancel", null)
@@ -304,12 +322,10 @@ public class AddExpenseActivity extends AppCompatActivity {
         for (String c : CategoryManager.getOrderedCategories(this)) {
             if (!CategoryManager.isDefaultCategory(c)) deletable.add(c);
         }
-
         if (deletable.isEmpty()) {
             Toast.makeText(this, "No deletable categories found", Toast.LENGTH_SHORT).show();
             return;
         }
-
         Collections.sort(deletable, String.CASE_INSENSITIVE_ORDER);
         String[] cats = deletable.toArray(new String[0]);
 
@@ -317,13 +333,16 @@ public class AddExpenseActivity extends AppCompatActivity {
                 .setTitle("Delete Category")
                 .setItems(cats, (d, which) -> {
                     String toRemove = cats[which];
-
                     new AlertDialog.Builder(this)
                             .setTitle("Confirm Delete")
                             .setMessage("Delete \"" + toRemove + "\" permanently?")
                             .setPositiveButton("Delete", (dd, w) -> {
                                 CategoryManager.removeCategory(this, toRemove);
-                                reloadCategories();
+                                List<String> fresh = CategoryManager.getOrderedCategories(this);
+                                String desired = fresh.contains(lastSelectedCategory) ? lastSelectedCategory : "Groceries";
+                                reloadCategories(desired);
+                                if (!desired.equals("Groceries")) lastSelectedCategory = desired;
+                                else lastSelectedCategory = "Groceries";
                                 Toast.makeText(this, "Deleted \"" + toRemove + "\"", Toast.LENGTH_SHORT).show();
                             })
                             .setNegativeButton("Cancel", null)
