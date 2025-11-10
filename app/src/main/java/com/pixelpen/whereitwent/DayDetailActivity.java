@@ -17,13 +17,32 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class DayDetailActivity extends AppCompatActivity {
 
     private LinearLayout expensesContainer;
+
+    // Incoming is yyyy-MM-dd
+    private final SimpleDateFormat incoming = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+    // Display as "dd MMM. yyyy"
+    private final SimpleDateFormat displayOut = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
+
+    // App accepts multiple input formats historically
+    private final String[] parsePatterns = new String[] {
+            "yyyy-MM-dd",
+            "dd/MM/yyyy",
+            "MM/dd/yyyy",
+            "dd MMM yyyy",
+            "dd MMM. yyyy",
+            "d MMM yyyy",
+            "d MMM. yyyy",
+            "d MMMM yyyy"
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,24 +56,43 @@ public class DayDetailActivity extends AppCompatActivity {
         String code = prefs.getString("currency_code", "THB");
         String symbol = CurrencyUtils.symbolFor(code);
 
-        String selectedDate = getIntent().getStringExtra("selected_date");
-        if (selectedDate == null) return;
+        String selectedDateRaw = getIntent().getStringExtra("selected_date"); // yyyy-MM-dd
+        if (selectedDateRaw == null) return;
 
-        List<Expense> expenses = ExpenseDatabase
-                .getDatabase(this)
-                .expenseDao()
-                .getByDate(selectedDate);
+        Date target = parseWith(incoming, selectedDateRaw);
+        if (target == null) return;
+
+        // Normalize target to day (Y/M/D only)
+        Calendar tgt = asYMD(target);
+
+        // Load ALL, then filter by same calendar day (handles mixed formats in DB)
+        List<Expense> all = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
+        List<Expense> expenses = new ArrayList<>();
+        for (Expense e : all) {
+            Date d = parseAny(e.date);
+            if (d == null) {
+                // Fallback: exact string match if parse fails
+                if (selectedDateRaw.equals(e.date)) {
+                    expenses.add(e);
+                }
+                continue;
+            }
+            Calendar cal = asYMD(d);
+            if (sameYMD(tgt, cal)) {
+                expenses.add(e);
+            }
+        }
 
         expensesContainer.removeAllViews();
 
-        // ✅ Date banner at top
+        // Banner
         TextView banner = new TextView(this);
         banner.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 dp(29)
         ));
         banner.setBackgroundColor(0xFFE1C699);
-        banner.setText(formatFullDate(selectedDate));
+        banner.setText(formatDisplay(selectedDateRaw));
         banner.setTextSize(16);
         banner.setTypeface(Typeface.DEFAULT_BOLD);
         banner.setTextColor(0xFF000000);
@@ -83,7 +121,7 @@ public class DayDetailActivity extends AppCompatActivity {
             // Click → edit/delete dialog
             row.setOnClickListener(v -> {
                 String details = "Category: " + e.category + "\n"
-                        + "Date: " + formatFullDate(e.date) + "\n"
+                        + "Date: " + safeDisplay(e.date) + "\n"
                         + "Item: " + e.description + "\n"
                         + "Amount: " + String.format(Locale.ENGLISH, "%.2f %s", e.amount, symbol);
 
@@ -142,10 +180,10 @@ public class DayDetailActivity extends AppCompatActivity {
         String totalFormatted = df.format(total) + " " + symbol;
 
         SpannableString totalDisplay = new SpannableString(totalFormatted);
-        int start = totalFormatted.length() - symbol.length();
+        int s2 = totalFormatted.length() - symbol.length();
         totalDisplay.setSpan(
                 new RelativeSizeSpan(0.85f),
-                start,
+                s2,
                 totalFormatted.length(),
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
         );
@@ -164,15 +202,55 @@ public class DayDetailActivity extends AppCompatActivity {
         return Math.round(dps * density);
     }
 
-    // ✅ Format YYYY-MM-DD → "25 Sep. 2025"
-    private String formatFullDate(String raw) {
+    private Date parseWith(SimpleDateFormat fmt, String raw) {
         try {
-            SimpleDateFormat in = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-            Date d = in.parse(raw);
-            SimpleDateFormat out = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
-            return out.format(d);
+            fmt.setLenient(false);
+            return fmt.parse(raw);
         } catch (Exception e) {
-            return raw;
+            return null;
         }
+    }
+
+    private Date parseAny(String raw) {
+        if (raw == null) return null;
+        for (String p : parsePatterns) {
+            try {
+                SimpleDateFormat f = new SimpleDateFormat(p, Locale.ENGLISH);
+                f.setLenient(false);
+                return f.parse(raw);
+            } catch (Exception ignore) {}
+        }
+        return null;
+    }
+
+    private Calendar asYMD(Date d) {
+        Calendar c = Calendar.getInstance(Locale.ENGLISH);
+        c.setTime(d);
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+        return c;
+    }
+
+    private boolean sameYMD(Calendar a, Calendar b) {
+        return a.get(Calendar.YEAR) == b.get(Calendar.YEAR)
+                && a.get(Calendar.MONTH) == b.get(Calendar.MONTH)
+                && a.get(Calendar.DAY_OF_MONTH) == b.get(Calendar.DAY_OF_MONTH);
+    }
+
+    private String formatDisplay(String incomingYMD) {
+        try {
+            Date d = incoming.parse(incomingYMD);
+            return displayOut.format(d);
+        } catch (Exception e) {
+            return incomingYMD;
+        }
+    }
+
+    private String safeDisplay(String raw) {
+        Date d = parseAny(raw);
+        if (d != null) return displayOut.format(d);
+        return raw;
     }
 }
