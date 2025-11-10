@@ -14,6 +14,32 @@
         <item>Bills</item>
         <item>Transport</item>
         <item>Other</item>
+
+        <resources>
+            <string-array name="date_range_labels">
+                <item>@string/date_range_1_month</item>
+                <item>@string/date_range_2_months</item>
+                <item>@string/date_range_3_months</item>
+            </string-array>
+            <integer-array name="date_range_values">
+                <item>1</item>
+                <item>2</item>
+                <item>3</item>
+            </integer-array>
+        </resources>
+
+
+
+
+
+
+
+
+
+
+
+
+
     </string-array>
 
 </resources>

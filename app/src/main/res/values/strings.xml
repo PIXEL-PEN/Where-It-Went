@@ -15,6 +15,16 @@
     <string name="back">Back</string>
 
 
+        <string name="settings_date_range_title">Date Range Display</string>
+        <string name="settings_date_range_subtitle">Limit how many months are shown across all screens</string>
+        <string name="date_range_1_month">1 Month</string>
+        <string name="date_range_2_months">2 Months</string>
+        <string name="date_range_3_months">3 Months</string>
+        <string name="date_range_dialog_title">Choose range</string>
+
+
+
+
     <string name="about_text">
     Expense Tracker v1.0\n\n© 2025 PIXEL-PEN\n\nDesigned for daily use as a simple, offline budgeting tool.\n\nFeatures: quick expense entry, multiple views, export to CSV and HTML, and database reset.\n\nFeedback: &lt;a href="https://github.com/PIXEL-PEN/Expense-Tracker/discussions"&gt;GitHub Discussions&lt;/a&gt;
     </string>
