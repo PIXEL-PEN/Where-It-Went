@@ -2,11 +2,15 @@ package com.pixelpen.whereitwent;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.TypedArray;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.RelativeSizeSpan;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
@@ -100,7 +104,7 @@ public class DateWiseActivity extends AppCompatActivity {
 
             String headerLabel = formatFullDate(rawDate);
 
-            // Section content container for this day (collapsible)
+            // Section content container (collapsible)
             LinearLayout section = new LinearLayout(this);
             section.setOrientation(LinearLayout.VERTICAL);
             LinearLayout.LayoutParams sectionLp = new LinearLayout.LayoutParams(
@@ -110,7 +114,7 @@ public class DateWiseActivity extends AppCompatActivity {
             section.setBackgroundColor(0xFFFFFFFF);
             section.setElevation(1f);
 
-            // Fill rows
+            // Build rows
             for (int i = 0; i < items.size(); i++) {
                 Expense e = items.get(i);
                 View row = inflater.inflate(R.layout.item_expense_date_row, section, false);
@@ -201,52 +205,74 @@ public class DateWiseActivity extends AppCompatActivity {
             totalRow.addView(amountTv);
             section.addView(totalRow);
 
-            // Header row (compact, styled like your View buttons)
+            // =========================
+            // =========================
+// Header row (Option B1) — softened bg
+// =========================
             LinearLayout headerRow = new LinearLayout(this);
             LinearLayout.LayoutParams headerLp = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, dp(40));
             headerLp.setMargins(dp(12), dp(8), dp(12), dp(4));
             headerRow.setLayoutParams(headerLp);
             headerRow.setOrientation(LinearLayout.HORIZONTAL);
-            headerRow.setBackgroundColor(0xFFE0E0E0);
-            headerRow.setPadding(dp(14), dp(6), dp(14), dp(6));
-            headerRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
 
-            // Left: date (bold 16sp) + count (normal 14sp)
+// softer card-like background vs #E0E0E0
+            int headerBg = 0xFFF4F6F8;
+            headerRow.setBackgroundColor(headerBg);
+
+            headerRow.setPadding(dp(12), dp(6), dp(12), dp(6));
+            headerRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            headerRow.setClickable(true);
+
+// Try to add a ripple foreground (safe on API 23+)
+            try {
+                TypedValue tv = new TypedValue();
+                getTheme().resolveAttribute(android.R.attr.selectableItemBackground, tv, true);
+                TypedArray ta = obtainStyledAttributes(new int[]{android.R.attr.selectableItemBackground});
+                Drawable ripple = ta.getDrawable(0);
+                ta.recycle();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && ripple != null) {
+                    headerRow.setForeground(ripple);
+                }
+            } catch (Exception ignore) {}
+
+            // Left accent strip (slimmer + soft coral)
+            View accentStrip = new View(this);
+            LinearLayout.LayoutParams stripLp = new LinearLayout.LayoutParams(dp(3), LinearLayout.LayoutParams.MATCH_PARENT);
+            stripLp.setMargins(0, 0, dp(10), 0);
+            accentStrip.setLayoutParams(stripLp);
+
+            int stripColor = ContextCompat.getColor(this, R.color.tag_discretionary); // #FF7043
+            int stripSoft  = (stripColor & 0x00FFFFFF) | (0xB3 << 24); // ~70% opacity
+            accentStrip.setBackgroundColor(stripSoft);
+
+
+            // Left label: date (bold 16sp) + count (normal ~14sp)
             TextView leftLabel = new TextView(this);
             leftLabel.setLayoutParams(new LinearLayout.LayoutParams(
                     0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
             leftLabel.setTextColor(accentColor);
-
-// Set base size to 16sp so date appears 16
             leftLabel.setTextSize(16);
-            leftLabel.setTypeface(Typeface.DEFAULT);   // keep normal so spans work
+            leftLabel.setTypeface(Typeface.DEFAULT);
 
             String datePart = headerLabel;
             String countPart = " (" + items.size() + ")";
             SpannableString labelSpan = new SpannableString(datePart + countPart);
-
-// Bold only the date
             labelSpan.setSpan(
                     new android.text.style.StyleSpan(Typeface.BOLD),
                     0,
                     datePart.length(),
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
             );
-
-// Shrink only the count to ~14sp
-// 14/16 ≈ 0.875
             labelSpan.setSpan(
-                    new RelativeSizeSpan(0.875f),
+                    new RelativeSizeSpan(0.875f), // 14sp relative to 16sp
                     datePart.length(),
                     datePart.length() + countPart.length(),
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
             );
-
             leftLabel.setText(labelSpan);
 
-
-            // Right: total (bold, 1sp smaller)
+            // Right total (bold 14sp)
             TextView rightTotal = new TextView(this);
             rightTotal.setLayoutParams(new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -255,6 +281,8 @@ public class DateWiseActivity extends AppCompatActivity {
             rightTotal.setTypeface(Typeface.DEFAULT_BOLD);
             rightTotal.setTextColor(accentColor);
 
+            // Assemble header
+            headerRow.addView(accentStrip);
             headerRow.addView(leftLabel);
             headerRow.addView(rightTotal);
 
