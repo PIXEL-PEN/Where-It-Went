@@ -78,7 +78,9 @@ public class AddExpenseActivity extends AppCompatActivity {
         if (linkCategoryFilter != null) {
             linkCategoryFilter.setOnClickListener(v -> {
                 drawerLayout.closeDrawers();
-                startActivity(new Intent(AddExpenseActivity.this, CategoryWiseActivity.class));
+                Intent i = new Intent(this, CategoryWiseActivity.class);
+                i.putExtra("open_filter", true);
+                startActivity(i);
             });
         }
 

@@ -15,7 +15,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,9 +31,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import android.widget.ImageButton;
-
-
 
 public class CategoryWiseActivity extends AppCompatActivity {
 
@@ -42,7 +38,8 @@ public class CategoryWiseActivity extends AppCompatActivity {
     private LayoutInflater inflater;
     private String symbol;
 
-    // Display & conversion formats
+    private boolean filterDialogQueued = false;
+
     private final SimpleDateFormat FRIENDLY =
             new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
     private final SimpleDateFormat ISO =
@@ -53,6 +50,9 @@ public class CategoryWiseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category_wise);
 
+        // If launched with the "open_filter" extra (from the drawer), queue the dialog
+        filterDialogQueued = getIntent().getBooleanExtra("open_filter", false);
+
         ImageButton btnBack = findViewById(R.id.btn_back);
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> {
@@ -61,24 +61,11 @@ public class CategoryWiseActivity extends AppCompatActivity {
             });
         }
 
-
-
-        // 🔹 Filter icon — opens Category Filter dialog
         ImageButton btnFilter = findViewById(R.id.btn_filter);
         if (btnFilter != null) {
             btnFilter.setOnClickListener(v -> showSimpleFilterDialog());
         }
 
-        // 🔹 Optionally show dialog automatically if launched from slider
-        if (getIntent().getBooleanExtra("show_filter_dialog", false)) {
-            if (btnFilter != null) {
-                btnFilter.post(this::showSimpleFilterDialog);
-            } else {
-                showSimpleFilterDialog();
-            }
-        }
-
-        // ✅ Continue with regular category logic
         expensesContainer = findViewById(R.id.categorywise_container);
         inflater = LayoutInflater.from(this);
 
@@ -94,6 +81,15 @@ public class CategoryWiseActivity extends AppCompatActivity {
         rebuildExpenseView(allExpenses);
     }
 
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        if (filterDialogQueued) {
+            filterDialogQueued = false;
+            showSimpleFilterDialog();
+            getIntent().removeExtra("open_filter");
+        }
+    }
 
     private void rebuildExpenseView(List<Expense> expenseList) {
         expensesContainer.removeAllViews();
