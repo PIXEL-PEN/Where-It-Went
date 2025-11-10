@@ -13,7 +13,6 @@
         android:layout_height="match_parent"
         android:background="#ECEFF1">
 
-        <!-- Top bar -->
         <RelativeLayout
             android:id="@+id/top_bar_container"
             android:layout_width="match_parent"
@@ -47,14 +46,12 @@
                 android:padding="10dp" />
         </RelativeLayout>
 
-        <!-- Spacer pushes form downward -->
         <View
             android:id="@+id/form_spacer"
             android:layout_width="match_parent"
             android:layout_height="150dp"
             android:layout_below="@id/top_bar_container" />
 
-        <!-- Add Expense form container -->
         <LinearLayout
             android:id="@+id/add_expense_container"
             android:orientation="vertical"
@@ -77,15 +74,13 @@
                 android:id="@+id/text_category_tag"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text=""
+                android:text="➤ (auto insert)"
                 android:textSize="10sp"
+                android:textColor="#888888"
                 android:textStyle="bold"
-                android:textColor="#666666"
+                android:gravity="end"
                 android:layout_marginTop="2dp"
-                android:layout_marginBottom="8dp"
-                android:gravity="end" />
-
-
+                android:layout_marginBottom="8dp" />
 
             <EditText
                 android:id="@+id/edit_description"
@@ -154,7 +149,6 @@
                 android:elevation="4dp" />
         </LinearLayout>
 
-        <!-- Lower-right button cluster -->
         <LinearLayout
             android:id="@+id/viewButtonsContainer"
             android:orientation="vertical"
@@ -179,7 +173,6 @@
                     android:layout_gravity="center_horizontal"
                     android:orientation="vertical"
                     android:gravity="start">
-
 
                     <TextView
                         android:id="@+id/btnViewAll"
@@ -232,21 +225,15 @@
                         android:textSize="15sp"
                         android:textStyle="bold"
                         android:background="#E0E0E0" />
-
                 </LinearLayout>
-
             </LinearLayout>
-
         </LinearLayout>
-
     </RelativeLayout>
 
-    <!-- Drawer include -->
     <include
         android:id="@+id/include_drawer"
         layout="@layout/activity_slider_drawer"
         android:layout_width="235dp"
         android:layout_height="match_parent"
         android:layout_gravity="end" />
-
 </androidx.drawerlayout.widget.DrawerLayout>

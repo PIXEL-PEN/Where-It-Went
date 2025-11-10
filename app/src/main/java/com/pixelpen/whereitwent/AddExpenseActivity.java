@@ -11,10 +11,13 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ImageButton;
 import android.widget.AdapterView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -25,54 +28,65 @@ import java.util.Locale;
 
 public class AddExpenseActivity extends AppCompatActivity {
 
+    private DrawerLayout drawerLayout;
+    private ImageButton btnFilter;
+
     private Spinner spinnerCategory;
     private EditText editDescription, editAmount;
     private TextView textDate;
     private Button btnSave;
 
-    private TextView textCategoryTag;
-
     private String currentCategoryTag;
     private Expense editingExpense = null;
     private ArrayAdapter<String> categoryAdapter;
-    private final List<String> categories = new ArrayList<>();
+    private List<String> categories = new ArrayList<>();
     private boolean suppressSpinnerCallback = false;
     private String lastSelectedCategory = "Groceries";
+
+    private TextView textCategoryTag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_expense);
 
-        spinnerCategory   = findViewById(R.id.spinner_category);
-        editDescription   = findViewById(R.id.edit_description);
-        editAmount        = findViewById(R.id.edit_amount);
-        textDate          = findViewById(R.id.text_date);
-        btnSave           = findViewById(R.id.btn_save);
-        textCategoryTag   = findViewById(R.id.text_category_tag);
+        drawerLayout = findViewById(R.id.drawer_layout);
+        btnFilter = findViewById(R.id.btn_filter);
+
+        spinnerCategory = findViewById(R.id.spinner_category);
+        editDescription = findViewById(R.id.edit_description);
+        editAmount = findViewById(R.id.edit_amount);
+        textDate = findViewById(R.id.text_date);
+        btnSave = findViewById(R.id.btn_save);
+        textCategoryTag = findViewById(R.id.text_category_tag);
 
         loadCategoriesIntoSpinner("Groceries");
-        updateTagDisplay("Groceries");
 
         spinnerCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (suppressSpinnerCallback) return;
-
                 String selected = categories.get(position);
-
-                if ("➕ Manage Categories".equals(selected)) {
+                if (selected.equals("➕ Manage Categories")) {
                     showManageCategoriesDialog();
                     return;
                 }
-                if (!"⋯".equals(selected)) {
+                if (!selected.equals("⋯")) {
                     currentCategoryTag = selected;
                     lastSelectedCategory = selected;
-                    updateTagDisplay(selected);
+                    updateCategoryTagLine(selected);
                 }
             }
-            @Override public void onNothingSelected(AdapterView<?> parent) {
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
                 currentCategoryTag = null;
-                updateTagDisplay(null);
+                textCategoryTag.setText("➤ (auto insert)");
+            }
+        });
+
+        btnFilter.setOnClickListener(v -> {
+            if (drawerLayout != null) {
+                drawerLayout.openDrawer(GravityCompat.END);
             }
         });
 
@@ -100,7 +114,6 @@ public class AddExpenseActivity extends AppCompatActivity {
                 editDescription.setText(editingExpense.description);
                 editAmount.setText(String.valueOf(editingExpense.amount));
                 textDate.setText(editingExpense.date);
-
                 int pos = -1;
                 if (editingExpense.category != null) {
                     pos = categories.indexOf(editingExpense.category);
@@ -111,25 +124,27 @@ public class AddExpenseActivity extends AppCompatActivity {
                     suppressSpinnerCallback = false;
                     currentCategoryTag = editingExpense.category;
                     lastSelectedCategory = editingExpense.category;
-                    updateTagDisplay(editingExpense.category);
+                    updateCategoryTagLine(editingExpense.category);
                 }
             }
         } else {
             Calendar today = Calendar.getInstance();
             SimpleDateFormat sdf = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
             textDate.setText(sdf.format(today.getTime()));
+            updateCategoryTagLine("Groceries");
         }
 
         btnSave.setOnClickListener(v -> {
             String description = editDescription.getText().toString().trim();
-            String amountStr   = editAmount.getText().toString().trim();
-            String date        = textDate.getText().toString();
-            String category    = spinnerCategory.getSelectedItem().toString();
+            String amountStr = editAmount.getText().toString().trim();
+            String date = textDate.getText().toString();
+            String category = spinnerCategory.getSelectedItem().toString();
 
-            if ("➕ Manage Categories".equals(category) || "⋯".equals(category)) {
+            if (category.equals("➕ Manage Categories") || category.equals("⋯")) {
                 Toast.makeText(this, "Please select a valid category", Toast.LENGTH_SHORT).show();
                 return;
             }
+
             if (description.isEmpty() || amountStr.isEmpty() || date.isEmpty()) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                 return;
@@ -170,18 +185,13 @@ public class AddExpenseActivity extends AppCompatActivity {
         findViewById(R.id.btnCategoryWise).setOnClickListener(v -> startActivity(new Intent(this, CategoryWiseActivity.class)));
     }
 
-    private void updateTagDisplay(String category) {
-        if (textCategoryTag == null) return;
-        if (category == null) {
-            textCategoryTag.setText("➤ (auto insert)");
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.END)) {
+            drawerLayout.closeDrawer(GravityCompat.END);
             return;
         }
-        String tag = CategoryManager.getTagForCategory(this, category);
-        if (tag == null || tag.trim().isEmpty()) {
-            textCategoryTag.setText("➤ (auto insert)");
-        } else {
-            textCategoryTag.setText("➤ " + tag);
-        }
+        super.onBackPressed();
     }
 
     private void loadCategoriesIntoSpinner(String desiredSelection) {
@@ -216,25 +226,26 @@ public class AddExpenseActivity extends AppCompatActivity {
         int idx = categories.indexOf(desiredSelection);
         if (idx < 0) idx = categories.indexOf("Groceries");
         if (idx < 0) idx = 0;
-
         suppressSpinnerCallback = true;
         spinnerCategory.setSelection(idx);
         suppressSpinnerCallback = false;
 
         String sel = categories.get(idx);
-        if (!"⋯".equals(sel) && !"➕ Manage Categories".equals(sel)) {
+        if (!sel.equals("⋯") && !sel.equals("➕ Manage Categories")) {
             lastSelectedCategory = sel;
+            updateCategoryTagLine(sel);
+        } else {
+            textCategoryTag.setText("➤ (auto insert)");
         }
     }
 
     private void reloadCategories(String desiredSelection) {
         loadCategoriesIntoSpinner(desiredSelection);
-        updateTagDisplay(desiredSelection);
     }
 
-    private void showManageCategoriesDialog() {
+    private AlertDialog showManageCategoriesDialog() {
         String[] options = {"Add Category", "Edit Tag", "Delete Category", "Reset Defaults"};
-        new AlertDialog.Builder(this)
+        return new AlertDialog.Builder(this)
                 .setTitle("Manage Categories")
                 .setItems(options, (DialogInterface dialog, int which) -> {
                     switch (which) {
@@ -322,8 +333,8 @@ public class AddExpenseActivity extends AppCompatActivity {
         editName.setEnabled(false);
 
         String currentTag = CategoryManager.getTagForCategory(this, categoryName);
-        if ("Fixed".equals(currentTag)) radioGroup.check(R.id.radio_fixed);
-        else if ("Basic".equals(currentTag)) radioGroup.check(R.id.radio_basic);
+        if (currentTag.equals("Fixed")) radioGroup.check(R.id.radio_fixed);
+        else if (currentTag.equals("Basic")) radioGroup.check(R.id.radio_basic);
         else radioGroup.check(R.id.radio_discretionary);
 
         new AlertDialog.Builder(this)
@@ -367,13 +378,25 @@ public class AddExpenseActivity extends AppCompatActivity {
                                 List<String> fresh = CategoryManager.getOrderedCategories(this);
                                 String desired = fresh.contains(lastSelectedCategory) ? lastSelectedCategory : "Groceries";
                                 reloadCategories(desired);
-                                lastSelectedCategory = desired;
+                                if (!desired.equals("Groceries")) lastSelectedCategory = desired;
+                                else lastSelectedCategory = "Groceries";
                                 Toast.makeText(this, "Deleted \"" + toRemove + "\"", Toast.LENGTH_SHORT).show();
                             })
                             .setNegativeButton("Cancel", null)
                             .show();
                 })
                 .show();
+    }
+
+    private void updateCategoryTagLine(String category) {
+        if (textCategoryTag == null) return;
+        String tag = CategoryManager.getTagForCategory(this, category);
+        if (tag == null || tag.trim().isEmpty()) {
+            textCategoryTag.setText("➤ (auto insert)");
+        } else {
+            textCategoryTag.setText("➤ " + tag);
+            textCategoryTag.setTypeface(textCategoryTag.getTypeface(), android.graphics.Typeface.BOLD);
+        }
     }
 
     private String getMonthAbbreviation(int monthIndex) {
