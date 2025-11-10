@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -89,7 +90,7 @@ public class DateWiseActivity extends AppCompatActivity {
 
         expensesContainer.removeAllViews();
 
-        String todayLabel = outHeader.format(new Date());
+        int accentColor = ContextCompat.getColor(this, R.color.colorAccent2);
 
         for (String rawDate : dates) {
             List<Expense> items = grouped.get(rawDate);
@@ -98,32 +99,16 @@ public class DateWiseActivity extends AppCompatActivity {
             for (Expense e : items) total += e.amount;
 
             String headerLabel = formatFullDate(rawDate);
-            String headerRight = " (" + items.size() + ")  " + money.format(total) + " " + symbol;
 
-            // Header "card"
-            TextView banner = new TextView(this);
-            LinearLayout.LayoutParams bannerLp = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, dp(56));
-            bannerLp.setMargins(dp(8), dp(8), dp(8), dp(2));
-            banner.setLayoutParams(bannerLp);
-            banner.setBackgroundColor(0xFFFFFFFF);
-            banner.setPadding(dp(16), 0, dp(12), 0);
-            banner.setTypeface(Typeface.DEFAULT_BOLD);
-            banner.setTextSize(16);
-            banner.setTextColor(0xFF000000);
-            banner.setGravity(android.view.Gravity.CENTER_VERTICAL | android.view.Gravity.START);
-            banner.setElevation(2f);
-            banner.setText(headerLabel + headerRight);
-
-            // Section content container for this day
+            // Section content container for this day (collapsible)
             LinearLayout section = new LinearLayout(this);
             section.setOrientation(LinearLayout.VERTICAL);
             LinearLayout.LayoutParams sectionLp = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            sectionLp.setMargins(dp(8), 0, dp(8), dp(6));
+            sectionLp.setMargins(dp(12), 0, dp(12), dp(8));
             section.setLayoutParams(sectionLp);
             section.setBackgroundColor(0xFFFFFFFF);
-            section.setElevation(2f);
+            section.setElevation(1f);
 
             // Fill rows
             for (int i = 0; i < items.size(); i++) {
@@ -177,23 +162,24 @@ public class DateWiseActivity extends AppCompatActivity {
                 if (i < items.size() - 1) {
                     View divider = new View(this);
                     LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT, 1);
+                            LinearLayout.LayoutParams.MATCH_PARENT, dp(1));
+                    lp.setMargins(dp(12), 0, dp(12), 0);
                     divider.setLayoutParams(lp);
-                    divider.setBackgroundColor(0xFFCCCCCC);
+                    divider.setBackgroundColor(0x1A000000);
                     section.addView(divider);
                 }
             }
 
-            // Per-day TOTAL row (inside the collapsible section)
+            // Per-day TOTAL row (inside section)
             LinearLayout totalRow = new LinearLayout(this);
             totalRow.setOrientation(LinearLayout.HORIZONTAL);
-            totalRow.setPadding(dp(12), dp(12), dp(12), dp(12));
+            totalRow.setPadding(dp(12), dp(10), dp(12), dp(12));
 
             TextView label = new TextView(this);
             label.setLayoutParams(new LinearLayout.LayoutParams(
                     0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
             label.setText("TOTAL");
-            label.setTextSize(16);
+            label.setTextSize(15);
             label.setTypeface(Typeface.DEFAULT_BOLD);
             label.setTextColor(0xFFB71C1C);
 
@@ -207,7 +193,7 @@ public class DateWiseActivity extends AppCompatActivity {
             int tStart = totalFormatted.length() - symbol.length();
             totalDisplay.setSpan(new RelativeSizeSpan(0.85f), tStart, totalFormatted.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             amountTv.setText(totalDisplay);
-            amountTv.setTextSize(16);
+            amountTv.setTextSize(15);
             amountTv.setTypeface(Typeface.DEFAULT_BOLD);
             amountTv.setTextColor(0xFFB71C1C);
 
@@ -215,20 +201,71 @@ public class DateWiseActivity extends AppCompatActivity {
             totalRow.addView(amountTv);
             section.addView(totalRow);
 
-            // Default collapsed except "today"
-            boolean expand = headerLabel.equals(todayLabel);
-            section.setVisibility(expand ? View.VISIBLE : View.GONE);
+            // Header row (compact, styled like your View buttons)
+            LinearLayout headerRow = new LinearLayout(this);
+            LinearLayout.LayoutParams headerLp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, dp(40));
+            headerLp.setMargins(dp(12), dp(8), dp(12), dp(4));
+            headerRow.setLayoutParams(headerLp);
+            headerRow.setOrientation(LinearLayout.HORIZONTAL);
+            headerRow.setBackgroundColor(0xFFE0E0E0);
+            headerRow.setPadding(dp(14), dp(6), dp(14), dp(6));
+            headerRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
 
-            // Toggle on header tap
-            banner.setOnClickListener(v -> {
-                if (section.getVisibility() == View.VISIBLE) {
-                    section.setVisibility(View.GONE);
-                } else {
-                    section.setVisibility(View.VISIBLE);
-                }
+            // Left: date (bold 16sp) + count (normal 14sp)
+            TextView leftLabel = new TextView(this);
+            leftLabel.setLayoutParams(new LinearLayout.LayoutParams(
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+            leftLabel.setTextColor(accentColor);
+
+// Set base size to 16sp so date appears 16
+            leftLabel.setTextSize(16);
+            leftLabel.setTypeface(Typeface.DEFAULT);   // keep normal so spans work
+
+            String datePart = headerLabel;
+            String countPart = " (" + items.size() + ")";
+            SpannableString labelSpan = new SpannableString(datePart + countPart);
+
+// Bold only the date
+            labelSpan.setSpan(
+                    new android.text.style.StyleSpan(Typeface.BOLD),
+                    0,
+                    datePart.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+
+// Shrink only the count to ~14sp
+// 14/16 ≈ 0.875
+            labelSpan.setSpan(
+                    new RelativeSizeSpan(0.875f),
+                    datePart.length(),
+                    datePart.length() + countPart.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+
+            leftLabel.setText(labelSpan);
+
+
+            // Right: total (bold, 1sp smaller)
+            TextView rightTotal = new TextView(this);
+            rightTotal.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            rightTotal.setText(money.format(total) + " " + symbol);
+            rightTotal.setTextSize(14);
+            rightTotal.setTypeface(Typeface.DEFAULT_BOLD);
+            rightTotal.setTextColor(accentColor);
+
+            headerRow.addView(leftLabel);
+            headerRow.addView(rightTotal);
+
+            // Default: all collapsed
+            section.setVisibility(View.GONE);
+
+            headerRow.setOnClickListener(v -> {
+                section.setVisibility(section.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
             });
 
-            expensesContainer.addView(banner);
+            expensesContainer.addView(headerRow);
             expensesContainer.addView(section);
         }
     }
