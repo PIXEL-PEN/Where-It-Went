@@ -22,14 +22,16 @@ import java.util.Locale;
 
 public class ViewAllActivity extends AppCompatActivity {
 
+    private RecyclerView recyclerView;
+    private ExpenseAdapter adapter;
+    private TextView tvTotalAmount;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_all);
 
         ImageButton btnBack = findViewById(R.id.btn_back);
-
-
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> {
                 startActivity(new Intent(this, MainActivity.class));
@@ -37,41 +39,26 @@ public class ViewAllActivity extends AppCompatActivity {
             });
         }
 
-        RecyclerView recyclerView = findViewById(R.id.recycler_expenses);
+        recyclerView = findViewById(R.id.recycler_expenses);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // Load all expenses
-        List<Expense> expenses = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
-
-        // Global sort: newest date first. Within same date: newest id first.
-        Collections.sort(expenses, (e1, e2) -> {
-            Date d1 = parseDate(e1.date);
-            Date d2 = parseDate(e2.date);
-
-            if (d1 != null && d2 != null) {
-                int cmp = d2.compareTo(d1); // newest first
-                if (cmp != 0) return cmp;
-            } else if (d1 == null && d2 == null) {
-                // fall through to id
-            } else {
-                // Put parsable dates before unparsable; unparsable sink lower
-                return (d1 == null) ? 1 : -1;
-            }
-
-            // Same day (or unparsed): newest id first
-            return Integer.compare(e2.id, e1.id);
-        });
-
-        // Adapter
-        ExpenseAdapter adapter = new ExpenseAdapter(expenses);
-        recyclerView.setAdapter(adapter);
-
-        // Crisp 1dp gray dividers
         recyclerView.addItemDecoration(new DividerItemDecoration(this));
 
-        // Footer total with smaller currency symbol after the number
+        tvTotalAmount = findViewById(R.id.tvTotalAmount);
+
+        reloadData();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        reloadData();
+    }
+
+    private void reloadData() {
+        List<Expense> all = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
+
         double total = 0.0;
-        for (Expense e : expenses) total += e.amount;
+        for (Expense e : all) total += e.amount;
 
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         String code = prefs.getString("currency_code", "THB");
@@ -88,9 +75,26 @@ public class ViewAllActivity extends AppCompatActivity {
                 formattedTotal.length(),
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
         );
-
-        TextView tvTotalAmount = findViewById(R.id.tvTotalAmount);
         tvTotalAmount.setText(totalDisplay);
+
+        List<Expense> display = DateRangeCutoff.filterByMonths(this, all);
+
+        Collections.sort(display, (e1, e2) -> {
+            Date d1 = parseDate(e1.date);
+            Date d2 = parseDate(e2.date);
+
+            if (d1 != null && d2 != null) {
+                int cmp = d2.compareTo(d1);
+                if (cmp != 0) return cmp;
+            } else if (d1 == null && d2 == null) {
+            } else {
+                return (d1 == null) ? 1 : -1;
+            }
+            return Integer.compare(e2.id, e1.id);
+        });
+
+        adapter = new ExpenseAdapter(display);
+        recyclerView.setAdapter(adapter);
     }
 
     private Date parseDate(String raw) {
@@ -99,7 +103,10 @@ public class ViewAllActivity extends AppCompatActivity {
                 "dd/MM/yyyy",
                 "MM/dd/yyyy",
                 "dd MMM yyyy",
-                "dd MMM. yyyy"
+                "dd MMM. yyyy",
+                "d MMM yyyy",
+                "d MMM. yyyy",
+                "d MMMM yyyy"
         };
         for (String p : patterns) {
             try {
