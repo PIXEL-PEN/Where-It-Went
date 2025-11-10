@@ -76,10 +76,7 @@
                 android:background="@drawable/spinner_background_settings"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp" />
-
         </LinearLayout>
-
-
 
         <TextView
             android:layout_width="match_parent"
@@ -87,20 +84,50 @@
             android:paddingStart="16dp"
             android:paddingTop="6dp"
             android:paddingBottom="6dp"
-            android:text="Cycle Tracking Period"
+            android:text="@string/settings_date_range_title"
             android:textSize="18sp"
             android:textStyle="bold"
             android:background="#B0BEC5"
             android:textColor="@color/colorAccent" />
 
         <LinearLayout
-            android:id="@+id/cycle_container"
+            android:id="@+id/date_range_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="6dp"
             android:background="#FFFFFF"
             android:elevation="2dp"
-            android:padding="16dp" />
+            android:padding="16dp"
+            android:orientation="vertical">
+
+
+
+            <RadioGroup
+                android:id="@+id/radio_date_range"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="10dp">
+
+                <RadioButton
+                    android:id="@+id/radio_1m"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/date_range_1_month" />
+
+                <RadioButton
+                    android:id="@+id/radio_2m"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/date_range_2_months" />
+
+                <RadioButton
+                    android:id="@+id/radio_3m"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/date_range_3_months" />
+            </RadioGroup>
+        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"

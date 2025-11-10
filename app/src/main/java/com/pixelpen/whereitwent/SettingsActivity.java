@@ -6,7 +6,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,18 +24,17 @@ import java.io.FileWriter;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
-import android.widget.ImageButton;
-
 
 public class SettingsActivity extends AppCompatActivity {
 
     private Spinner spinnerCurrency;
 
-
-    // SAF request code
     private static final int CREATE_CSV_FILE = 2001;
 
     private String csvContent = null;
+
+    private RadioGroup radioDateRange;
+    private RadioButton radio1m, radio2m, radio3m;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,11 +49,8 @@ public class SettingsActivity extends AppCompatActivity {
             });
         }
 
-
-
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
 
-        // ---------------- About Feedback Link ----------------
         TextView about = findViewById(R.id.text_about);
         if (about != null) {
             about.setText(Html.fromHtml(getString(R.string.about_text), Html.FROM_HTML_MODE_LEGACY));
@@ -57,10 +58,8 @@ public class SettingsActivity extends AppCompatActivity {
             about.setLinksClickable(true);
         }
 
-        // ---------------- Currency Spinner ----------------
         spinnerCurrency = findViewById(R.id.spinner_currency);
         final List<String> currencies = Arrays.asList(
-
                 "USD — US Dollar ($)",
                 "EUR — Euro (€)",
                 "GBP — British Pound (£)",
@@ -76,7 +75,6 @@ public class SettingsActivity extends AppCompatActivity {
                 "VND — Vietnamese Dong (₫)"
         );
 
-
         ArrayAdapter<String> currencyAdapter = new ArrayAdapter<>(
                 this,
                 R.layout.spinner_item_selected,
@@ -85,7 +83,6 @@ public class SettingsActivity extends AppCompatActivity {
         currencyAdapter.setDropDownViewResource(R.layout.spinner_item_dropdown);
         spinnerCurrency.setAdapter(currencyAdapter);
 
-        // Default = first item in list (USD)
         String defaultCode = currencies.get(0).split(" ")[0];
         String savedCode = prefs.getString("currency_code", defaultCode);
 
@@ -98,19 +95,40 @@ public class SettingsActivity extends AppCompatActivity {
         }
         spinnerCurrency.setSelection(restoredIndex, false);
 
-        spinnerCurrency.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+        spinnerCurrency.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String label = currencies.get(position);
                 String code = label.split(" ")[0];
                 prefs.edit().putString("currency_code", code).apply();
             }
-            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+            @Override public void onNothingSelected(AdapterView<?> parent) {}
         });
 
+        radioDateRange = findViewById(R.id.radio_date_range);
+        radio1m = findViewById(R.id.radio_1m);
+        radio2m = findViewById(R.id.radio_2m);
+        radio3m = findViewById(R.id.radio_3m);
 
+        if (radioDateRange != null) {
+            int months = DateRangePrefs.getMonths(this);
+            if (months == 1) {
+                radio1m.setChecked(true);
+            } else if (months == 2) {
+                radio2m.setChecked(true);
+            } else {
+                radio3m.setChecked(true);
+            }
 
-        // ---------------- Export Button ----------------
+            radioDateRange.setOnCheckedChangeListener((group, checkedId) -> {
+                int selected = 3;
+                if (checkedId == R.id.radio_1m) selected = 1;
+                else if (checkedId == R.id.radio_2m) selected = 2;
+                DateRangePrefs.setMonths(this, selected);
+                Toast.makeText(this, "Date range: " + selected + (selected == 1 ? " month" : " months"), Toast.LENGTH_SHORT).show();
+            });
+        }
+
         findViewById(R.id.btn_export).setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("Export Data")
@@ -121,7 +139,6 @@ public class SettingsActivity extends AppCompatActivity {
                     .show();
         });
 
-        // ---------------- Reset Button ----------------
         findViewById(R.id.btn_reset).setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("Reset Database")
@@ -135,7 +152,6 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
-    // ---------------- CSV Export (SAF) ----------------
     private void exportToStorage() {
         StringBuilder sb = new StringBuilder();
         List<Expense> expenses = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
@@ -172,7 +188,6 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    // ---------------- HTML Export ----------------
     private void exportAndEmail() {
         try {
             File file = new File(getExternalFilesDir(null), "expenses.html");

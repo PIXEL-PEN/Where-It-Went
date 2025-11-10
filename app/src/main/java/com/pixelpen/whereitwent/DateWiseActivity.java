@@ -9,6 +9,7 @@ import android.text.Spanned;
 import android.text.style.RelativeSizeSpan;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -25,13 +26,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import android.widget.ImageButton;
-
-
 
 public class DateWiseActivity extends AppCompatActivity {
 
     private LinearLayout expensesContainer;
+    private final SimpleDateFormat outHeader = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,22 +45,31 @@ public class DateWiseActivity extends AppCompatActivity {
             });
         }
 
-
         expensesContainer = findViewById(R.id.datewise_container);
+        render();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        render();
+    }
+
+    private void render() {
         LayoutInflater inflater = LayoutInflater.from(this);
 
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         String code = prefs.getString("currency_code", "THB");
         String symbol = CurrencyUtils.symbolFor(code);
+        DecimalFormat money = new DecimalFormat("#,##0.00");
 
-        List<Expense> allExpenses = ExpenseDatabase
-                .getDatabase(this)
-                .expenseDao()
-                .getAll();
+        // Load all, then apply global Date Range (display only)
+        List<Expense> allExpenses = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
+        List<Expense> filtered = DateRangeCutoff.filterByMonths(this, allExpenses);
 
-        // Group by date string
+        // Group by raw date string
         Map<String, List<Expense>> grouped = new LinkedHashMap<>();
-        for (Expense e : allExpenses) {
+        for (Expense e : filtered) {
             grouped.computeIfAbsent(e.date, k -> new ArrayList<>()).add(e);
         }
 
@@ -70,39 +78,57 @@ public class DateWiseActivity extends AppCompatActivity {
             Collections.sort(items, Comparator.comparingInt(exp -> exp.id));
         }
 
-        // Sort the date groups by actual date (newest → oldest)
+        // Sort date groups by parsed date (newest → oldest)
         List<String> dates = new ArrayList<>(grouped.keySet());
         Collections.sort(dates, (d1, d2) -> {
             Date date1 = parseDate(d1);
             Date date2 = parseDate(d2);
             if (date1 == null || date2 == null) return d1.compareTo(d2);
-            return date2.compareTo(date1); // reverse order: newest first
+            return date2.compareTo(date1);
         });
 
         expensesContainer.removeAllViews();
 
-        for (String date : dates) {
-            List<Expense> items = grouped.get(date);
+        String todayLabel = outHeader.format(new Date());
 
-            // Banner with full date
-            TextView banner = new TextView(this);
-            banner.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    dp(29)
-            ));
-            banner.setBackgroundColor(0xFFE1C699);
-            banner.setText(formatFullDate(date));
-            banner.setTextSize(16);
-            banner.setTypeface(Typeface.DEFAULT_BOLD);
-            banner.setTextColor(0xFF000000);
-            banner.setGravity(android.view.Gravity.CENTER_VERTICAL | android.view.Gravity.START);
-            banner.setPadding(dp(16), 0, 0, 0);
-            expensesContainer.addView(banner);
+        for (String rawDate : dates) {
+            List<Expense> items = grouped.get(rawDate);
 
             double total = 0.0;
+            for (Expense e : items) total += e.amount;
 
-            for (Expense e : items) {
-                View row = inflater.inflate(R.layout.item_expense_date_row, expensesContainer, false);
+            String headerLabel = formatFullDate(rawDate);
+            String headerRight = " (" + items.size() + ")  " + money.format(total) + " " + symbol;
+
+            // Header "card"
+            TextView banner = new TextView(this);
+            LinearLayout.LayoutParams bannerLp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, dp(56));
+            bannerLp.setMargins(dp(8), dp(8), dp(8), dp(2));
+            banner.setLayoutParams(bannerLp);
+            banner.setBackgroundColor(0xFFFFFFFF);
+            banner.setPadding(dp(16), 0, dp(12), 0);
+            banner.setTypeface(Typeface.DEFAULT_BOLD);
+            banner.setTextSize(16);
+            banner.setTextColor(0xFF000000);
+            banner.setGravity(android.view.Gravity.CENTER_VERTICAL | android.view.Gravity.START);
+            banner.setElevation(2f);
+            banner.setText(headerLabel + headerRight);
+
+            // Section content container for this day
+            LinearLayout section = new LinearLayout(this);
+            section.setOrientation(LinearLayout.VERTICAL);
+            LinearLayout.LayoutParams sectionLp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            sectionLp.setMargins(dp(8), 0, dp(8), dp(6));
+            section.setLayoutParams(sectionLp);
+            section.setBackgroundColor(0xFFFFFFFF);
+            section.setElevation(2f);
+
+            // Fill rows
+            for (int i = 0; i < items.size(); i++) {
+                Expense e = items.get(i);
+                View row = inflater.inflate(R.layout.item_expense_date_row, section, false);
 
                 TextView textDescription = row.findViewById(R.id.text_description);
                 TextView textCategory   = row.findViewById(R.id.text_category);
@@ -115,13 +141,12 @@ public class DateWiseActivity extends AppCompatActivity {
                 textDescription.setText(e.description);
                 textCategory.setText(e.category);
 
-                String formatted = String.format(Locale.ENGLISH, "%.2f %s", e.amount, symbol);
-                SpannableString display = new SpannableString(formatted);
-                int start = formatted.length() - symbol.length();
-                display.setSpan(new RelativeSizeSpan(0.85f), start, formatted.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                textAmount.setText(display);
+                String amt = String.format(Locale.ENGLISH, "%.2f %s", e.amount, symbol);
+                SpannableString amtSpan = new SpannableString(amt);
+                int start = amt.length() - symbol.length();
+                amtSpan.setSpan(new RelativeSizeSpan(0.85f), start, amt.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                textAmount.setText(amtSpan);
 
-                // Clickable row: Expense Details dialog
                 row.setOnClickListener(v -> {
                     String details = "Category: " + e.category + "\n"
                             + "Date: " + formatFullDate(e.date) + "\n"
@@ -144,23 +169,22 @@ public class DateWiseActivity extends AppCompatActivity {
                                 startActivity(intent);
                             })
                             .create();
-
                     dialog.show();
                 });
 
-                expensesContainer.addView(row);
+                section.addView(row);
 
-                View divider = new View(this);
-                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT, 1);
-                divider.setLayoutParams(lp);
-                divider.setBackgroundColor(0xFF888888);
-                expensesContainer.addView(divider);
-
-                total += e.amount;
+                if (i < items.size() - 1) {
+                    View divider = new View(this);
+                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT, 1);
+                    divider.setLayoutParams(lp);
+                    divider.setBackgroundColor(0xFFCCCCCC);
+                    section.addView(divider);
+                }
             }
 
-            // TOTAL row
+            // Per-day TOTAL row (inside the collapsible section)
             LinearLayout totalRow = new LinearLayout(this);
             totalRow.setOrientation(LinearLayout.HORIZONTAL);
             totalRow.setPadding(dp(12), dp(12), dp(12), dp(12));
@@ -169,7 +193,7 @@ public class DateWiseActivity extends AppCompatActivity {
             label.setLayoutParams(new LinearLayout.LayoutParams(
                     0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
             label.setText("TOTAL");
-            label.setTextSize(18);
+            label.setTextSize(16);
             label.setTypeface(Typeface.DEFAULT_BOLD);
             label.setTextColor(0xFFB71C1C);
 
@@ -178,21 +202,34 @@ public class DateWiseActivity extends AppCompatActivity {
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT));
 
-            // ✅ Use DecimalFormat for comma separators
-            DecimalFormat df = new DecimalFormat("#,##0.00");
-            String totalFormatted = df.format(total) + " " + symbol;
-
+            String totalFormatted = money.format(total) + " " + symbol;
             SpannableString totalDisplay = new SpannableString(totalFormatted);
-            int start = totalFormatted.length() - symbol.length();
-            totalDisplay.setSpan(new RelativeSizeSpan(0.85f), start, totalFormatted.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            int tStart = totalFormatted.length() - symbol.length();
+            totalDisplay.setSpan(new RelativeSizeSpan(0.85f), tStart, totalFormatted.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             amountTv.setText(totalDisplay);
-            amountTv.setTextSize(18);
+            amountTv.setTextSize(16);
             amountTv.setTypeface(Typeface.DEFAULT_BOLD);
             amountTv.setTextColor(0xFFB71C1C);
 
             totalRow.addView(label);
             totalRow.addView(amountTv);
-            expensesContainer.addView(totalRow);
+            section.addView(totalRow);
+
+            // Default collapsed except "today"
+            boolean expand = headerLabel.equals(todayLabel);
+            section.setVisibility(expand ? View.VISIBLE : View.GONE);
+
+            // Toggle on header tap
+            banner.setOnClickListener(v -> {
+                if (section.getVisibility() == View.VISIBLE) {
+                    section.setVisibility(View.GONE);
+                } else {
+                    section.setVisibility(View.VISIBLE);
+                }
+            });
+
+            expensesContainer.addView(banner);
+            expensesContainer.addView(section);
         }
     }
 
@@ -201,14 +238,16 @@ public class DateWiseActivity extends AppCompatActivity {
         return Math.round(dps * density);
     }
 
-    // Parse raw date string into Date object
     private Date parseDate(String raw) {
         String[] patterns = {
                 "yyyy-MM-dd",
                 "dd/MM/yyyy",
                 "MM/dd/yyyy",
                 "dd MMM yyyy",
-                "dd MMM. yyyy"
+                "dd MMM. yyyy",
+                "d MMM yyyy",
+                "d MMM. yyyy",
+                "d MMMM yyyy"
         };
         for (String p : patterns) {
             try {
@@ -220,12 +259,10 @@ public class DateWiseActivity extends AppCompatActivity {
         return null;
     }
 
-    // Force full date format "dd MMM. yyyy"
     private String formatFullDate(String raw) {
         Date d = parseDate(raw);
         if (d != null) {
-            SimpleDateFormat out = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
-            return out.format(d);
+            return outHeader.format(d);
         }
         return raw;
     }
