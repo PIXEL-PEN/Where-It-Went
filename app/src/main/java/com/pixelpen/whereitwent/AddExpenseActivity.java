@@ -25,6 +25,8 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import android.view.Gravity;
+
 
 public class AddExpenseActivity extends AppCompatActivity {
 
@@ -50,8 +52,85 @@ public class AddExpenseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_expense);
 
+        // after setContentView(...)
         drawerLayout = findViewById(R.id.drawer_layout);
-        btnFilter = findViewById(R.id.btn_filter);
+        btnFilter    = findViewById(R.id.btn_filter);
+
+// Open drawer from hamburger
+        if (btnFilter != null) {
+            btnFilter.setOnClickListener(v -> drawerLayout.openDrawer(android.view.Gravity.END));
+        }
+
+// Drawer links
+        TextView linkSettings         = findViewById(R.id.linkSettings);
+        TextView linkCategoryFilter   = findViewById(R.id.linkCategoryFilter);
+        TextView linkManageCategories = findViewById(R.id.linkManageCategories);
+        TextView linkDistribution     = findViewById(R.id.linkDistribution);
+        TextView linkTutorial         = findViewById(R.id.linkTutorial); // label shows "Guide"
+
+        if (linkSettings != null) {
+            linkSettings.setOnClickListener(v -> {
+                drawerLayout.closeDrawers();
+                startActivity(new Intent(AddExpenseActivity.this, SettingsActivity.class));
+            });
+        }
+
+        if (linkCategoryFilter != null) {
+            linkCategoryFilter.setOnClickListener(v -> {
+                drawerLayout.closeDrawers();
+                startActivity(new Intent(AddExpenseActivity.this, CategoryWiseActivity.class));
+            });
+        }
+
+        if (linkManageCategories != null) {
+            linkManageCategories.setOnClickListener(v -> {
+                drawerLayout.closeDrawers();
+                showManageCategoriesDialog();
+            });
+        }
+
+        if (linkDistribution != null) {
+            linkDistribution.setOnClickListener(v -> {
+                drawerLayout.closeDrawers();
+                startActivity(new Intent(AddExpenseActivity.this, DistributionActivity.class));
+            });
+        }
+
+        if (linkTutorial != null) {
+            linkTutorial.setOnClickListener(v -> {
+                drawerLayout.closeDrawers();
+                startActivity(new Intent(AddExpenseActivity.this, TutorialActivity.class)); // “Guide”
+            });
+        }
+
+        if (linkManageCategories != null) {
+            linkManageCategories.setOnClickListener(v -> {
+                drawerLayout.closeDrawers();
+
+                showManageCategoriesDialog();
+            });
+        }
+
+        if (linkDistribution != null) {
+            linkDistribution.setOnClickListener(v -> {
+                drawerLayout.closeDrawers();
+
+
+                startActivity(new Intent(this, DistributionActivity.class));
+            });
+        }
+
+        if (linkTutorial != null) {
+            linkTutorial.setOnClickListener(v -> {
+                drawerLayout.closeDrawers();
+
+                // Keep the existing TutorialActivity target; label is now “Guide”
+                startActivity(new Intent(this, TutorialActivity.class));
+            });
+        }
+
+
+
 
         spinnerCategory = findViewById(R.id.spinner_category);
         editDescription = findViewById(R.id.edit_description);

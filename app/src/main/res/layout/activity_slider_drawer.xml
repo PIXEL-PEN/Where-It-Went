@@ -125,7 +125,7 @@
                 android:layout_marginVertical="8dp"
                 android:paddingVertical="6dp"
                 android:gravity="center"
-                android:text="Tutorial"
+                android:text="Guide"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:background="#024265" />
