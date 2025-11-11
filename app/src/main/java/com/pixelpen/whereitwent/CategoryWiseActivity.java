@@ -69,6 +69,15 @@ public class CategoryWiseActivity extends AppCompatActivity {
             });
         }
 
+        boolean shouldOpen = getIntent().getBooleanExtra("open_filter", false);
+        if (shouldOpen) {
+            getIntent().removeExtra("open_filter");
+            getWindow().getDecorView().postDelayed(() -> {
+                if (!isFinishing() && !isDestroyed()) showFilterDialog();
+            }, 50);
+        }
+
+
         // Toolbar filter icon
         ImageButton btnFilter = findViewById(R.id.btn_filter);
         if (btnFilter != null) {
@@ -84,6 +93,10 @@ public class CategoryWiseActivity extends AppCompatActivity {
             }
         }
     }
+
+
+
+
 
     private void openFilterDialogWithDelay() {
         // 180–250 ms delay allows drawer to finish closing animation
@@ -110,11 +123,17 @@ public class CategoryWiseActivity extends AppCompatActivity {
         openFilterDialogWithDelay();
     }
 
+
+
+
+
     @Override
     protected void onResume() {
         super.onResume();
         render();
     }
+
+
 
     private void render() {
         // Load base data (no global DateRangeCutoff — neutralized)

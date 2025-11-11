@@ -50,52 +50,66 @@ public class MainActivity extends AppCompatActivity {
         // We reuse the existing layout that already contains the drawer include
         setContentView(R.layout.activity_add_expense);
 
-        // Drawer + hamburger
+        // Drawer + hamburger (keeps using btn_filter to open the drawer)
         drawerLayout = findViewById(R.id.drawer_layout);
         View ham = findViewById(R.id.btn_filter);
         if (ham != null && drawerLayout != null) {
             ham.setOnClickListener(v -> drawerLayout.openDrawer(android.view.Gravity.END));
         }
 
-        // Drawer links (all null-guarded in case the include name/id differs)
+// Drawer links (null-guarded)
         TextView linkSettings         = findViewById(R.id.linkSettings);
         TextView linkCategoryFilter   = findViewById(R.id.linkCategoryFilter);
         TextView linkManageCategories = findViewById(R.id.linkManageCategories);
         TextView linkDistribution     = findViewById(R.id.linkDistribution);
-        TextView linkTutorial         = findViewById(R.id.linkTutorial); // label text is “Guide” in XML
+        TextView linkTutorial         = findViewById(R.id.linkTutorial);
 
+// Settings: navigate as before
         if (linkSettings != null) {
             linkSettings.setOnClickListener(v -> {
-                drawerLayout.closeDrawers();
+                if (drawerLayout != null) drawerLayout.closeDrawers();
                 startActivity(new Intent(this, SettingsActivity.class));
             });
         }
+
+// Category Filter: close drawer, then launch CategoryWiseActivity and auto-open its dialog
         if (linkCategoryFilter != null) {
             linkCategoryFilter.setOnClickListener(v -> {
-                drawerLayout.closeDrawers();
-                Intent i = new Intent(this, CategoryWiseActivity.class);
-                i.putExtra("open_filter", true); // auto-open the filter dialog there
-                startActivity(i);
+                if (drawerLayout != null) drawerLayout.closeDrawers();
+                // small delay to let the drawer close animation finish
+                getWindow().getDecorView().postDelayed(() -> {
+                    Intent i = new Intent(this, CategoryWiseActivity.class);
+                    i.putExtra("open_filter", true);
+                    startActivity(i);
+                }, 200);
             });
         }
+
+// Manage Categories: TEMP — avoid missing-class compile error.
+// Replace with your real screen later, or keep as a toast.
         if (linkManageCategories != null) {
             linkManageCategories.setOnClickListener(v -> {
-                drawerLayout.closeDrawers();
-                showManageCategoriesDialog();
+                if (drawerLayout != null) drawerLayout.closeDrawers();
+                android.widget.Toast.makeText(this, "Edit Categories: not implemented yet", android.widget.Toast.LENGTH_SHORT).show();
+                // When you add a screen, replace toast with:
+                // startActivity(new Intent(this, YourManageCategoriesActivity.class));
             });
         }
+
         if (linkDistribution != null) {
             linkDistribution.setOnClickListener(v -> {
-                drawerLayout.closeDrawers();
+                if (drawerLayout != null) drawerLayout.closeDrawers();
                 startActivity(new Intent(this, DistributionActivity.class));
             });
         }
+
         if (linkTutorial != null) {
             linkTutorial.setOnClickListener(v -> {
-                drawerLayout.closeDrawers();
+                if (drawerLayout != null) drawerLayout.closeDrawers();
                 startActivity(new Intent(this, TutorialActivity.class));
             });
         }
+
 
         // Form views
         spinnerCategory  = findViewById(R.id.spinner_category);
