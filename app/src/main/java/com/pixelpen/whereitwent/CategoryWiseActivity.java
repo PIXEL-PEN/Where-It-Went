@@ -45,7 +45,8 @@ public class CategoryWiseActivity extends AppCompatActivity {
 
     // Accent & headers
     private static final int HEADER_BG_CUSTOM = 0xFFBFCBD3;   // medium gray
-    private static final int HEADER_BG_FIXED = 0xFFFFE0B2;   // amber
+    private static final int HEADER_BG_FIXED  = 0xFFFFDDC1;   // salmon
+
     private static final List<String> FIXED_TOP_ORDER = Arrays.asList(
             "Groceries", "Rent", "Utilities", "Bills", "Transport", "Other"
     );
