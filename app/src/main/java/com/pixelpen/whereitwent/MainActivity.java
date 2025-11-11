@@ -57,14 +57,14 @@ public class MainActivity extends AppCompatActivity {
             ham.setOnClickListener(v -> drawerLayout.openDrawer(android.view.Gravity.END));
         }
 
-// Drawer links (null-guarded)
+// Drawer links (declare once)
         TextView linkSettings         = findViewById(R.id.linkSettings);
         TextView linkCategoryFilter   = findViewById(R.id.linkCategoryFilter);
         TextView linkManageCategories = findViewById(R.id.linkManageCategories);
         TextView linkDistribution     = findViewById(R.id.linkDistribution);
         TextView linkTutorial         = findViewById(R.id.linkTutorial);
 
-// Settings: navigate as before
+// Settings
         if (linkSettings != null) {
             linkSettings.setOnClickListener(v -> {
                 if (drawerLayout != null) drawerLayout.closeDrawers();
@@ -72,11 +72,10 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-// Category Filter: close drawer, then launch CategoryWiseActivity and auto-open its dialog
+// Category Filter
         if (linkCategoryFilter != null) {
             linkCategoryFilter.setOnClickListener(v -> {
                 if (drawerLayout != null) drawerLayout.closeDrawers();
-                // small delay to let the drawer close animation finish
                 getWindow().getDecorView().postDelayed(() -> {
                     Intent i = new Intent(this, CategoryWiseActivity.class);
                     i.putExtra("open_filter", true);
@@ -85,34 +84,39 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-// Manage Categories: TEMP — avoid missing-class compile error.
-// Replace with your real screen later, or keep as a toast.
+// Manage Categories (dialog)
         if (linkManageCategories != null) {
             linkManageCategories.setOnClickListener(v -> {
                 if (drawerLayout != null) drawerLayout.closeDrawers();
-                // Small delay so the drawer close animation completes before showing dialog
                 getWindow().getDecorView().postDelayed(() -> {
                     if (!isFinishing() && !isDestroyed()) showManageCategoriesDialog();
                 }, 150);
             });
         }
 
-
-
-
+// Distribution
         if (linkDistribution != null) {
             linkDistribution.setOnClickListener(v -> {
-                if (drawerLayout != null) drawerLayout.closeDrawers();
-                startActivity(new Intent(this, DistributionActivity.class));
+                if (drawerLayout != null) {
+                    drawerLayout.closeDrawers();
+                    drawerLayout.postDelayed(
+                            () -> startActivity(new Intent(this, DistributionActivity.class)),
+                            150
+                    );
+                } else {
+                    startActivity(new Intent(this, DistributionActivity.class));
+                }
             });
         }
 
+// Tutorial (optional; keep existing behavior)
         if (linkTutorial != null) {
             linkTutorial.setOnClickListener(v -> {
                 if (drawerLayout != null) drawerLayout.closeDrawers();
-                startActivity(new Intent(this, TutorialActivity.class));
+                // TODO: launch tutorial/guide activity if you have one
             });
         }
+
 
 
         // Form views
