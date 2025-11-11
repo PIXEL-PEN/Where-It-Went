@@ -40,7 +40,6 @@ public class DateWiseActivity extends AppCompatActivity {
     private final SimpleDateFormat outHeader = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
     private final SimpleDateFormat ymKey      = new SimpleDateFormat("yyyy-MM", Locale.ENGLISH);
 
-    // UI state: default = last 7 days
     private boolean showFullMonth = false;
 
     @Override
@@ -74,22 +73,18 @@ public class DateWiseActivity extends AppCompatActivity {
         String symbol = CurrencyUtils.symbolFor(code);
         DecimalFormat money = new DecimalFormat("#,##0.00");
 
-        // Load all, then apply your existing display cutoff (kept for compatibility)
         List<Expense> allExpenses = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
         List<Expense> filtered = DateRangeCutoff.filterByMonths(this, allExpenses);
 
-        // Group by raw date string
         Map<String, List<Expense>> grouped = new LinkedHashMap<>();
         for (Expense e : filtered) {
             grouped.computeIfAbsent(e.date, k -> new ArrayList<>()).add(e);
         }
 
-        // Sort items within each date (oldest → newest by id)
         for (List<Expense> items : grouped.values()) {
             Collections.sort(items, Comparator.comparingInt(exp -> exp.id));
         }
 
-        // Sort date groups by parsed date (newest → oldest)
         List<String> dates = new ArrayList<>(grouped.keySet());
         Collections.sort(dates, (d1, d2) -> {
             Date date1 = parseDate(d1);
@@ -98,15 +93,14 @@ public class DateWiseActivity extends AppCompatActivity {
             return date2.compareTo(date1);
         });
 
-        // Compute the subset of dates to show, based on the toggle
         List<String> subset = subsetDates(dates);
 
         expensesContainer.removeAllViews();
 
-        // Toggle row (Last 7 days | Full month)
         addToggleRow(expensesContainer, subset.size(), dates, grouped);
 
         int accentColor = ContextCompat.getColor(this, R.color.colorAccent2);
+        int headerBg = 0xFFBFCBD3; // medium gray to match other screens
 
         for (String rawDate : subset) {
             List<Expense> items = grouped.get(rawDate);
@@ -117,7 +111,6 @@ public class DateWiseActivity extends AppCompatActivity {
 
             String headerLabel = formatFullDate(rawDate);
 
-            // Section content container (collapsible)
             LinearLayout section = new LinearLayout(this);
             section.setOrientation(LinearLayout.VERTICAL);
             LinearLayout.LayoutParams sectionLp = new LinearLayout.LayoutParams(
@@ -127,7 +120,6 @@ public class DateWiseActivity extends AppCompatActivity {
             section.setBackgroundColor(0xFFFFFFFF);
             section.setElevation(1f);
 
-            // Build rows
             for (int i = 0; i < items.size(); i++) {
                 Expense e = items.get(i);
                 View row = inflater.inflate(R.layout.item_expense_date_row, section, false);
@@ -187,7 +179,6 @@ public class DateWiseActivity extends AppCompatActivity {
                 }
             }
 
-            // Per-day TOTAL row (inside section)
             LinearLayout totalRow = new LinearLayout(this);
             totalRow.setOrientation(LinearLayout.HORIZONTAL);
             totalRow.setPadding(dp(12), dp(10), dp(12), dp(12));
@@ -218,15 +209,14 @@ public class DateWiseActivity extends AppCompatActivity {
             totalRow.addView(amountTv);
             section.addView(totalRow);
 
-            // Header row (softened background, original look)
             LinearLayout headerRow = new LinearLayout(this);
             LinearLayout.LayoutParams headerLp = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, dp(40));
+                    LinearLayout.LayoutParams.MATCH_PARENT, dp(32));
             headerLp.setMargins(dp(12), dp(8), dp(12), dp(4));
             headerRow.setLayoutParams(headerLp);
             headerRow.setOrientation(LinearLayout.HORIZONTAL);
-            headerRow.setBackgroundColor(0xFFF4F6F8);
-            headerRow.setPadding(dp(12), dp(6), dp(12), dp(6));
+            headerRow.setBackgroundColor(headerBg);
+            headerRow.setPadding(dp(12), dp(4), dp(12), dp(4));
             headerRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
             headerRow.setClickable(true);
 
@@ -275,7 +265,6 @@ public class DateWiseActivity extends AppCompatActivity {
             headerRow.addView(leftLabel);
             headerRow.addView(rightTotal);
 
-            // Default collapsed
             section.setVisibility(View.GONE);
             headerRow.setOnClickListener(v -> {
                 section.setVisibility(section.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
@@ -301,7 +290,6 @@ public class DateWiseActivity extends AppCompatActivity {
         left.setTextSize(14);
         left.setTypeface(Typeface.DEFAULT_BOLD);
 
-        // Show a tiny hint of what month we’re in when on "Full month"
         if (showFullMonth && !allDates.isEmpty()) {
             Date top = parseDate(allDates.get(0));
             if (top != null) {
@@ -336,10 +324,8 @@ public class DateWiseActivity extends AppCompatActivity {
             return new ArrayList<>(sortedNewestToOldest.subList(0, end));
         }
 
-        // Full month: take all dates from the most-recent month present
         Date top = parseDate(sortedNewestToOldest.get(0));
         if (top == null) {
-            // Fallback: if parsing fails, just return all
             return new ArrayList<>(sortedNewestToOldest);
         }
         String topYm = ymKey.format(top);
@@ -351,7 +337,6 @@ public class DateWiseActivity extends AppCompatActivity {
                 out.add(raw);
             }
         }
-        // Preserve original order (already newest → oldest)
         return out;
     }
 
