@@ -90,11 +90,15 @@ public class MainActivity extends AppCompatActivity {
         if (linkManageCategories != null) {
             linkManageCategories.setOnClickListener(v -> {
                 if (drawerLayout != null) drawerLayout.closeDrawers();
-                android.widget.Toast.makeText(this, "Edit Categories: not implemented yet", android.widget.Toast.LENGTH_SHORT).show();
-                // When you add a screen, replace toast with:
-                // startActivity(new Intent(this, YourManageCategoriesActivity.class));
+                // Small delay so the drawer close animation completes before showing dialog
+                getWindow().getDecorView().postDelayed(() -> {
+                    if (!isFinishing() && !isDestroyed()) showManageCategoriesDialog();
+                }, 150);
             });
         }
+
+
+
 
         if (linkDistribution != null) {
             linkDistribution.setOnClickListener(v -> {
@@ -243,6 +247,9 @@ public class MainActivity extends AppCompatActivity {
         String tag = CategoryManager.getTagForCategory(this, category);
         textCategoryTag.setText((tag == null || tag.trim().isEmpty()) ? "➤ (auto insert)" : ("➤ " + tag));
     }
+
+
+
 
     private void loadCategoriesIntoSpinner(String desiredSelection) {
         List<String> ordered = CategoryManager.getOrderedCategories(this);
