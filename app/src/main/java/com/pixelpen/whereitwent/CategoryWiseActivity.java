@@ -25,6 +25,7 @@ import androidx.core.content.ContextCompat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -47,7 +48,7 @@ public class CategoryWiseActivity extends AppCompatActivity {
     private final SimpleDateFormat outDate = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
     private final SimpleDateFormat iso = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
 
-    private final String[] parsePatterns = new String[] {
+    private final String[] parsePatterns = new String[]{
             "yyyy-MM-dd",
             "dd/MM/yyyy",
             "MM/dd/yyyy",
@@ -57,6 +58,10 @@ public class CategoryWiseActivity extends AppCompatActivity {
             "d MMM. yyyy",
             "d MMMM yyyy"
     };
+
+    private static final List<String> FIXED_TOP_ORDER = Arrays.asList(
+            "Groceries", "Rent", "Utilities", "Bills", "Transport", "Other"
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,8 +145,22 @@ public class CategoryWiseActivity extends AppCompatActivity {
             });
         }
 
-        List<String> categories = new ArrayList<>(byCategory.keySet());
-        Collections.sort(categories, Comparator.nullsLast(String::compareToIgnoreCase));
+        List<String> allCats = new ArrayList<>(byCategory.keySet());
+        List<String> ordered = new ArrayList<>();
+
+        for (String fixed : FIXED_TOP_ORDER) {
+            if (containsIgnoreCase(allCats, fixed)) {
+                String key = findKeyIgnoreCase(allCats, fixed);
+                if (key != null) ordered.add(key);
+            }
+        }
+
+        List<String> customs = new ArrayList<>();
+        for (String c : allCats) {
+            if (!containsIgnoreCase(FIXED_TOP_ORDER, c)) customs.add(c);
+        }
+        Collections.sort(customs, Comparator.nullsLast(String::compareToIgnoreCase));
+        ordered.addAll(customs);
 
         categoryContainer.removeAllViews();
 
@@ -150,11 +169,14 @@ public class CategoryWiseActivity extends AppCompatActivity {
         }
 
         final int accentText = ContextCompat.getColor(this, R.color.colorAccent2);
-        final int headerBg = 0xFFBFCBD3;
+        final int headerBgCustom = 0xFFBFCBD3;
+        final int headerBgFixed = 0xFFFFE0B2;
 
-        for (String cat : categories) {
+        for (String cat : ordered) {
             List<Expense> items = byCategory.get(cat);
             if (items == null || items.isEmpty()) continue;
+
+            boolean isFixed = containsIgnoreCase(FIXED_TOP_ORDER, cat);
 
             double catTotal = 0.0;
             for (Expense e : items) catTotal += e.amount;
@@ -173,8 +195,8 @@ public class CategoryWiseActivity extends AppCompatActivity {
                 View row = inflater.inflate(R.layout.item_expense_date_row, section, false);
 
                 TextView textDescription = row.findViewById(R.id.text_description);
-                TextView textCategory   = row.findViewById(R.id.text_category);
-                TextView textAmount     = row.findViewById(R.id.text_amount);
+                TextView textCategory = row.findViewById(R.id.text_category);
+                TextView textAmount = row.findViewById(R.id.text_amount);
 
                 if (textDescription == null || textCategory == null || textAmount == null) continue;
 
@@ -255,12 +277,12 @@ public class CategoryWiseActivity extends AppCompatActivity {
 
             LinearLayout headerRow = new LinearLayout(this);
             LinearLayout.LayoutParams headerLp = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, dp(40));
+                    LinearLayout.LayoutParams.MATCH_PARENT, dp(32));
             headerLp.setMargins(dp(12), dp(8), dp(12), dp(4));
             headerRow.setLayoutParams(headerLp);
             headerRow.setOrientation(LinearLayout.HORIZONTAL);
-            headerRow.setBackgroundColor(headerBg);
-            headerRow.setPadding(dp(12), dp(6), dp(12), dp(6));
+            headerRow.setBackgroundColor(isFixed ? headerBgFixed : headerBgCustom);
+            headerRow.setPadding(dp(12), dp(4), dp(12), dp(4));
             headerRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
             headerRow.setClickable(true);
 
@@ -291,6 +313,22 @@ public class CategoryWiseActivity extends AppCompatActivity {
             categoryContainer.addView(headerRow);
             categoryContainer.addView(section);
         }
+    }
+
+    private static boolean containsIgnoreCase(Iterable<String> iterable, String probe) {
+        if (probe == null) return false;
+        for (String s : iterable) {
+            if (s != null && s.equalsIgnoreCase(probe)) return true;
+        }
+        return false;
+    }
+
+    private static String findKeyIgnoreCase(Iterable<String> iterable, String probe) {
+        if (probe == null) return null;
+        for (String s : iterable) {
+            if (s != null && s.equalsIgnoreCase(probe)) return s;
+        }
+        return null;
     }
 
     private void addFilterPill(LinearLayout parent, String cat, String startIso, String endIso) {
