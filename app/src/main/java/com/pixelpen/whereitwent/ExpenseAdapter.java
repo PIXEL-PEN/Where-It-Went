@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -23,60 +24,70 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
 
     private final List<Expense> expenses;
 
-    public ExpenseAdapter(List<Expense> expenses) {
-        this.expenses = expenses;
+    public ExpenseAdapter(List<Expense> initial) {
+        this.expenses = (initial == null) ? new ArrayList<>() : new ArrayList<>(initial);
+        setHasStableIds(false);
+    }
+
+    /** Pagination hook from ViewAllActivity */
+    public void updateData(List<Expense> newPage) {
+        expenses.clear();
+        if (newPage != null) expenses.addAll(newPage);
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public ExpenseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
+        View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_expense, parent, false);
-        return new ExpenseViewHolder(view);
+        return new ExpenseViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ExpenseViewHolder holder, int position) {
-        Expense expense = expenses.get(position);
-        Context context = holder.itemView.getContext();
+        Expense e = expenses.get(position);
+        Context ctx = holder.itemView.getContext();
 
-        holder.textCategory.setText(expense.category);
-        holder.textDate.setText(expense.date);
+        holder.textCategory.setText(e.category);
+        holder.textDate.setText(e.date);
 
-        // 🏷 Retrieve tag for this category
-        String tag = CategoryManager.getTagForCategory(context, expense.category);
-
-        // 💰 Load user’s selected currency
-        SharedPreferences prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE);
+        SharedPreferences prefs = ctx.getSharedPreferences("settings", Context.MODE_PRIVATE);
         String code = prefs.getString("currency_code", "THB");
         String symbol = CurrencyUtils.symbolFor(code);
 
-        // Format amount with smaller currency symbol
-        String formatted = String.format(Locale.ENGLISH, "%.2f %s", expense.amount, symbol);
+        String formatted = String.format(Locale.ENGLISH, "%.2f %s", e.amount, symbol);
         SpannableString display = new SpannableString(formatted);
         int start = formatted.length() - symbol.length();
-        display.setSpan(new RelativeSizeSpan(0.85f), start, formatted.length(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        display.setSpan(new RelativeSizeSpan(0.85f), start, formatted.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         holder.textAmount.setText(display);
 
-        // ✅ Row click → details dialog
         holder.itemView.setOnClickListener(v -> {
-            new AlertDialog.Builder(context)
+            String tag = CategoryManager.getTagForCategory(ctx, e.category);
+
+            new AlertDialog.Builder(ctx)
                     .setTitle("Expense Details")
-                    .setMessage("Category: " + expense.category + " (" + tag + ")" + "\n"
-                            + "Date: " + expense.date + "\n"
-                            + "Item: " + expense.description + "\n"
+                    .setMessage("Category: " + e.category + " (" + tag + ")" + "\n"
+                            + "Date: " + e.date + "\n"
+                            + "Item: " + e.description + "\n"
                             + "Amount: " + formatted)
-                    .setPositiveButton("Edit", (dialog, which) -> {
-                        Intent intent = new Intent(context, AddExpenseActivity.class);
-                        intent.putExtra("expense_id", expense.id);
-                        context.startActivity(intent);
+                    .setPositiveButton("Edit", (d, w) -> {
+                        Intent intent = new Intent(ctx, AddExpenseActivity.class);
+                        intent.putExtra("expense_id", e.id);
+                        ctx.startActivity(intent);
                     })
-                    .setNegativeButton("Delete", (dialog, which) -> {
-                        ExpenseDatabase.getDatabase(context).expenseDao().delete(expense);
-                        expenses.remove(position);
-                        notifyItemRemoved(position);
-                        Toast.makeText(context, "Expense deleted", Toast.LENGTH_SHORT).show();
+                    .setNegativeButton("Delete", (d, w) -> {
+                        ExpenseDatabase.getDatabase(ctx).expenseDao().delete(e);
+
+                        int adapterPos = holder.getAdapterPosition();
+                        if (adapterPos != RecyclerView.NO_POSITION) {
+                            expenses.remove(adapterPos);
+                            notifyItemRemoved(adapterPos);
+                        } else {
+                            expenses.remove(e);
+                            notifyDataSetChanged();
+                        }
+                        Toast.makeText(ctx, "Expense deleted", Toast.LENGTH_SHORT).show();
                     })
                     .setNeutralButton("Close", null)
                     .show();

@@ -69,7 +69,9 @@
                 android:tint="@android:color/white"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Filter / Menu"
-                android:padding="10dp" />
+                android:padding="10dp"
+                android:onClick="onFilterClick" />
+
         </RelativeLayout>
 
         <!-- Scrollable category container -->

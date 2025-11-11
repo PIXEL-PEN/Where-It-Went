@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -11,6 +12,7 @@ import android.text.style.RelativeSizeSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
@@ -18,40 +20,48 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import java.text.DecimalFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 public class CategoryWiseActivity extends AppCompatActivity {
 
-    private LinearLayout expensesContainer;
-    private LayoutInflater inflater;
-    private String symbol;
+    private LinearLayout categoryContainer;
 
-    private boolean filterDialogQueued = false;
+    private static final String PREFS = "settings";
+    private static final String K_ACTIVE = "catf_active";
+    private static final String K_CATEGORY = "catf_category";
+    private static final String K_START = "catf_start";
+    private static final String K_END = "catf_end";
 
-    private final SimpleDateFormat FRIENDLY =
-            new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
-    private final SimpleDateFormat ISO =
-            new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+    private final SimpleDateFormat outDate = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
+    private final SimpleDateFormat iso = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+
+    private final String[] parsePatterns = new String[] {
+            "yyyy-MM-dd",
+            "dd/MM/yyyy",
+            "MM/dd/yyyy",
+            "dd MMM yyyy",
+            "dd MMM. yyyy",
+            "d MMM yyyy",
+            "d MMM. yyyy",
+            "d MMMM yyyy"
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category_wise);
-
-        // If launched with the "open_filter" extra (from the drawer), queue the dialog
-        filterDialogQueued = getIntent().getBooleanExtra("open_filter", false);
 
         ImageButton btnBack = findViewById(R.id.btn_back);
         if (btnBack != null) {
@@ -63,105 +73,134 @@ public class CategoryWiseActivity extends AppCompatActivity {
 
         ImageButton btnFilter = findViewById(R.id.btn_filter);
         if (btnFilter != null) {
-            btnFilter.setOnClickListener(v -> showSimpleFilterDialog());
+            btnFilter.setOnClickListener(v -> showCategoryFilterDialog());
+            btnFilter.setOnLongClickListener(v -> {
+                clearCustomFilter();
+                return true;
+            });
         }
 
-        expensesContainer = findViewById(R.id.categorywise_container);
-        inflater = LayoutInflater.from(this);
+        TextView linkDrawer = findViewById(R.id.linkCategoryFilter);
+        if (linkDrawer != null) {
+            linkDrawer.setOnClickListener(v -> showCategoryFilterDialog());
+        }
 
-        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        String code = prefs.getString("currency_code", "THB");
-        symbol = CurrencyUtils.symbolFor(code);
-
-        List<Expense> allExpenses = ExpenseDatabase
-                .getDatabase(this)
-                .expenseDao()
-                .getAll();
-
-        rebuildExpenseView(allExpenses);
+        categoryContainer = findViewById(R.id.categorywise_container);
+        render();
     }
 
     @Override
-    protected void onPostResume() {
-        super.onPostResume();
-        if (filterDialogQueued) {
-            filterDialogQueued = false;
-            showSimpleFilterDialog();
-            getIntent().removeExtra("open_filter");
-        }
+    protected void onResume() {
+        super.onResume();
+        render();
     }
 
-    private void rebuildExpenseView(List<Expense> expenseList) {
-        expensesContainer.removeAllViews();
+    private void render() {
+        LayoutInflater inflater = LayoutInflater.from(this);
+        SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
 
-        if (expenseList == null || expenseList.isEmpty()) {
-            TextView empty = new TextView(this);
-            empty.setText("No expenses found.");
-            empty.setPadding(dp(16), dp(16), dp(16), dp(16));
-            expensesContainer.addView(empty);
-            return;
+        String code = prefs.getString("currency_code", "THB");
+        String symbol = CurrencyUtils.symbolFor(code);
+        DecimalFormat money = new DecimalFormat("#,##0.00");
+
+        List<Expense> base = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
+
+        boolean active = prefs.getBoolean(K_ACTIVE, false);
+        String fCat = prefs.getString(K_CATEGORY, "All Categories");
+        String fStart = prefs.getString(K_START, null);
+        String fEnd = prefs.getString(K_END, null);
+
+        List<Expense> filtered;
+        if (active && fStart != null && fEnd != null) {
+            filtered = filterByCustomRange(base, fStart, fEnd);
+            if (fCat != null && !"All Categories".equalsIgnoreCase(fCat)) {
+                filtered = filterByCategory(filtered, fCat);
+            }
+        } else {
+            filtered = DateRangeCutoff.filterByMonths(this, base);
         }
 
-        Map<String, List<Expense>> grouped = new LinkedHashMap<>();
-        for (Expense e : expenseList) {
-            grouped.computeIfAbsent(e.category, k -> new ArrayList<>()).add(e);
+        Map<String, List<Expense>> byCategory = new LinkedHashMap<>();
+        for (Expense e : filtered) {
+            String cat = (e.category == null || e.category.trim().isEmpty()) ? "Uncategorized" : e.category.trim();
+            byCategory.computeIfAbsent(cat, k -> new ArrayList<>()).add(e);
         }
 
-        List<Map.Entry<String, List<Expense>>> categories =
-                new ArrayList<>(grouped.entrySet());
-        Collections.sort(categories, (a, b) ->
-                latestDate(b.getValue()).compareTo(latestDate(a.getValue())));
+        for (List<Expense> items : byCategory.values()) {
+            Collections.sort(items, (e1, e2) -> {
+                java.util.Date d1 = parseDate(e1.date);
+                java.util.Date d2 = parseDate(e2.date);
+                if (d1 != null && d2 != null) {
+                    int cmp = d2.compareTo(d1);
+                    if (cmp != 0) return cmp;
+                } else if (d1 == null ^ d2 == null) {
+                    return (d1 == null) ? 1 : -1;
+                }
+                return Integer.compare(e2.id, e1.id);
+            });
+        }
 
-        for (Map.Entry<String, List<Expense>> entry : categories) {
-            String category = entry.getKey();
-            List<Expense> items = entry.getValue();
-            Collections.sort(items, Comparator.comparing(e -> e.date));
+        List<String> categories = new ArrayList<>(byCategory.keySet());
+        Collections.sort(categories, Comparator.nullsLast(String::compareToIgnoreCase));
 
-            TextView banner = new TextView(this);
-            banner.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, dp(29)));
-            banner.setBackgroundColor(0xFFE1C699);
-            banner.setText(category);
-            banner.setTextSize(16);
-            banner.setTypeface(Typeface.DEFAULT_BOLD);
-            banner.setTextColor(0xFF000000);
-            banner.setGravity(android.view.Gravity.CENTER_VERTICAL | android.view.Gravity.START);
-            banner.setPadding(dp(16), 0, 0, 0);
-            expensesContainer.addView(banner);
+        categoryContainer.removeAllViews();
+
+        if (active && fStart != null && fEnd != null) {
+            addFilterPill(categoryContainer, fCat, fStart, fEnd);
+        }
+
+        final int accentText = ContextCompat.getColor(this, R.color.colorAccent2);
+        final int headerBg = 0xFFBFCBD3;
+
+        for (String cat : categories) {
+            List<Expense> items = byCategory.get(cat);
+            if (items == null || items.isEmpty()) continue;
 
             double catTotal = 0.0;
+            for (Expense e : items) catTotal += e.amount;
 
-            for (Expense e : items) {
-                catTotal += e.amount;
+            LinearLayout section = new LinearLayout(this);
+            section.setOrientation(LinearLayout.VERTICAL);
+            LinearLayout.LayoutParams sectionLp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            sectionLp.setMargins(dp(12), 0, dp(12), dp(8));
+            section.setLayoutParams(sectionLp);
+            section.setBackgroundColor(0xFFFFFFFF);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) section.setElevation(1f);
 
-                View row = inflater.inflate(R.layout.item_expense_date_row, expensesContainer, false);
+            for (int i = 0; i < items.size(); i++) {
+                Expense e = items.get(i);
+                View row = inflater.inflate(R.layout.item_expense_date_row, section, false);
+
                 TextView textDescription = row.findViewById(R.id.text_description);
-                TextView textCategory = row.findViewById(R.id.text_category);
-                TextView textAmount = row.findViewById(R.id.text_amount);
+                TextView textCategory   = row.findViewById(R.id.text_category);
+                TextView textAmount     = row.findViewById(R.id.text_amount);
+
+                if (textDescription == null || textCategory == null || textAmount == null) continue;
 
                 textDescription.setText(e.description);
-                textCategory.setText(formatFullDate(e.date));
+                textCategory.setText(safeDateDisplay(e.date));
 
-                String formatted = String.format(Locale.ENGLISH, "%.2f %s", e.amount, symbol);
-                SpannableString display = new SpannableString(formatted);
-                int start = formatted.length() - symbol.length();
-                display.setSpan(new RelativeSizeSpan(0.85f), start, formatted.length(),
-                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                textAmount.setText(display);
+                String amt = String.format(Locale.ENGLISH, "%.2f %s", e.amount, symbol);
+                SpannableString amtSpan = new SpannableString(amt);
+                int start = amt.length() - symbol.length();
+                amtSpan.setSpan(new RelativeSizeSpan(0.85f), start, amt.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                textAmount.setText(amtSpan);
 
                 row.setOnClickListener(v -> {
-                    String details = "Category: " + e.category + "\n"
-                            + "Date: " + formatFullDate(e.date) + "\n"
+                    String details = "Category: " + cat + "\n"
+                            + "Date: " + safeDateDisplay(e.date) + "\n"
                             + "Item: " + e.description + "\n"
                             + "Amount: " + String.format(Locale.ENGLISH, "%.2f %s", e.amount, symbol);
 
-                    new AlertDialog.Builder(CategoryWiseActivity.this)
+                    AlertDialog dialog = new AlertDialog.Builder(CategoryWiseActivity.this)
                             .setTitle("Expense Details")
                             .setMessage(details)
                             .setNegativeButton("CLOSE", (d, which) -> d.dismiss())
                             .setNeutralButton("DELETE", (d, which) -> {
                                 ExpenseDatabase.getDatabase(CategoryWiseActivity.this)
-                                        .expenseDao().delete(e);
+                                        .expenseDao()
+                                        .delete(e);
                                 recreate();
                             })
                             .setPositiveButton("EDIT", (d, which) -> {
@@ -169,211 +208,250 @@ public class CategoryWiseActivity extends AppCompatActivity {
                                 intent.putExtra("expense_id", e.id);
                                 startActivity(intent);
                             })
-                            .show();
+                            .create();
+                    dialog.show();
                 });
 
-                expensesContainer.addView(row);
+                section.addView(row);
 
-                View divider = new View(this);
-                divider.setLayoutParams(new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT, 1));
-                divider.setBackgroundColor(0xFF888888);
-                expensesContainer.addView(divider);
+                if (i < items.size() - 1) {
+                    View divider = new View(this);
+                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT, dp(1));
+                    lp.setMargins(dp(12), 0, dp(12), 0);
+                    divider.setLayoutParams(lp);
+                    divider.setBackgroundColor(0x1A000000);
+                    section.addView(divider);
+                }
             }
 
             LinearLayout totalRow = new LinearLayout(this);
             totalRow.setOrientation(LinearLayout.HORIZONTAL);
-            totalRow.setPadding(dp(12), dp(12), dp(12), dp(12));
+            totalRow.setPadding(dp(12), dp(10), dp(12), dp(12));
 
             TextView label = new TextView(this);
             label.setLayoutParams(new LinearLayout.LayoutParams(
                     0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
             label.setText("TOTAL");
-            label.setTextSize(18);
+            label.setTextSize(15);
             label.setTypeface(Typeface.DEFAULT_BOLD);
             label.setTextColor(0xFFB71C1C);
 
             TextView amountTv = new TextView(this);
-            amountTv.setTextSize(18);
+            amountTv.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            String totalFormatted = money.format(catTotal) + " " + symbol;
+            SpannableString totalDisplay = new SpannableString(totalFormatted);
+            int tStart = totalFormatted.length() - symbol.length();
+            totalDisplay.setSpan(new RelativeSizeSpan(0.85f), tStart, totalFormatted.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            amountTv.setText(totalDisplay);
+            amountTv.setTextSize(15);
             amountTv.setTypeface(Typeface.DEFAULT_BOLD);
             amountTv.setTextColor(0xFFB71C1C);
 
-            DecimalFormat df = new DecimalFormat("#,##0.00");
-            String totalFormatted = df.format(catTotal) + " " + symbol;
-            SpannableString totalDisplay = new SpannableString(totalFormatted);
-            int start = totalFormatted.length() - symbol.length();
-            totalDisplay.setSpan(new RelativeSizeSpan(0.85f), start, totalFormatted.length(),
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            amountTv.setText(totalDisplay);
-
             totalRow.addView(label);
             totalRow.addView(amountTv);
-            expensesContainer.addView(totalRow);
+            section.addView(totalRow);
+
+            LinearLayout headerRow = new LinearLayout(this);
+            LinearLayout.LayoutParams headerLp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, dp(40));
+            headerLp.setMargins(dp(12), dp(8), dp(12), dp(4));
+            headerRow.setLayoutParams(headerLp);
+            headerRow.setOrientation(LinearLayout.HORIZONTAL);
+            headerRow.setBackgroundColor(headerBg);
+            headerRow.setPadding(dp(12), dp(6), dp(12), dp(6));
+            headerRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            headerRow.setClickable(true);
+
+            TextView leftTitle = new TextView(this);
+            leftTitle.setLayoutParams(new LinearLayout.LayoutParams(
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+            leftTitle.setText(cat);
+            leftTitle.setTextSize(16);
+            leftTitle.setTypeface(Typeface.DEFAULT_BOLD);
+            leftTitle.setTextColor(accentText);
+
+            TextView rightTotal = new TextView(this);
+            rightTotal.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            rightTotal.setText(money.format(catTotal) + " " + symbol);
+            rightTotal.setTextSize(14);
+            rightTotal.setTypeface(Typeface.DEFAULT_BOLD);
+            rightTotal.setTextColor(accentText);
+
+            headerRow.addView(leftTitle);
+            headerRow.addView(rightTotal);
+
+            section.setVisibility(View.GONE);
+            headerRow.setOnClickListener(v -> {
+                section.setVisibility(section.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+            });
+
+            categoryContainer.addView(headerRow);
+            categoryContainer.addView(section);
         }
     }
 
-    private void showSimpleFilterDialog() {
+    private void addFilterPill(LinearLayout parent, String cat, String startIso, String endIso) {
+        LinearLayout pill = new LinearLayout(this);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(dp(12), dp(8), dp(12), dp(4));
+        pill.setLayoutParams(lp);
+        pill.setOrientation(LinearLayout.HORIZONTAL);
+        pill.setBackgroundColor(0xFFEFF5F9);
+        pill.setPadding(dp(10), dp(8), dp(10), dp(8));
+
+        TextView tv = new TextView(this);
+        tv.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        String catLabel = (cat == null || cat.trim().isEmpty()) ? "All Categories" : cat;
+        String label = "Filtered: " + catLabel + "  •  " + startIso + " – " + endIso;
+        tv.setText(label);
+        tv.setTextSize(13);
+        tv.setTextColor(ContextCompat.getColor(this, R.color.colorAccent2));
+
+        TextView clear = new TextView(this);
+        clear.setText("CLEAR");
+        clear.setTextSize(13);
+        clear.setTypeface(Typeface.DEFAULT_BOLD);
+        clear.setTextColor(0xFFB71C1C);
+        clear.setPadding(dp(12), 0, 0, 0);
+        clear.setOnClickListener(v -> clearCustomFilter());
+
+        pill.addView(tv);
+        pill.addView(clear);
+        parent.addView(pill);
+    }
+
+    private void clearCustomFilter() {
+        SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        prefs.edit()
+                .putBoolean(K_ACTIVE, false)
+                .remove(K_CATEGORY)
+                .remove(K_START)
+                .remove(K_END)
+                .apply();
+        render();
+    }
+
+    private List<Expense> filterByCustomRange(List<Expense> items, String startIso, String endIso) {
+        java.util.Date start = parseIso(startIso);
+        java.util.Date end = parseIso(endIso);
+        if (start == null || end == null) return new ArrayList<>(items);
+
+        Calendar calEnd = Calendar.getInstance(Locale.ENGLISH);
+        calEnd.setTime(end);
+        calEnd.set(Calendar.HOUR_OF_DAY, 23);
+        calEnd.set(Calendar.MINUTE, 59);
+        calEnd.set(Calendar.SECOND, 59);
+        calEnd.set(Calendar.MILLISECOND, 999);
+        long endMs = calEnd.getTimeInMillis();
+
+        List<Expense> out = new ArrayList<>();
+        for (Expense e : items) {
+            java.util.Date d = parseDate(e.date);
+            if (d == null) continue;
+            long ms = d.getTime();
+            if (ms >= start.getTime() && ms <= endMs) out.add(e);
+        }
+        return out;
+    }
+
+    private List<Expense> filterByCategory(List<Expense> items, String cat) {
+        List<Expense> out = new ArrayList<>();
+        for (Expense e : items) {
+            String c = (e.category == null) ? "" : e.category.trim();
+            if (c.equalsIgnoreCase(cat)) out.add(e);
+        }
+        return out;
+    }
+
+    private void showCategoryFilterDialog() {
+        View view = getLayoutInflater().inflate(R.layout.dialog_filter_by_period, null);
+
+        Spinner spinner = view.findViewById(R.id.spinner_category);
+        Button btnStart = view.findViewById(R.id.btn_start_date);
+        Button btnEnd = view.findViewById(R.id.btn_end_date);
+        Button btnCancel = view.findViewById(R.id.btn_cancel);
+        Button btnApply = view.findViewById(R.id.btn_apply);
+
         List<Expense> all = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
-
-        List<String> defaults = new ArrayList<>();
-        Collections.addAll(defaults, "Groceries", "Rent", "Utilities", "Bills", "Transport", "Other");
-
-        List<String> customs = new ArrayList<>();
+        LinkedHashSet<String> set = new LinkedHashSet<>();
         for (Expense e : all) {
-            if (e.category != null && !e.category.trim().isEmpty()
-                    && !defaults.contains(e.category) && !customs.contains(e.category)) {
-                customs.add(e.category);
-            }
+            if (e.category != null && !e.category.trim().isEmpty()) set.add(e.category.trim());
         }
-        Collections.sort(customs);
-
-        List<String> categories = new ArrayList<>();
-        categories.addAll(defaults);
-        if (!customs.isEmpty()) {
-            categories.add("⋯");
-            categories.addAll(customs);
+        List<String> cats = new ArrayList<>();
+        cats.add("All Categories");
+        cats.addAll(set);
+        if (cats.size() > 1) {
+            Collections.sort(cats.subList(1, cats.size()), String::compareToIgnoreCase);
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                this, android.R.layout.simple_spinner_item, categories) {
-            @Override
-            public boolean isEnabled(int position) {
-                String item = getItem(position);
-                return item != null && !item.equals("⋯");
-            }
-
-            @Override
-            public View getDropDownView(int position, View convertView, android.view.ViewGroup parent) {
-                View view = super.getDropDownView(position, convertView, parent);
-                TextView tv = (TextView) view;
-                String item = getItem(position);
-                if ("⋯".equals(item)) {
-                    tv.setTextColor(0xFF777777);
-                } else {
-                    tv.setTextColor(0xFF000000);
-                }
-                return view;
-            }
-        };
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(dp(20), dp(12), dp(20), dp(8));
-
-        Spinner spinner = new Spinner(this);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, cats);
         spinner.setAdapter(adapter);
-        layout.addView(spinner);
 
-        TextView txtAvailable = new TextView(this);
-        txtAvailable.setTextColor(0xFF666666);
-        txtAvailable.setTextSize(14);
-        txtAvailable.setTypeface(Typeface.SANS_SERIF, Typeface.ITALIC);
-        txtAvailable.setPadding(0, dp(8), 0, dp(12));
-        txtAvailable.setText("Available: —");
-        layout.addView(txtAvailable);
+        SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        String prevCat = prefs.getString(K_CATEGORY, "All Categories");
+        String prevStart = prefs.getString(K_START, null);
+        String prevEnd = prefs.getString(K_END, null);
 
-        TextView txtStart = new TextView(this);
-        txtStart.setText("▶ Start Date: (tap to select)");
-        txtStart.setTextSize(16);
-        txtStart.setTypeface(Typeface.DEFAULT_BOLD);
-        txtStart.setPadding(0, dp(4), 0, dp(12));
-        layout.addView(txtStart);
+        if (prevCat != null) {
+            int idx = cats.indexOf(prevCat);
+            if (idx >= 0) spinner.setSelection(idx);
+        }
+        if (prevStart != null) btnStart.setText(prevStart);
+        if (prevEnd != null) btnEnd.setText(prevEnd);
 
-        TextView txtEnd = new TextView(this);
-        txtEnd.setText("▶ End Date: (tap to select)");
-        txtEnd.setTextSize(16);
-        txtEnd.setTypeface(Typeface.DEFAULT_BOLD);
-        txtEnd.setPadding(0, dp(4), 0, dp(10));
-        layout.addView(txtEnd);
+        final Calendar calTmp = Calendar.getInstance();
 
-        spinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
-                String selected = categories.get(position);
-                List<Date> dates = new ArrayList<>();
-                for (Expense e : all) {
-                    if (selected.equals(e.category)) {
-                        Date d = tryParseDbText(e.date);
-                        if (d != null) dates.add(d);
-                    }
-                }
-                if (!dates.isEmpty()) {
-                    String avail = FRIENDLY.format(Collections.min(dates)) + " – " +
-                            FRIENDLY.format(Collections.max(dates));
-                    txtAvailable.setText("Available: " + avail);
-                } else {
-                    txtAvailable.setText("Available: (no data)");
-                }
-            }
-
-            @Override
-            public void onNothingSelected(android.widget.AdapterView<?> parent) { }
+        btnStart.setOnClickListener(v -> {
+            int y = calTmp.get(Calendar.YEAR), m = calTmp.get(Calendar.MONTH), d = calTmp.get(Calendar.DAY_OF_MONTH);
+            new DatePickerDialog(this, (dp, yy, mm, dd) -> {
+                calTmp.set(yy, mm, dd, 0, 0, 0);
+                btnStart.setText(iso.format(calTmp.getTime()));
+            }, y, m, d).show();
         });
 
-        View.OnClickListener pickDate = v -> {
-            boolean isStart = (v == txtStart);
-            Calendar cal = Calendar.getInstance();
-            new DatePickerDialog(CategoryWiseActivity.this, (view, y, m, d) -> {
-                Calendar chosen = Calendar.getInstance();
-                chosen.set(y, m, d);
-                String label = FRIENDLY.format(chosen.getTime());
-                if (isStart) {
-                    txtStart.setText("▶ Start Date: " + label);
-                } else {
-                    txtEnd.setText("▶ End Date: " + label);
-                }
-            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show();
-        };
-        txtStart.setOnClickListener(pickDate);
-        txtEnd.setOnClickListener(pickDate);
+        btnEnd.setOnClickListener(v -> {
+            int y = calTmp.get(Calendar.YEAR), m = calTmp.get(Calendar.MONTH), d = calTmp.get(Calendar.DAY_OF_MONTH);
+            new DatePickerDialog(this, (dp, yy, mm, dd) -> {
+                calTmp.set(yy, mm, dd, 0, 0, 0);
+                btnEnd.setText(iso.format(calTmp.getTime()));
+            }, y, m, d).show();
+        });
 
-        new AlertDialog.Builder(this)
-                .setTitle("Filter by Category & Date Range")
-                .setView(layout)
-                .setPositiveButton("Apply", (d, which) -> {
-                    String cat = spinner.getSelectedItem().toString();
-                    String startFriendly = txtStart.getText().toString().replace("▶ Start Date: ", "");
-                    String endFriendly = txtEnd.getText().toString().replace("▶ End Date: ", "");
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(view)
+                .create();
 
-                    if (startFriendly.contains("(") || endFriendly.contains("(")) {
-                        String availLine = txtAvailable.getText().toString();
-                        if (availLine.startsWith("Available: ") && availLine.contains("–")) {
-                            String[] parts = availLine.substring("Available: ".length()).split("–");
-                            if (parts.length == 2) {
-                                startFriendly = parts[0].trim();
-                                endFriendly = parts[1].trim();
-                            }
-                        }
-                    }
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
 
-                    String startIso = friendlyToIso(startFriendly);
-                    String endIso = friendlyToIso(endFriendly);
+        btnApply.setOnClickListener(v -> {
+            String chooseCat = (String) spinner.getSelectedItem();
+            String s = btnStart.getText().toString();
+            String e = btnEnd.getText().toString();
 
-                    List<Expense> filtered = ExpenseDatabase
-                            .getDatabase(CategoryWiseActivity.this)
-                            .expenseDao()
-                            .getExpensesBetweenIso(startIso, endIso);
+            if (s == null || s.length() < 8 || e == null || e.length() < 8) {
+                new AlertDialog.Builder(this)
+                        .setMessage("Please select both start and end dates.")
+                        .setPositiveButton("OK", null)
+                        .show();
+                return;
+            }
 
-                    List<Expense> byCat = new ArrayList<>();
-                    for (Expense e : filtered) {
-                        if (cat.equals(e.category)) byCat.add(e);
-                    }
+            prefs.edit()
+                    .putBoolean(K_ACTIVE, true)
+                    .putString(K_CATEGORY, chooseCat)
+                    .putString(K_START, s)
+                    .putString(K_END, e)
+                    .apply();
 
-                    rebuildExpenseView(byCat);
-                })
-                .setNegativeButton("Cancel", (d, which) -> d.dismiss())
-                .show();
-    }
+            dialog.dismiss();
+            render();
+        });
 
-    private Date tryParseDbText(String text) {
-        try { return FRIENDLY.parse(text); }
-        catch (ParseException e) { return null; }
-    }
-
-    private String friendlyToIso(String text) {
-        try { return ISO.format(FRIENDLY.parse(text)); }
-        catch (Exception e) { return "1970-01-01"; }
+        dialog.show();
     }
 
     private int dp(int dps) {
@@ -381,23 +459,30 @@ public class CategoryWiseActivity extends AppCompatActivity {
         return Math.round(dps * density);
     }
 
-    private String latestDate(List<Expense> list) {
-        String latest = "";
-        for (Expense e : list) {
-            if (e.date != null && e.date.compareTo(latest) > 0) {
-                latest = e.date;
-            }
+    private java.util.Date parseDate(String raw) {
+        if (raw == null) return null;
+        for (String p : parsePatterns) {
+            try {
+                SimpleDateFormat f = new SimpleDateFormat(p, Locale.ENGLISH);
+                f.setLenient(false);
+                return f.parse(raw);
+            } catch (Exception ignore) {}
         }
-        return latest;
+        return null;
     }
 
-    private String formatFullDate(String raw) {
+    private java.util.Date parseIso(String raw) {
         try {
-            SimpleDateFormat in = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-            Date d = in.parse(raw);
-            return FRIENDLY.format(d);
+            iso.setLenient(false);
+            return iso.parse(raw);
         } catch (Exception e) {
-            return raw;
+            return null;
         }
+    }
+
+    private String safeDateDisplay(String raw) {
+        java.util.Date d = parseDate(raw);
+        if (d != null) return outDate.format(d);
+        return raw;
     }
 }

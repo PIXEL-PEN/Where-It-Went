@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -22,9 +23,15 @@ import java.util.Locale;
 
 public class ViewAllActivity extends AppCompatActivity {
 
+    private static final int PAGE_SIZE = 15;
+
     private RecyclerView recyclerView;
     private ExpenseAdapter adapter;
     private TextView tvTotalAmount;
+    private TextView btnPrev, btnNext, pageStatus;
+
+    private final List<Expense> all = new ArrayList<>();
+    private int pageIndex = 0; // 0-based page
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,21 +51,77 @@ public class ViewAllActivity extends AppCompatActivity {
         recyclerView.addItemDecoration(new DividerItemDecoration(this));
 
         tvTotalAmount = findViewById(R.id.tvTotalAmount);
+        btnPrev = findViewById(R.id.btn_prev_page);
+        btnNext = findViewById(R.id.btn_next_page);
+        pageStatus = findViewById(R.id.page_status);
 
-        reloadData();
+        List<Expense> loaded = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
+        all.clear();
+        all.addAll(loaded);
+
+        Collections.sort(all, (e1, e2) -> {
+            Date d1 = parseDate(e1.date);
+            Date d2 = parseDate(e2.date);
+            if (d1 != null && d2 != null) {
+                int cmp = d2.compareTo(d1);
+                if (cmp != 0) return cmp;
+            } else if (d1 == null ^ d2 == null) {
+                return (d1 == null) ? 1 : -1;
+            }
+            return Integer.compare(e2.id, e1.id);
+        });
+
+        adapter = new ExpenseAdapter(sliceForPage(pageIndex));
+        recyclerView.setAdapter(adapter);
+
+        updatePager();
+        updateTotalFooter(sliceForPage(pageIndex));
+
+        if (btnPrev != null) {
+            btnPrev.setOnClickListener(v -> {
+                if (pageIndex > 0) {
+                    pageIndex--;
+                    adapter.updateData(sliceForPage(pageIndex));
+                    updatePager();
+                    updateTotalFooter(sliceForPage(pageIndex));
+                    recyclerView.scrollToPosition(0);
+                }
+            });
+        }
+        if (btnNext != null) {
+            btnNext.setOnClickListener(v -> {
+                if ((pageIndex + 1) * PAGE_SIZE < all.size()) {
+                    pageIndex++;
+                    adapter.updateData(sliceForPage(pageIndex));
+                    updatePager();
+                    updateTotalFooter(sliceForPage(pageIndex));
+                    recyclerView.scrollToPosition(0);
+                }
+            });
+        }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        reloadData();
+    private List<Expense> sliceForPage(int page) {
+        int start = page * PAGE_SIZE;
+        int end = Math.min(start + PAGE_SIZE, all.size());
+        if (start >= end || start >= all.size()) return new ArrayList<>();
+        return new ArrayList<>(all.subList(start, end));
     }
 
-    private void reloadData() {
-        List<Expense> all = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
+    private void updatePager() {
+        int startNum = all.isEmpty() ? 0 : pageIndex * PAGE_SIZE + 1;
+        int endNum = Math.min((pageIndex + 1) * PAGE_SIZE, all.size());
 
+        if (pageStatus != null) {
+            pageStatus.setText(all.isEmpty() ? "0" : (startNum + "–" + endNum));
+        }
+        if (btnPrev != null) btnPrev.setVisibility(pageIndex > 0 ? android.view.View.VISIBLE : android.view.View.GONE);
+        if (btnNext != null) btnNext.setVisibility(((pageIndex + 1) * PAGE_SIZE) < all.size() ? android.view.View.VISIBLE : android.view.View.GONE);
+    }
+
+    private void updateTotalFooter(List<Expense> pageData) {
         double total = 0.0;
-        for (Expense e : all) total += e.amount;
+        for (Expense e : pageData) total += e.amount;
 
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         String code = prefs.getString("currency_code", "THB");
@@ -69,32 +132,11 @@ public class ViewAllActivity extends AppCompatActivity {
 
         SpannableString totalDisplay = new SpannableString(formattedTotal);
         int start = formattedTotal.length() - symbol.length();
-        totalDisplay.setSpan(
-                new RelativeSizeSpan(0.85f),
-                start,
-                formattedTotal.length(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-        );
-        tvTotalAmount.setText(totalDisplay);
+        totalDisplay.setSpan(new RelativeSizeSpan(0.85f), start, formattedTotal.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        List<Expense> display = DateRangeCutoff.filterByMonths(this, all);
-
-        Collections.sort(display, (e1, e2) -> {
-            Date d1 = parseDate(e1.date);
-            Date d2 = parseDate(e2.date);
-
-            if (d1 != null && d2 != null) {
-                int cmp = d2.compareTo(d1);
-                if (cmp != 0) return cmp;
-            } else if (d1 == null && d2 == null) {
-            } else {
-                return (d1 == null) ? 1 : -1;
-            }
-            return Integer.compare(e2.id, e1.id);
-        });
-
-        adapter = new ExpenseAdapter(display);
-        recyclerView.setAdapter(adapter);
+        if (tvTotalAmount != null) {
+            tvTotalAmount.setText(totalDisplay);
+        }
     }
 
     private Date parseDate(String raw) {
@@ -103,10 +145,7 @@ public class ViewAllActivity extends AppCompatActivity {
                 "dd/MM/yyyy",
                 "MM/dd/yyyy",
                 "dd MMM yyyy",
-                "dd MMM. yyyy",
-                "d MMM yyyy",
-                "d MMM. yyyy",
-                "d MMMM yyyy"
+                "dd MMM. yyyy"
         };
         for (String p : patterns) {
             try {
