@@ -38,8 +38,10 @@ public class DateWiseActivity extends AppCompatActivity {
 
     private LinearLayout expensesContainer;
     private final SimpleDateFormat outHeader = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
-    private final SimpleDateFormat ymKey      = new SimpleDateFormat("yyyy-MM", Locale.ENGLISH);
+    private final SimpleDateFormat ymKey     = new SimpleDateFormat("yyyy-MM", Locale.ENGLISH);
+    private final SimpleDateFormat dayKey    = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
 
+    // UI state: default = last 7 days
     private boolean showFullMonth = false;
 
     @Override
@@ -73,18 +75,22 @@ public class DateWiseActivity extends AppCompatActivity {
         String symbol = CurrencyUtils.symbolFor(code);
         DecimalFormat money = new DecimalFormat("#,##0.00");
 
+        // Load and apply global display cutoff
         List<Expense> allExpenses = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
         List<Expense> filtered = DateRangeCutoff.filterByMonths(this, allExpenses);
 
+        // Group by raw date string
         Map<String, List<Expense>> grouped = new LinkedHashMap<>();
         for (Expense e : filtered) {
             grouped.computeIfAbsent(e.date, k -> new ArrayList<>()).add(e);
         }
 
+        // Sort items within each date (oldest → newest by id)
         for (List<Expense> items : grouped.values()) {
             Collections.sort(items, Comparator.comparingInt(exp -> exp.id));
         }
 
+        // Sort dates (newest → oldest)
         List<String> dates = new ArrayList<>(grouped.keySet());
         Collections.sort(dates, (d1, d2) -> {
             Date date1 = parseDate(d1);
@@ -93,16 +99,24 @@ public class DateWiseActivity extends AppCompatActivity {
             return date2.compareTo(date1);
         });
 
+        // Subset for the current toggle
         List<String> subset = subsetDates(dates);
 
         expensesContainer.removeAllViews();
 
+        // Toggle row (Last 7 days | Full month)
         addToggleRow(expensesContainer, subset.size(), dates, grouped);
 
         int accentColor = ContextCompat.getColor(this, R.color.colorAccent2);
-        int headerBg = 0xFFBFCBD3; // medium gray to match other screens
+        int headerBg = 0xFFBFCBD3; // medium gray
 
-        for (String rawDate : subset) {
+        // Target day key (today)
+        String todayKey = dayKey.format(new Date());
+        boolean expandedAssigned = false;
+        LinearLayout firstSectionRef = null;
+
+        for (int idx = 0; idx < subset.size(); idx++) {
+            String rawDate = subset.get(idx);
             List<Expense> items = grouped.get(rawDate);
             if (items == null || items.isEmpty()) continue;
 
@@ -111,6 +125,7 @@ public class DateWiseActivity extends AppCompatActivity {
 
             String headerLabel = formatFullDate(rawDate);
 
+            // Section content container (collapsible)
             LinearLayout section = new LinearLayout(this);
             section.setOrientation(LinearLayout.VERTICAL);
             LinearLayout.LayoutParams sectionLp = new LinearLayout.LayoutParams(
@@ -128,9 +143,7 @@ public class DateWiseActivity extends AppCompatActivity {
                 TextView textCategory   = row.findViewById(R.id.text_category);
                 TextView textAmount     = row.findViewById(R.id.text_amount);
 
-                if (textDescription == null || textCategory == null || textAmount == null) {
-                    continue;
-                }
+                if (textDescription == null || textCategory == null || textAmount == null) continue;
 
                 textDescription.setText(e.description);
                 textCategory.setText(e.category);
@@ -179,6 +192,7 @@ public class DateWiseActivity extends AppCompatActivity {
                 }
             }
 
+            // Per-day TOTAL row (inside section)
             LinearLayout totalRow = new LinearLayout(this);
             totalRow.setOrientation(LinearLayout.HORIZONTAL);
             totalRow.setPadding(dp(12), dp(10), dp(12), dp(12));
@@ -209,6 +223,7 @@ public class DateWiseActivity extends AppCompatActivity {
             totalRow.addView(amountTv);
             section.addView(totalRow);
 
+            // Header row (32dp, medium gray) with left accent strip
             LinearLayout headerRow = new LinearLayout(this);
             LinearLayout.LayoutParams headerLp = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, dp(32));
@@ -265,13 +280,36 @@ public class DateWiseActivity extends AppCompatActivity {
             headerRow.addView(leftLabel);
             headerRow.addView(rightTotal);
 
+            // Default collapsed; we'll open today's (or most recent) below
             section.setVisibility(View.GONE);
             headerRow.setOnClickListener(v -> {
                 section.setVisibility(section.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
             });
 
+            // Decide default expansion
+            if (!expandedAssigned) {
+                // First section reference as fallback (most recent in subset)
+                if (firstSectionRef == null) {
+                    firstSectionRef = section;
+                }
+                // If this rawDate equals "today", expand it
+                Date parsed = parseDate(rawDate);
+                if (parsed != null) {
+                    String dk = dayKey.format(parsed);
+                    if (dk.equals(todayKey)) {
+                        section.setVisibility(View.VISIBLE);
+                        expandedAssigned = true;
+                    }
+                }
+            }
+
             expensesContainer.addView(headerRow);
             expensesContainer.addView(section);
+        }
+
+        // If nothing expanded yet (e.g., no today's entry in subset), expand the most recent section
+        if (!expandedAssigned && firstSectionRef != null) {
+            firstSectionRef.setVisibility(View.VISIBLE);
         }
     }
 
@@ -324,6 +362,7 @@ public class DateWiseActivity extends AppCompatActivity {
             return new ArrayList<>(sortedNewestToOldest.subList(0, end));
         }
 
+        // Full month: take all dates from the most-recent month present
         Date top = parseDate(sortedNewestToOldest.get(0));
         if (top == null) {
             return new ArrayList<>(sortedNewestToOldest);
