@@ -226,9 +226,12 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Expense added", Toast.LENGTH_SHORT).show();
             }
 
-            // Refresh main
-            startActivity(new Intent(this, MainActivity.class));
+            // Switch directly to Date View so user sees the new entry
+            Intent intent = new Intent(this, DateWiseActivity.class);
+            intent.putExtra("from_add_expense", true);
+            startActivity(intent);
             finish();
+
         });
 
         // Lower-right quick-nav buttons
