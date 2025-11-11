@@ -28,14 +28,20 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 public class DateWiseActivity extends AppCompatActivity {
 
     private LinearLayout expensesContainer;
     private final SimpleDateFormat outHeader = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
+    private final SimpleDateFormat ymKey      = new SimpleDateFormat("yyyy-MM", Locale.ENGLISH);
+
+    // UI state: default = last 7 days
+    private boolean showFullMonth = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +74,7 @@ public class DateWiseActivity extends AppCompatActivity {
         String symbol = CurrencyUtils.symbolFor(code);
         DecimalFormat money = new DecimalFormat("#,##0.00");
 
-        // Load all, then apply global Date Range (display only)
+        // Load all, then apply your existing display cutoff (kept for compatibility)
         List<Expense> allExpenses = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
         List<Expense> filtered = DateRangeCutoff.filterByMonths(this, allExpenses);
 
@@ -92,12 +98,19 @@ public class DateWiseActivity extends AppCompatActivity {
             return date2.compareTo(date1);
         });
 
+        // Compute the subset of dates to show, based on the toggle
+        List<String> subset = subsetDates(dates);
+
         expensesContainer.removeAllViews();
+
+        // Toggle row (Last 7 days | Full month)
+        addToggleRow(expensesContainer, subset.size(), dates, grouped);
 
         int accentColor = ContextCompat.getColor(this, R.color.colorAccent2);
 
-        for (String rawDate : dates) {
+        for (String rawDate : subset) {
             List<Expense> items = grouped.get(rawDate);
+            if (items == null || items.isEmpty()) continue;
 
             double total = 0.0;
             for (Expense e : items) total += e.amount;
@@ -205,26 +218,18 @@ public class DateWiseActivity extends AppCompatActivity {
             totalRow.addView(amountTv);
             section.addView(totalRow);
 
-            // =========================
-            // =========================
-// Header row (Option B1) — softened bg
-// =========================
+            // Header row (softened background, original look)
             LinearLayout headerRow = new LinearLayout(this);
             LinearLayout.LayoutParams headerLp = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, dp(40));
             headerLp.setMargins(dp(12), dp(8), dp(12), dp(4));
             headerRow.setLayoutParams(headerLp);
             headerRow.setOrientation(LinearLayout.HORIZONTAL);
-
-// softer card-like background vs #E0E0E0
-            int headerBg = 0xFFF4F6F8;
-            headerRow.setBackgroundColor(headerBg);
-
+            headerRow.setBackgroundColor(0xFFF4F6F8);
             headerRow.setPadding(dp(12), dp(6), dp(12), dp(6));
             headerRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
             headerRow.setClickable(true);
 
-// Try to add a ripple foreground (safe on API 23+)
             try {
                 TypedValue tv = new TypedValue();
                 getTheme().resolveAttribute(android.R.attr.selectableItemBackground, tv, true);
@@ -236,18 +241,14 @@ public class DateWiseActivity extends AppCompatActivity {
                 }
             } catch (Exception ignore) {}
 
-            // Left accent strip (slimmer + soft coral)
             View accentStrip = new View(this);
             LinearLayout.LayoutParams stripLp = new LinearLayout.LayoutParams(dp(3), LinearLayout.LayoutParams.MATCH_PARENT);
             stripLp.setMargins(0, 0, dp(10), 0);
             accentStrip.setLayoutParams(stripLp);
-
-            int stripColor = ContextCompat.getColor(this, R.color.tag_discretionary); // #FF7043
-            int stripSoft  = (stripColor & 0x00FFFFFF) | (0xB3 << 24); // ~70% opacity
+            int stripColor = ContextCompat.getColor(this, R.color.tag_discretionary);
+            int stripSoft  = (stripColor & 0x00FFFFFF) | (0xB3 << 24);
             accentStrip.setBackgroundColor(stripSoft);
 
-
-            // Left label: date (bold 16sp) + count (normal ~14sp)
             TextView leftLabel = new TextView(this);
             leftLabel.setLayoutParams(new LinearLayout.LayoutParams(
                     0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
@@ -258,21 +259,10 @@ public class DateWiseActivity extends AppCompatActivity {
             String datePart = headerLabel;
             String countPart = " (" + items.size() + ")";
             SpannableString labelSpan = new SpannableString(datePart + countPart);
-            labelSpan.setSpan(
-                    new android.text.style.StyleSpan(Typeface.BOLD),
-                    0,
-                    datePart.length(),
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-            );
-            labelSpan.setSpan(
-                    new RelativeSizeSpan(0.875f), // 14sp relative to 16sp
-                    datePart.length(),
-                    datePart.length() + countPart.length(),
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-            );
+            labelSpan.setSpan(new android.text.style.StyleSpan(Typeface.BOLD), 0, datePart.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            labelSpan.setSpan(new RelativeSizeSpan(0.875f), datePart.length(), datePart.length() + countPart.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             leftLabel.setText(labelSpan);
 
-            // Right total (bold 14sp)
             TextView rightTotal = new TextView(this);
             rightTotal.setLayoutParams(new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -281,14 +271,12 @@ public class DateWiseActivity extends AppCompatActivity {
             rightTotal.setTypeface(Typeface.DEFAULT_BOLD);
             rightTotal.setTextColor(accentColor);
 
-            // Assemble header
             headerRow.addView(accentStrip);
             headerRow.addView(leftLabel);
             headerRow.addView(rightTotal);
 
-            // Default: all collapsed
+            // Default collapsed
             section.setVisibility(View.GONE);
-
             headerRow.setOnClickListener(v -> {
                 section.setVisibility(section.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
             });
@@ -296,6 +284,75 @@ public class DateWiseActivity extends AppCompatActivity {
             expensesContainer.addView(headerRow);
             expensesContainer.addView(section);
         }
+    }
+
+    private void addToggleRow(LinearLayout parent, int subsetCount, List<String> allDates, Map<String, List<Expense>> grouped) {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(dp(12), dp(6), dp(12), dp(6));
+        row.setLayoutParams(lp);
+        row.setPadding(dp(8), dp(6), dp(8), dp(6));
+
+        TextView left = new TextView(this);
+        left.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        left.setText(showFullMonth ? "Full month" : "Last 7 days");
+        left.setTextSize(14);
+        left.setTypeface(Typeface.DEFAULT_BOLD);
+
+        // Show a tiny hint of what month we’re in when on "Full month"
+        if (showFullMonth && !allDates.isEmpty()) {
+            Date top = parseDate(allDates.get(0));
+            if (top != null) {
+                SimpleDateFormat monFmt = new SimpleDateFormat("MMMM yyyy", Locale.ENGLISH);
+                left.setText("Full month — " + monFmt.format(top));
+            }
+        }
+
+        TextView right = new TextView(this);
+        right.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        right.setText(showFullMonth ? "Show 7 days" : "Show full month");
+        right.setTextSize(14);
+        right.setTextColor(ContextCompat.getColor(this, R.color.colorAccent2));
+        right.setPadding(dp(8), dp(4), dp(8), dp(4));
+        right.setOnClickListener(v -> {
+            showFullMonth = !showFullMonth;
+            render();
+        });
+
+        row.addView(left);
+        row.addView(right);
+
+        parent.addView(row);
+    }
+
+    private List<String> subsetDates(List<String> sortedNewestToOldest) {
+        if (sortedNewestToOldest.isEmpty()) return sortedNewestToOldest;
+
+        if (!showFullMonth) {
+            int end = Math.min(7, sortedNewestToOldest.size());
+            return new ArrayList<>(sortedNewestToOldest.subList(0, end));
+        }
+
+        // Full month: take all dates from the most-recent month present
+        Date top = parseDate(sortedNewestToOldest.get(0));
+        if (top == null) {
+            // Fallback: if parsing fails, just return all
+            return new ArrayList<>(sortedNewestToOldest);
+        }
+        String topYm = ymKey.format(top);
+
+        List<String> out = new ArrayList<>();
+        for (String raw : sortedNewestToOldest) {
+            Date d = parseDate(raw);
+            if (d != null && ymKey.format(d).equals(topYm)) {
+                out.add(raw);
+            }
+        }
+        // Preserve original order (already newest → oldest)
+        return out;
     }
 
     private int dp(int dps) {
