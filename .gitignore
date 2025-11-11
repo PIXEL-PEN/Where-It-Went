@@ -17,3 +17,5 @@ ExpenseTracker-release-key.jks
 # Ignore keystore files
 *.jks
 *.keystore
+
+/backups/
