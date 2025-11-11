@@ -34,12 +34,10 @@ public class MonthWiseActivity extends AppCompatActivity {
 
     private LinearLayout monthContainer;
 
-    // Header and day display formats
-    private final SimpleDateFormat headerOut = new SimpleDateFormat("MMMM - yyyy", Locale.ENGLISH); // e.g., "November - 2025"
-    private final SimpleDateFormat dayOut    = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH); // e.g., "12 Nov. 2025"
-    private final SimpleDateFormat rawKeyFmt = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);   // DayDetail expects this
+    private final SimpleDateFormat headerOut = new SimpleDateFormat("MMMM - yyyy", Locale.ENGLISH);
+    private final SimpleDateFormat dayOut    = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
+    private final SimpleDateFormat rawKeyFmt = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
 
-    // Parsers for app's mixed input formats
     private final String[] parsePatterns = new String[] {
             "yyyy-MM-dd",
             "dd/MM/yyyy",
@@ -82,11 +80,11 @@ public class MonthWiseActivity extends AppCompatActivity {
         String symbol = CurrencyUtils.symbolFor(code);
         DecimalFormat money = new DecimalFormat("#,##0.00");
 
-        // Load then apply global Date Range (display only)
+        // Load + apply global display range
         List<Expense> all = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
         List<Expense> filtered = DateRangeCutoff.filterByMonths(this, all);
 
-        // Group by month (key = millis at first day of month)
+        // Group actual data by month key
         Map<Long, List<Expense>> byMonth = new LinkedHashMap<>();
         for (Expense e : filtered) {
             Date d = parseDate(e.date);
@@ -95,50 +93,49 @@ public class MonthWiseActivity extends AppCompatActivity {
             byMonth.computeIfAbsent(key, k -> new ArrayList<>()).add(e);
         }
 
-        // Stable item order inside month (oldest → newest by id)
+        // Stable order inside month
         for (List<Expense> items : byMonth.values()) {
             Collections.sort(items, Comparator.comparingInt(exp -> exp.id));
         }
 
-        // Newest month first
-        List<Long> keys = new ArrayList<>(byMonth.keySet());
-        Collections.sort(keys, (k1, k2) -> Long.compare(k2, k1));
+        // Build 12-month window: current month + previous 11, newest first
+        List<Long> window = buildLastNMonthsKeys(12, true);
 
         monthContainer.removeAllViews();
 
         int accentText = ContextCompat.getColor(this, R.color.colorAccent2);
-        int headerBg   = 0xFFC9D6DF; // darker header background per your request
+        int headerBg   = 0xFFBFCBD3; // medium gray
 
-        for (Long key : keys) {
+        for (Long key : window) {
             List<Expense> monthItems = byMonth.get(key);
-            if (monthItems == null || monthItems.isEmpty()) continue;
-
             Date monthDate = new Date(key);
             String monthLabel = headerOut.format(monthDate);
 
             double monthTotal = 0.0;
-            for (Expense e : monthItems) monthTotal += e.amount;
-
-            // ---- Build unique day list with totals and raw keys ----
-            // Use LinkedHash* to preserve insertion order before sorting explicitly.
-            Map<String, Double> dayTotalsByRaw = new LinkedHashMap<>(); // rawKey "yyyy-MM-dd" -> total
-            Map<String, String> displayLabelForRaw = new LinkedHashMap<>(); // rawKey -> "dd MMM. yyyy"
-            Set<String> uniqueRawKeys = new LinkedHashSet<>();
-
-            for (Expense e : monthItems) {
-                Date d = parseDate(e.date);
-                if (d == null) continue;
-                String rawKey = rawKeyFmt.format(d); // EXACT key DayDetail expects
-                String display = dayOut.format(d);
-
-                uniqueRawKeys.add(rawKey);
-                displayLabelForRaw.put(rawKey, display);
-
-                double prev = dayTotalsByRaw.containsKey(rawKey) ? dayTotalsByRaw.get(rawKey) : 0.0;
-                dayTotalsByRaw.put(rawKey, prev + e.amount);
+            if (monthItems != null) {
+                for (Expense e : monthItems) monthTotal += e.amount;
             }
 
-            // Sort days newest → oldest by parsing rawKey
+            // Build per-day rows if present
+            Map<String, Double> dayTotalsByRaw = new LinkedHashMap<>();
+            Map<String, String> displayLabelForRaw = new LinkedHashMap<>();
+            Set<String> uniqueRawKeys = new LinkedHashSet<>();
+
+            if (monthItems != null) {
+                for (Expense e : monthItems) {
+                    Date d = parseDate(e.date);
+                    if (d == null) continue;
+                    String rawKey = rawKeyFmt.format(d);
+                    String display = dayOut.format(d);
+
+                    uniqueRawKeys.add(rawKey);
+                    displayLabelForRaw.put(rawKey, display);
+
+                    double prev = dayTotalsByRaw.containsKey(rawKey) ? dayTotalsByRaw.get(rawKey) : 0.0;
+                    dayTotalsByRaw.put(rawKey, prev + e.amount);
+                }
+            }
+
             List<String> rawKeys = new ArrayList<>(uniqueRawKeys);
             Collections.sort(rawKeys, (a, b) -> {
                 try {
@@ -151,7 +148,7 @@ public class MonthWiseActivity extends AppCompatActivity {
                 }
             });
 
-            // ---- Collapsible section with day rows ----
+            // Collapsible section
             LinearLayout section = new LinearLayout(this);
             section.setOrientation(LinearLayout.VERTICAL);
             LinearLayout.LayoutParams sectionLp = new LinearLayout.LayoutParams(
@@ -161,69 +158,76 @@ public class MonthWiseActivity extends AppCompatActivity {
             section.setBackgroundColor(0xFFFFFFFF);
             section.setElevation(1f);
 
-            for (int i = 0; i < rawKeys.size(); i++) {
-                String rawKey = rawKeys.get(i);                 // yyyy-MM-dd
-                String dayLabel = displayLabelForRaw.get(rawKey); // dd MMM. yyyy
-                double dayTotal = dayTotalsByRaw.get(rawKey) != null ? dayTotalsByRaw.get(rawKey) : 0.0;
+            if (rawKeys.isEmpty()) {
+                TextView none = new TextView(this);
+                none.setPadding(dp(12), dp(10), dp(12), dp(12));
+                none.setText("No entries");
+                none.setTextSize(14);
+                none.setTextColor(0xFF666666);
+                section.addView(none);
+            } else {
+                for (int i = 0; i < rawKeys.size(); i++) {
+                    String rawKey = rawKeys.get(i);
+                    String dayLabel = displayLabelForRaw.get(rawKey);
+                    double dayTotal = dayTotalsByRaw.get(rawKey) != null ? dayTotalsByRaw.get(rawKey) : 0.0;
 
-                // Row: day label left, amount right
-                LinearLayout row = new LinearLayout(this);
-                row.setOrientation(LinearLayout.HORIZONTAL);
-                row.setPadding(dp(12), dp(12), dp(12), dp(12));
-                row.setClickable(true);
+                    LinearLayout row = new LinearLayout(this);
+                    row.setOrientation(LinearLayout.HORIZONTAL);
+                    row.setPadding(dp(12), dp(12), dp(12), dp(12));
+                    row.setClickable(true);
 
-                TextView tvLeft = new TextView(this);
-                tvLeft.setLayoutParams(new LinearLayout.LayoutParams(
-                        0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-                tvLeft.setText(dayLabel);
-                tvLeft.setTextSize(15);
-                tvLeft.setTypeface(Typeface.DEFAULT_BOLD);
-                tvLeft.setTextColor(0xFF222222);
+                    TextView tvLeft = new TextView(this);
+                    tvLeft.setLayoutParams(new LinearLayout.LayoutParams(
+                            0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+                    tvLeft.setText(dayLabel);
+                    tvLeft.setTextSize(15);
+                    tvLeft.setTypeface(Typeface.DEFAULT_BOLD);
+                    tvLeft.setTextColor(0xFF222222);
 
-                TextView tvRight = new TextView(this);
-                tvRight.setLayoutParams(new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                String amt = money.format(dayTotal) + " " + symbol;
-                SpannableString amtSpan = new SpannableString(amt);
-                int s = amt.length() - symbol.length();
-                amtSpan.setSpan(new RelativeSizeSpan(0.90f), s, amt.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                tvRight.setText(amtSpan);
-                tvRight.setTextSize(15);
-                tvRight.setTypeface(Typeface.DEFAULT_BOLD);
-                tvRight.setTextColor(0xFF222222);
+                    TextView tvRight = new TextView(this);
+                    tvRight.setLayoutParams(new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                    String amt = money.format(dayTotal) + " " + symbol;
+                    SpannableString amtSpan = new SpannableString(amt);
+                    int s = amt.length() - symbol.length();
+                    amtSpan.setSpan(new RelativeSizeSpan(0.90f), s, amt.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    tvRight.setText(amtSpan);
+                    tvRight.setTextSize(15);
+                    tvRight.setTypeface(Typeface.DEFAULT_BOLD);
+                    tvRight.setTextColor(0xFF222222);
 
-                row.addView(tvLeft);
-                row.addView(tvRight);
+                    row.addView(tvLeft);
+                    row.addView(tvRight);
 
-                // Click: launch DayDetailActivity with EXACT raw key "yyyy-MM-dd"
-                row.setOnClickListener(v -> {
-                    Intent intent = new Intent(MonthWiseActivity.this, DayDetailActivity.class);
-                    intent.putExtra("selected_date", rawKey);
-                    startActivity(intent);
-                });
+                    row.setOnClickListener(v -> {
+                        Intent intent = new Intent(MonthWiseActivity.this, DayDetailActivity.class);
+                        intent.putExtra("selected_date", rawKey);
+                        startActivity(intent);
+                    });
 
-                section.addView(row);
+                    section.addView(row);
 
-                if (i < rawKeys.size() - 1) {
-                    View divider = new View(this);
-                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT, dp(1));
-                    lp.setMargins(dp(12), 0, dp(12), 0);
-                    divider.setLayoutParams(lp);
-                    divider.setBackgroundColor(0x1A000000);
-                    section.addView(divider);
+                    if (i < rawKeys.size() - 1) {
+                        View divider = new View(this);
+                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT, dp(1));
+                        lp.setMargins(dp(12), 0, dp(12), 0);
+                        divider.setLayoutParams(lp);
+                        divider.setBackgroundColor(0x1A000000);
+                        section.addView(divider);
+                    }
                 }
             }
 
-            // ---- Month header (bold month left, month total right, darker bg) ----
+            // 32dp medium-gray header with total at right
             LinearLayout headerRow = new LinearLayout(this);
             LinearLayout.LayoutParams headerLp = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, dp(40));
+                    LinearLayout.LayoutParams.MATCH_PARENT, dp(32));
             headerLp.setMargins(dp(12), dp(8), dp(12), dp(4));
             headerRow.setLayoutParams(headerLp);
             headerRow.setOrientation(LinearLayout.HORIZONTAL);
             headerRow.setBackgroundColor(headerBg);
-            headerRow.setPadding(dp(12), dp(6), dp(12), dp(6));
+            headerRow.setPadding(dp(12), dp(4), dp(12), dp(4));
             headerRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
             headerRow.setClickable(true);
 
@@ -255,6 +259,31 @@ public class MonthWiseActivity extends AppCompatActivity {
             monthContainer.addView(headerRow);
             monthContainer.addView(section);
         }
+    }
+
+    // Build N months ending at current month (includeCurrent = true) or ending at previous (false).
+    // Returns newest-first.
+    private List<Long> buildLastNMonthsKeys(int n, boolean includeCurrent) {
+        List<Long> keys = new ArrayList<>(n);
+        Calendar c = Calendar.getInstance(Locale.ENGLISH);
+        // Snap to first of month, midnight
+        c.set(Calendar.DAY_OF_MONTH, 1);
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+
+        if (!includeCurrent) {
+            c.add(Calendar.MONTH, -1); // start from previous month
+        }
+
+        for (int i = 0; i < n; i++) {
+            keys.add(c.getTimeInMillis());
+            c.add(Calendar.MONTH, -1);
+        }
+
+        // ensure newest first (already in newest-first order as we walked backwards from "now")
+        return keys;
     }
 
     private int dp(int dps) {
