@@ -46,6 +46,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Discretionary" />
+
+
+        <RadioButton
+            android:id="@+id/radio_off_budget"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Off-Budget" />
+
+
+
     </RadioGroup>
 
 </LinearLayout>

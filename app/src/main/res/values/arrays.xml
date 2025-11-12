@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string-array name="tag_types">
+    <!-- New canonical list for category tags -->
+    <string-array name="tag_options">
+        <item>Fixed</item>
         <item>Basic</item>
         <item>Discretionary</item>
-        <item>Other</item>
+        <item>Off-Budget</item>
     </string-array>
 
+    <!-- Back-compat: mirror of tag_options so any old code using tag_types still works -->
+    <string-array name="tag_types">
+        <item>Fixed</item>
+        <item>Basic</item>
+        <item>Discretionary</item>
+        <item>Off-Budget</item>
+    </string-array>
+
+    <!-- Default categories -->
     <string-array name="category_names">
         <item>Groceries</item>
         <item>Rent</item>
@@ -16,6 +27,7 @@
         <item>Other</item>
     </string-array>
 
+    <!-- Legacy date range labels (safe to keep; remove later if fully unused) -->
     <string-array name="date_range_labels">
         <item>@string/date_range_1_month</item>
         <item>@string/date_range_2_months</item>
@@ -29,4 +41,3 @@
     </integer-array>
 
 </resources>
-

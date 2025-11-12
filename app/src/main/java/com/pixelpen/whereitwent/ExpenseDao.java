@@ -29,6 +29,9 @@ public interface ExpenseDao {
     @Query("DELETE FROM expenses")
     void clearAll();
 
+    
+
+
     // ✅ Expenses for a specific date
     @Query("SELECT * FROM expenses WHERE date = :date ORDER BY id ASC")
     List<Expense> getByDate(String date);
