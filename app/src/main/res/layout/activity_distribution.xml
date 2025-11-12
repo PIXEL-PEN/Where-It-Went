@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:background="#ECEFF1">
 
-    <!-- Top bar (matches View All / Month View scheme) -->
     <RelativeLayout
         android:id="@+id/top_bar_container"
         android:layout_width="match_parent"
@@ -54,7 +53,6 @@
         </LinearLayout>
     </RelativeLayout>
 
-    <!-- Main content -->
     <LinearLayout
         android:id="@+id/content"
         android:orientation="vertical"
@@ -63,20 +61,144 @@
         android:layout_below="@id/top_bar_container"
         android:gravity="center"
         android:padding="16dp"
-        android:layout_marginTop="-120dp">
+        android:layout_marginTop="-160dp">
 
-
-    <com.pixelpen.whereitwent.SimplePieView
+        <com.pixelpen.whereitwent.SimplePieView
             android:id="@+id/pie"
             android:layout_width="260dp"
             android:layout_height="260dp" />
 
-        <TextView
-            android:id="@+id/legend"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/legend_container"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:textSize="14sp"
-            android:textColor="#222222" />
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <View
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:background="#0D5D8A" />
+
+                <TextView
+                    android:id="@+id/legend_fixed_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Fixed"
+                    android:textSize="14sp"
+                    android:textColor="#222222" />
+
+                <TextView
+                    android:id="@+id/legend_fixed_total"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    android:textColor="#222222"
+                    android:layout_marginTop="2dp" />
+
+                <TextView
+                    android:id="@+id/legend_fixed_delta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textSize="12sp"
+                    android:textColor="#555555"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <View
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:background="#BFCBD3" />
+
+                <TextView
+                    android:id="@+id/legend_basic_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Basic"
+                    android:textSize="14sp"
+                    android:textColor="#222222" />
+
+                <TextView
+                    android:id="@+id/legend_basic_total"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    android:textColor="#222222"
+                    android:layout_marginTop="2dp" />
+
+                <TextView
+                    android:id="@+id/legend_basic_delta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textSize="12sp"
+                    android:textColor="#555555"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <View
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:background="#FFDDC1" />
+
+                <TextView
+                    android:id="@+id/legend_disc_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Discretionary"
+                    android:textSize="14sp"
+                    android:textColor="#222222" />
+
+                <TextView
+                    android:id="@+id/legend_disc_total"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    android:textColor="#222222"
+                    android:layout_marginTop="2dp" />
+
+                <TextView
+                    android:id="@+id/legend_disc_delta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="—"
+                    android:textSize="12sp"
+                    android:textColor="#555555"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
 </RelativeLayout>
