@@ -33,8 +33,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     private String csvContent = null;
 
-    private RadioGroup radioDateRange;
-    private RadioButton radio1m, radio2m, radio3m;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,29 +104,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override public void onNothingSelected(AdapterView<?> parent) {}
         });
 
-        radioDateRange = findViewById(R.id.radio_date_range);
-        radio1m = findViewById(R.id.radio_1m);
-        radio2m = findViewById(R.id.radio_2m);
-        radio3m = findViewById(R.id.radio_3m);
 
-        if (radioDateRange != null) {
-            int months = DateRangePrefs.getMonths(this);
-            if (months == 1) {
-                radio1m.setChecked(true);
-            } else if (months == 2) {
-                radio2m.setChecked(true);
-            } else {
-                radio3m.setChecked(true);
-            }
-
-            radioDateRange.setOnCheckedChangeListener((group, checkedId) -> {
-                int selected = 3;
-                if (checkedId == R.id.radio_1m) selected = 1;
-                else if (checkedId == R.id.radio_2m) selected = 2;
-                DateRangePrefs.setMonths(this, selected);
-                Toast.makeText(this, "Date range: " + selected + (selected == 1 ? " month" : " months"), Toast.LENGTH_SHORT).show();
-            });
-        }
 
         findViewById(R.id.btn_export).setOnClickListener(v -> {
             new AlertDialog.Builder(this)

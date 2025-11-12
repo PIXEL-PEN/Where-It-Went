@@ -1,15 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_tutorial"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
-    android:background="#ECEFF1">
+    android:background="@color/colorPrimary">
 
-    <TextView
+    <!-- Room around the card so the accent shows -->
+    <ScrollView
+        android:id="@+id/scroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingLeft="32dp"
+        android:paddingRight="32dp"
+        android:paddingTop="56dp"
+        android:paddingBottom="120dp"
+        android:fillViewport="true">
+
+        <!-- Card wrapper so we can center and keep margins -->
+        <LinearLayout
+            android:id="@+id/card_wrapper"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal">
+
+            <!-- The white card -->
+            <LinearLayout
+                android:id="@+id/card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="#FFFFFF"
+                android:padding="16dp"
+                android:elevation="2dp">
+
+                <TextView
+                    android:id="@+id/tv_readme"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#222222"
+                    android:textSize="16sp"
+                    android:lineSpacingExtra="2dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom action row, lifted above system nav -->
+    <LinearLayout
+        android:id="@+id/action_row"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Tutorial screen placeholder"
-        android:textSize="20sp"
-        android:textColor="#000000"/>
-</LinearLayout>
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="88dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_close_readme"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="Close"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="@android:color/white"
+            android:background="@drawable/ok_button_solid"
+            android:layout_marginEnd="12dp"
+            android:elevation="4dp" />
+
+        <Button
+            android:id="@+id/btn_edit_readme"
+            android:layout_width="96dp"
+            android:layout_height="40dp"
+            android:text="Edit"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="@android:color/white"
+            android:background="@drawable/ok_button_solid"
+            android:elevation="4dp" />
+    </LinearLayout>
+</RelativeLayout>

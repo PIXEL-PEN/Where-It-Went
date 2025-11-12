@@ -30,7 +30,8 @@
         <activity android:name=".SettingsActivity" android:exported="false" />
         <activity android:name=".AboutActivity" android:exported="false" />
         <activity android:name=".DistributionActivity" android:exported="false" />
-        <activity android:name=".TutorialActivity" android:exported="false" />
+        <activity android:name=".TutorialActivity" android:exported="false"/>
+
         <activity android:name=".MainLegacyActivity" android:exported="false" />
 
         <!-- FileProvider -->

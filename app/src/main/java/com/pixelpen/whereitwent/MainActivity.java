@@ -112,10 +112,16 @@ public class MainActivity extends AppCompatActivity {
 // Tutorial (optional; keep existing behavior)
         if (linkTutorial != null) {
             linkTutorial.setOnClickListener(v -> {
-                if (drawerLayout != null) drawerLayout.closeDrawers();
-                // TODO: launch tutorial/guide activity if you have one
+                if (drawerLayout != null) {
+                    drawerLayout.closeDrawers();
+                    drawerLayout.postDelayed(() ->
+                            startActivity(new Intent(this, TutorialActivity.class)), 150);
+                } else {
+                    startActivity(new Intent(this, TutorialActivity.class));
+                }
             });
         }
+
 
 
 

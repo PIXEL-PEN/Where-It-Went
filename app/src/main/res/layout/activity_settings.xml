@@ -84,57 +84,6 @@
             android:paddingStart="16dp"
             android:paddingTop="6dp"
             android:paddingBottom="6dp"
-            android:text="@string/settings_date_range_title"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:background="#B0BEC5"
-            android:textColor="@color/colorAccent" />
-
-        <LinearLayout
-            android:id="@+id/date_range_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="6dp"
-            android:background="#FFFFFF"
-            android:elevation="2dp"
-            android:padding="16dp"
-            android:orientation="vertical">
-
-
-
-            <RadioGroup
-                android:id="@+id/radio_date_range"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="10dp">
-
-                <RadioButton
-                    android:id="@+id/radio_1m"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/date_range_1_month" />
-
-                <RadioButton
-                    android:id="@+id/radio_2m"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/date_range_2_months" />
-
-                <RadioButton
-                    android:id="@+id/radio_3m"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/date_range_3_months" />
-            </RadioGroup>
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="16dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp"
             android:text="Database Management"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -187,7 +136,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="24dp"
-            android:text="@string/about_text"
+            android:text="Where It Went — a simple, opinionated expense tracker.\n\n• Tag categories as Fixed, Basic, or Discretionary.\n• View by Date, Month, or Category.\n• Distribution pie aggregates the three tags.\n\nThis is a living description. Content will evolve as features stabilize."
             android:textSize="16sp"
             android:gravity="top|start"
             android:linksClickable="true"
