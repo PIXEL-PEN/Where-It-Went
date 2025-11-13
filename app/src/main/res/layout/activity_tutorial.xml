@@ -67,15 +67,6 @@
             android:layout_marginEnd="12dp"
             android:elevation="4dp" />
 
-        <Button
-            android:id="@+id/btn_edit_readme"
-            android:layout_width="96dp"
-            android:layout_height="40dp"
-            android:text="Edit"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:textColor="@android:color/white"
-            android:background="@drawable/ok_button_solid"
-            android:elevation="4dp" />
+
     </LinearLayout>
 </RelativeLayout>
