@@ -30,6 +30,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import android.graphics.Color;
+import android.view.Gravity;
+
 public class MonthWiseActivity extends AppCompatActivity {
 
     private LinearLayout monthContainer;
@@ -219,7 +222,7 @@ public class MonthWiseActivity extends AppCompatActivity {
                 }
             }
 
-            // 32dp medium-gray header with total at right
+            // 32dp medium-gray header with total at right (ORIGINAL)
             LinearLayout headerRow = new LinearLayout(this);
             LinearLayout.LayoutParams headerLp = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, dp(32));
@@ -250,7 +253,7 @@ public class MonthWiseActivity extends AppCompatActivity {
             headerRow.addView(leftMonth);
             headerRow.addView(rightTotal);
 
-            // Default collapsed
+// Default collapsed
             section.setVisibility(View.GONE);
             headerRow.setOnClickListener(v -> {
                 section.setVisibility(section.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
@@ -258,6 +261,7 @@ public class MonthWiseActivity extends AppCompatActivity {
 
             monthContainer.addView(headerRow);
             monthContainer.addView(section);
+
         }
     }
 
