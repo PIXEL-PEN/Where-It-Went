@@ -19,7 +19,7 @@ public class CategoryManager {
 
     // Canonical tag constants
     public static final String TAG_FIXED = "Fixed";
-    public static final String TAG_BASIC = "Basic";
+    public static final String TAG_BASIC = "Necessity";
     public static final String TAG_DISC  = "Discretionary";
     public static final String TAG_OFF   = "Off-Budget";
 
@@ -51,7 +51,7 @@ public class CategoryManager {
         String t = tag.trim();
         if (t.equalsIgnoreCase(TAG_FIXED)) return TAG_FIXED;
         if (t.equalsIgnoreCase(TAG_BASIC)) return TAG_BASIC;
-        if (t.equalsIgnoreCase("Necessities")) return TAG_BASIC; // legacy -> Basic
+        if (t.equalsIgnoreCase("Necessities")) return TAG_BASIC; // legacy -> Necessity
         if (t.equalsIgnoreCase(TAG_DISC)) return TAG_DISC;
         if (t.equalsIgnoreCase(TAG_OFF))  return TAG_OFF;
         // Fallback: keep the system stable

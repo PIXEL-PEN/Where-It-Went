@@ -392,7 +392,7 @@ public class MainActivity extends AppCompatActivity {
 
         String currentTag = CategoryManager.getTagForCategory(this, categoryName);
         if (currentTag.equals("Fixed")) radioGroup.check(R.id.radio_fixed);
-        else if (currentTag.equals("Basic")) radioGroup.check(R.id.radio_basic);
+        else if (currentTag.equals("Necessity")) radioGroup.check(R.id.radio_basic);
         else radioGroup.check(R.id.radio_discretionary);
 
         new AlertDialog.Builder(this)

@@ -136,7 +136,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="24dp"
-            android:text="Where It Went — a simple, opinionated expense tracker.\n\n• Tag categories as Fixed, Basic, or Discretionary.\n• View by Date, Month, or Category.\n• Distribution pie aggregates the three tags.\n\nThis is a living description. Content will evolve as features stabilize."
+            android:text="Where It Went — a simple, opinionated expense tracker.\n\n• Tag categories as Fixed, Necessity, or Discretionary.\n• View by Date, Month, or Category.\n• Distribution pie aggregates the three tags.\n\nThis is a living description. Content will evolve as features stabilize."
             android:textSize="16sp"
             android:gravity="top|start"
             android:linksClickable="true"

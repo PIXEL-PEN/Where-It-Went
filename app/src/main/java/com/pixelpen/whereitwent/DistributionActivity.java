@@ -25,7 +25,7 @@ public class DistributionActivity extends AppCompatActivity {
 
     // Buckets we visualize
     private static final String TAG_FIXED          = "Fixed";
-    private static final String TAG_BASIC          = "Basic";
+    private static final String TAG_BASIC          = "Necessity";
     private static final String TAG_NECESSITIES    = "Necessities";   // legacy alias you used earlier
     private static final String TAG_DISCRETIONARY  = "Discretionary";
     private static final String TAG_OTHER          = "Other";          // safety catch-all
@@ -93,7 +93,7 @@ public class DistributionActivity extends AppCompatActivity {
         double discLatest  = sumBucketForMonth(byTagMonth, latestMonth, Bucket.DISCRETIONARY);
 
         // Push to pie (Off-Budget is excluded by construction)
-        // If SimplePieView draws slices in order: [Fixed, Discretionary, Basic]
+        // If SimplePieView draws slices in order: [Fixed, Discretionary, Necessity]
         pie.setValues((float) fixedLatest, (float) discLatest, (float) basicLatest);
 
 
