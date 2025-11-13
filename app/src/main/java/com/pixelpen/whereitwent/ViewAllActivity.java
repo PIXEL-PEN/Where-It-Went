@@ -59,6 +59,7 @@ public class ViewAllActivity extends AppCompatActivity {
         all.clear();
         all.addAll(loaded);
 
+        // Sort newest date first, then by id desc as tiebreaker
         Collections.sort(all, (e1, e2) -> {
             Date d1 = parseDate(e1.date);
             Date d2 = parseDate(e2.date);
@@ -75,7 +76,7 @@ public class ViewAllActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         updatePager();
-        updateTotalFooter(sliceForPage(pageIndex));
+        updateTotalFooter(); // grand total once, independent of paging
 
         if (btnPrev != null) {
             btnPrev.setOnClickListener(v -> {
@@ -83,7 +84,7 @@ public class ViewAllActivity extends AppCompatActivity {
                     pageIndex--;
                     adapter.updateData(sliceForPage(pageIndex));
                     updatePager();
-                    updateTotalFooter(sliceForPage(pageIndex));
+                    // NOTE: do NOT touch total here – it stays grand total
                     recyclerView.scrollToPosition(0);
                 }
             });
@@ -94,7 +95,7 @@ public class ViewAllActivity extends AppCompatActivity {
                     pageIndex++;
                     adapter.updateData(sliceForPage(pageIndex));
                     updatePager();
-                    updateTotalFooter(sliceForPage(pageIndex));
+                    // NOTE: do NOT touch total here – it stays grand total
                     recyclerView.scrollToPosition(0);
                 }
             });
@@ -115,13 +116,20 @@ public class ViewAllActivity extends AppCompatActivity {
         if (pageStatus != null) {
             pageStatus.setText(all.isEmpty() ? "0" : (startNum + "–" + endNum));
         }
-        if (btnPrev != null) btnPrev.setVisibility(pageIndex > 0 ? android.view.View.VISIBLE : android.view.View.GONE);
-        if (btnNext != null) btnNext.setVisibility(((pageIndex + 1) * PAGE_SIZE) < all.size() ? android.view.View.VISIBLE : android.view.View.GONE);
+        if (btnPrev != null) {
+            btnPrev.setVisibility(pageIndex > 0 ? android.view.View.VISIBLE : android.view.View.GONE);
+        }
+        if (btnNext != null) {
+            btnNext.setVisibility(((pageIndex + 1) * PAGE_SIZE) < all.size()
+                    ? android.view.View.VISIBLE
+                    : android.view.View.GONE);
+        }
     }
 
-    private void updateTotalFooter(List<Expense> pageData) {
+    // Now uses ALL expenses, not just the current page
+    private void updateTotalFooter() {
         double total = 0.0;
-        for (Expense e : pageData) total += e.amount;
+        for (Expense e : all) total += e.amount;
 
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         String code = prefs.getString("currency_code", "THB");
@@ -132,7 +140,10 @@ public class ViewAllActivity extends AppCompatActivity {
 
         SpannableString totalDisplay = new SpannableString(formattedTotal);
         int start = formattedTotal.length() - symbol.length();
-        totalDisplay.setSpan(new RelativeSizeSpan(0.85f), start, formattedTotal.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        totalDisplay.setSpan(new RelativeSizeSpan(0.85f),
+                start,
+                formattedTotal.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         if (tvTotalAmount != null) {
             tvTotalAmount.setText(totalDisplay);
