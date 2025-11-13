@@ -22,12 +22,11 @@ android {
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                     'proguard-rules.pro'
-            // signingConfig signingConfigs.release
         }
         debug { }
     }
 
-    // ✅ Flavors (single copy!)
+    // Flavors (single dimension)
     flavorDimensions "mode"
 
     productFlavors {
@@ -39,12 +38,31 @@ android {
         }
         stable {
             dimension "mode"
+            applicationIdSuffix ".stable"
+            versionNameSuffix "-stable"
             resValue "string", "app_name", "WhereItWent"
         }
     }
 
+    // ✔ CUSTOM APK FILE NAMES
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
 
-        dependenciesInfo {
+            def flavor = variant.flavorName       // dev / stable
+            def type = variant.buildType.name     // debug / release
+            def base = "WhereItWent"              // clean visible name
+
+            if (flavor == "dev") {
+                outputFileName = "${base}-DEV-${type}.apk"
+            } else if (flavor == "stable") {
+                outputFileName = "${base}-STABLE-${type}.apk"
+            } else {
+                outputFileName = "${base}-${type}.apk"
+            }
+        }
+    }
+
+    dependenciesInfo {
         includeInApk = false
         includeInBundle = false
     }
