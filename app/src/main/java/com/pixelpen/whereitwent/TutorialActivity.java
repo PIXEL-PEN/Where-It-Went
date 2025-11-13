@@ -1,68 +1,80 @@
 package com.pixelpen.whereitwent;
 
+import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
+import android.text.InputType;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class TutorialActivity extends AppCompatActivity {
 
-    private static final String PREFS = "settings";
-    private static final String KEY_README = "guide_readme";
-    private static final String KEY_ENABLE_EDIT = "enable_guide_edit";
+    private TextView tvReadme;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tutorial);
 
-        TextView readme = findViewById(R.id.tv_readme);
-        Button edit = findViewById(R.id.btn_edit_readme);
+        tvReadme = findViewById(R.id.tv_readme);
 
-        // Load current README text (or a simple default)
-        SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
-        String text = prefs.getString(KEY_README,
-                "Welcome to Where It Went.\n\n" +
-                        "This is a living guide. Tap EDIT to update these notes during development.");
-        if (readme != null) readme.setText(text);
+        // Load guide.md from /res/raw
+        tvReadme.setText(loadGuideText());
 
-        // Optional: toggle edit button visibility via a flag in SharedPreferences
-        boolean canEdit = prefs.getBoolean(KEY_ENABLE_EDIT, true);
-        if (edit != null) edit.setVisibility(canEdit ? View.VISIBLE : View.GONE);
+        Button btnClose = findViewById(R.id.btn_close_readme);
+        Button btnEdit  = findViewById(R.id.btn_edit_readme);
 
-        if (edit != null) {
-            edit.setOnClickListener(v -> showEditDialog(readme));
-            Button close = findViewById(R.id.btn_close_readme);
-            if (close != null) close.setOnClickListener(v -> finish());
+        btnClose.setOnClickListener(v -> {
+            finish();
+            overridePendingTransition(0,0);
+        });
 
+        btnEdit.setOnClickListener(v -> showEditDialog());
+    }
 
+    private String loadGuideText() {
+        try {
+            InputStream is = getResources().openRawResource(R.raw.guide);
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            StringBuilder sb = new StringBuilder();
+            String line;
 
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+
+            br.close();
+            is.close();
+
+            return sb.toString();
+
+        } catch (Exception e) {
+            return "Guide unavailable.";
         }
     }
 
-    private void showEditDialog(TextView target) {
-        if (target == null) return;
-
+    private void showEditDialog() {
+        // Developer-side edit only (not persistent!)
         final EditText input = new EditText(this);
-        input.setMinLines(6);
-        input.setText(target.getText());
+        input.setInputType(InputType.TYPE_CLASS_TEXT
+                | InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+        input.setMinLines(12);
+        input.setText(tvReadme.getText());
 
         new AlertDialog.Builder(this)
-                .setTitle("Edit Guide")
+                .setTitle("Edit Guide (Developer Only)")
                 .setView(input)
-                .setPositiveButton("Save", (DialogInterface dialog, int which) -> {
-                    String newText = input.getText().toString();
-                    target.setText(newText);
-                    getSharedPreferences(PREFS, MODE_PRIVATE)
-                            .edit()
-                            .putString(KEY_README, newText)
-                            .apply();
+                .setPositiveButton("Apply", (dialog, which) -> {
+                    tvReadme.setText(input.getText());
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
