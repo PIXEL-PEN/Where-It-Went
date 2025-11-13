@@ -258,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
     private void updateTagLineFor(String category) {
         if (textCategoryTag == null) return;
         String tag = CategoryManager.getTagForCategory(this, category);
-        textCategoryTag.setText((tag == null || tag.trim().isEmpty()) ? "➤ (auto insert)" : ("➤ " + tag));
+        textCategoryTag.setText((tag == null || tag.trim().isEmpty()) ? "(auto insert)" : (" " + tag));
     }
 
 
@@ -299,7 +299,8 @@ public class MainActivity extends AppCompatActivity {
             lastSelectedCategory = sel;
             updateTagLineFor(sel);
         } else if (textCategoryTag != null) {
-            textCategoryTag.setText("➤ (auto insert)");
+            textCategoryTag.setText("(auto insert)");
+
         }
     }
 
