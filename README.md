@@ -1,4 +1,4 @@
-# 📱Where It Went 
+# 📱 Where It Went
 *A simple, offline-first budgeting app designed for daily use.*
 
 
@@ -11,7 +11,7 @@
 
 <h2 style="font-size:1.6em; font-weight:700;">🧭 What Is This?</h2>
 
-**Where It Went** is a simple, focused daily expense tracker designed for people who just want to know:  
+**Where It Went** is a simple, focused daily expense tracker designed for people who just want to know:
 > _“Where did all my money go?”_
 
 No budgeting tools.  
@@ -42,20 +42,21 @@ It works *because* it doesn’t try to do everything — just one thing well.
 
 <h2 style="font-size:1.6em; font-weight:700;">✨ Key Features</h2>
 
-- 📆 **Track daily expenses** in seconds  
-- 📊 **Clear overviews**: by day, month, or category  
-- 🧠 **Project / trip friendly**: great for focused tracking  
-- 🚫 **No income tracking**: we leave that to your bank  
-- 🔒 **No cloud, no tracking, no ads, no nonsense**  
+- 📆 **Track daily expenses** in seconds
+- 📊 **Clear overviews**: by day, month, or category
+- Distribution Graph — Fixed, Necessities, Discretionary, Off-Budget
+- 🧠 **Project / trip friendly**: great for focused tracking
+- 🚫 **No income tracking**: we leave that to your bank
+- 🔒 **No cloud, no tracking, no ads, no nonsense**
 - 💡 **Fully offline** – your data stays on your device
 
 ---
 
 <h2 style="font-size:1.6em; font-weight:700;">🛠️ Who It’s For</h2>
 
-- People who just want to track spending without a spreadsheet  
-- Makers, DIYers, and travelers who track **projects and trips**  
-- Privacy-conscious users who don’t want to trade data for features  
+- People who just want to track spending without a spreadsheet
+- Makers, DIYers, and travelers who track **projects and trips**
+- Privacy-conscious users who don’t want to trade data for features
 - Anyone tired of bloated apps that solve the wrong problems
 
 ---
@@ -86,8 +87,8 @@ Perfect for:
 
 <h2 style="font-size:1.6em; font-weight:700;">🧱 Open Source</h2>
 
-- 100% open source (license: MIT or your preferred license)  
-- No hidden dependencies, no phone-home behavior  
+- 100% open source (license: MIT or your preferred license)
+- No hidden dependencies, no phone-home behavior
 - Built with minimalism and transparency in mind
 
 ---
@@ -108,36 +109,29 @@ Open an issue or get in touch.
 
 Let's keep it simple — and keep it useful.
 
-
-
+---
 
 ## 📱 Screenshots
 
-| Main Menu | Add Expense | View Menu |
-|-----------|-------------|-----------|
-| <img src="docs/main.jpg" width="220"/> | <img src="docs/add.jpg" width="220"/> | <img src="docs/view-menu.jpg" width="220"/> |
+### Main Screens
 
-| View All | By Date | By Category |
-|----------|---------|-------------|
-| <img src="docs/all-exp.jpg" width="220"/> | <img src="docs/by-date.jpg" width="220"/> | <img src="docs/by-categ.jpg" width="220"/> |
+| Add Expense | View All |
+|-------------|-----------|
+| <img src="docs/screenshots/01_add-expense.png" width="260"/> | <img src="docs/screenshots/02_by-all.png" width="260"/> |
 
-| By Month | Settings | Edit Item |
-|----------|----------|-----------|
-| <img src="docs/by-month.jpg" width="220"/> | <img src="docs/settings.jpg" width="220"/> | <img src="docs/edit-item.jpg" width="220"/> |
+### Detail Views
+
+| By Date | By Month |
+|---------|----------|
+| <img src="docs/screenshots/03_by-date.png" width="260"/> | <img src="docs/screenshots/04_by-month.png" width="260"/> |
+
+### Category & Navigation
+
+| By Category | Side Drawer |
+|-------------|-------------|
+| <img src="docs/screenshots/05_by-category.png" width="260"/> | <img src="docs/screenshots/06_side-drawer.png" width="260"/> |
 
 ---
 
-
-
 ## 📄 License
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
-
-
-
-
-
-
-
-
-
-
