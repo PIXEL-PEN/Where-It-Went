@@ -1,4 +1,4 @@
-# 📱 ExpenseTracker (Where It Went)
+# 📱 Where It Went
 *A simple, offline-first budgeting app designed for daily use.*
 
 
