@@ -1,56 +1,83 @@
 # Changelog
-
-## v1.0.2 (2025-10-08)
-**Feature Upgrades — Unified UI Polish**
-
-### Added
-- Floating **“Add Expense”** button on the View Menu for faster entry.
-- Category/date filter dialog with dynamic range detection and bold clickable date fields.
-- Auto-sorted category spinner (defaults first: Groceries → Rent → Utilities → Bills → Transport → Other).
-- Divider line between default and user-added categories for clarity.
-
-### Improved
-- Consistent color scheme and padding for FAB and button elements.
-- Restored *Manage Categories* spinner functionality after separator fix.
-- Unified “Available Range” display for filters.
-
-### Fixed
-- Resolved layout regression in View Menu and restored proper FAB positioning.
-- Corrected missing **Bills** entry in default category list.
-
-### Technical
-- Branch lineage: `feature/category-period-view` → `feature/fab-button`
-- Snapshot tag: `freeze-20251008-merge-ui-fab`
-- Database: consistent `BETWEEN` date-range queries
-- XML: unified ripple drawables, color match for FAB (#546E7A)
+_All notable changes to **Where It Went** will be documented in this file._
 
 ---
 
-## v1.0 (2025-09-24)
-**Public Release — Stable Build**
+## **v1.0.2 — UI Polish & Final Stabilization (2025-01-15)**
+**Refined for release-quality field testing.**
+
+### Added
+- New polished launcher icon (512×512) for GitHub & F-Droid.
+- Full F-Droid metadata structure (screenshots, icon, descriptions).
+- Guide screen using clean markdown (`/res/raw/guide.md`).
+- “Off-Budget” tag added to category system.
+- Automatic previous-month comparison on Distribution Graph.
+- Build variants (`devDebug`, `stableDebug`) with custom APK names.
+
+### Improved
+- All headers, banners, and view screens unified with consistent padding, colors, and typography.
+- Date view and month view restored to original stable collapsible behavior.
+- Side drawer UI refined; all navigation links stable and verified.
+- Add-Expense form polished (spacing, icons, interaction cues).
+- Spinner tag insertion line cleaned (removed stray arrow artifact).
+- Category dialog UI fully restored and standardized.
+- Distribution screen legends, percentages, and layout finalized.
+
+### Fixed
+- Multiple spinner edit regressions resolved.
+- Category-tag persistence now stable across all views.
+- View-All totals corrected and made persistent.
+- Collapsible date headers no longer misalign on reopen.
+- Numerous rollback-fix checkpoints merged into a consistent baseline.
+
+### Technical Notes
+- Final freeze tag: `freeze-202501XX-final-ui-polish`
+- Directory cleanup: old screenshots removed, new structure adopted.
+- Repo renamed fully to **WhereItWent**; legacy references removed.
+- Credential caching fixed (libsecret) for repeatable Git pushes.
+
+---
+
+## **v1.0.1 — Feature-Complete Baseline (2024-12-12)**
+**Core functionality locked in; all modules integrated.**
 
 ### Features
-- Add, view, and manage expenses with multiple views:
-  - View All
-  - Date-wise
-  - Month-wise
-  - Category-wise
-  - Day detail view
-- Decimal formatting for totals (`#,##0.00`).
-- Category manager with fixed defaults (`Groceries, Rent, Utilities, Bills, Transport, Other`) and custom categories (alphabetical).
-- Settings:
-  - Currency selection
-  - Date format options
-  - Export to CSV and HTML
-  - Reset database (expenses only, categories preserved)
-- Lightweight, fully offline design (no internet required).
-- Simple, consistent UI with banners, totals, and editable items.
+- Distribution Graph built from category tags:  
+  **Fixed · Necessities · Discretionary · Off-Budget**
+- Multi-view navigation:  
+  **View All · By Date · By Month · By Category**
+- Day-Detail view with totals and rolling calculations.
+- Category Manager with radio-button tag selector.
+- Auto-insert tag logic during expense entry.
+- Full Export module: HTML + CSV.
+- Fully offline; zero network permission footprint.
+
+### Improvements
+- Unified color system across all screens.
+- Clean top-bar layouts with accent strips.
+- Navigation robust across all routes.
+- Spinner dialogs visually corrected and behavior stabilized.
 
 ### Fixes
-- Corrected banners for DayDetail screen.
-- Spinner now shows defaults first, custom categories sorted.
-- UI polish on Settings and totals.
+- Category edits now update across all views instantly.
+- By-Date and By-Month views no longer lose state after edits.
+- Arrow inconsistencies removed throughout UI.
 
-### Known Limitations
-- Screenshots to be added.
-- Categories cannot yet be labeled/tagged as *Essential*, *Fixed*, *Discretionary* (planned).
+---
+
+## **v1.0.0 — First Complete Working Build (2024-11-01)**
+**Where It Went becomes functional end-to-end.**
+
+### Initial Feature Set
+- Add expenses with date, category, and amount.
+- Manage categories (defaults + user-defined).
+- Basic tagging foundation (Fixed / Necessity / Discretionary).
+- View All with totals.
+- Monthly and daily rollups.
+- Reset database tool.
+- Fully local data (SQLite), no accounts, no ads, no cloud.
+
+### Notes
+- UI was experimental; later replaced by several polished rewrites.
+- Internal versions were not publicly released.
+

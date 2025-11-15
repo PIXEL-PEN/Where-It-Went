@@ -1,4 +1,4 @@
-# 📱 ExpenseTracker (Where It Went)
+# 📱Where It Went 
 *A simple, offline-first budgeting app designed for daily use.*
 
 
@@ -30,7 +30,6 @@ Just a clean interface that lets you log your expenses quickly, then shows you *
 Most expense trackers are either:
 
 - Overly complicated (QuickBooks in disguise),
-- Clunky or ugly,
 - Infested with trackers and ads,
 - Or make you link your bank just to log a sandwich.
 
