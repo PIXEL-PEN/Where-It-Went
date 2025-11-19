@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "com.pixelpen.whereitwent.stable",
+  "variantName": "stableRelease",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 2,
+      "versionName": "1.0.1-stable",
+      "outputFile": "WhereItWent-STABLE-release.apk"
+    }
+  ],
+  "elementType": "File"
+}
