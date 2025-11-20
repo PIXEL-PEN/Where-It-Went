@@ -56,23 +56,53 @@
             android:gravity="center_vertical"
             android:background="@android:color/white">
 
+            <!-- Left arrow -->
             <ImageButton
                 android:id="@+id/btn_prev_month"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:src="@drawable/ic_arrow_back_white"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_arrow_left"
                 android:background="@android:color/transparent"
-                android:tint="@color/colorAccent2"/>
+                android:padding="6dp"
+                android:tint="#444444"/>
 
+            <!-- Month title -->
             <TextView
                 android:id="@+id/text_month_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
                 android:text="November 2025"
                 android:textColor="#000000"
                 android:textSize="20sp"
                 android:textStyle="bold"/>
+
+            <!-- Right arrow -->
+            <ImageButton
+                android:id="@+id/btn_next_month"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_arrow_right"
+                android:background="@android:color/transparent"
+                android:padding="6dp"
+                android:tint="#444444"/>
+
+            <!-- Spacer -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"/>
+
+            <!-- Total -->
+            <TextView
+                android:id="@+id/text_month_total"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2,150.00 ₱"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#CC0000"/>
         </LinearLayout>
 
         <!-- Divider under banner -->
@@ -231,7 +261,7 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
             android:layout_marginEnd="20dp"
-            android:layout_marginBottom="94dp"
+            android:layout_marginBottom="90dp"
             android:background="@drawable/fab_button_flat"
             android:src="@drawable/ic_add_plus"
             android:tint="@android:color/white"/>
