@@ -51,59 +51,69 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_below="@id/top_bar_container"
-            android:paddingStart="16dp"
+            android:paddingStart="12dp"
             android:paddingEnd="16dp"
             android:gravity="center_vertical"
             android:background="@android:color/white">
 
-            <!-- Left arrow -->
+            <!-- Back arrow (left) -->
             <ImageButton
                 android:id="@+id/btn_prev_month"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
-                android:src="@drawable/ic_arrow_left"
+                android:src="@drawable/ic_arrow_back_white"
                 android:background="@android:color/transparent"
-                android:padding="6dp"
-                android:tint="#444444"/>
+                android:tint="#333333"
+                android:padding="6dp" />
+
+            <!-- Small gap -->
+            <Space
+                android:layout_width="3dp"
+                android:layout_height="1dp" />
 
             <!-- Month title -->
             <TextView
                 android:id="@+id/text_month_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="12dp"
                 android:text="November 2025"
                 android:textColor="#000000"
                 android:textSize="20sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold" />
 
-            <!-- Right arrow -->
+            <!-- Small gap -->
+            <Space
+                android:layout_width="3dp"
+                android:layout_height="1dp" />
+
+            <!-- Forward arrow (right of month) -->
             <ImageButton
                 android:id="@+id/btn_next_month"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
-                android:src="@drawable/ic_arrow_right"
+                android:src="@drawable/ic_arrow_forward_white"
                 android:background="@android:color/transparent"
-                android:padding="6dp"
-                android:tint="#444444"/>
+                android:tint="#333333"
+                android:padding="6dp" />
 
-            <!-- Spacer -->
+            <!-- Spacer pushes total far right -->
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:layout_weight="1"/>
+                android:layout_weight="1" />
 
             <!-- Total -->
             <TextView
                 android:id="@+id/text_month_total"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="2,150.00 ₱"
+                android:text="0.00 ₱"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="#CC0000"/>
+                android:textColor="#CC0000" />
+
         </LinearLayout>
+
 
         <!-- Divider under banner -->
         <View
