@@ -56,42 +56,37 @@
             android:gravity="center_vertical"
             android:background="@android:color/white">
 
-            <!-- Back triangle (left) -->
+            <!-- Back triangle -->
             <ImageButton
                 android:id="@+id/btn_prev_month"
-                android:layout_width="52dp"
-                android:layout_height="52dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:src="@drawable/ic_triangle_left"
                 android:background="@android:color/transparent"
-                android:padding="10dp"
-                android:tint="#333333"/>
+                android:tint="#333333"
+                android:padding="10dp" />
 
-            <Space
-                android:layout_width="3dp"
-                android:layout_height="1dp" />
-
+            <!-- pull title closer to left arrow -->
             <TextView
                 android:id="@+id/text_month_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="-10dp"
+                android:layout_marginEnd="-10dp"
                 android:text="November 2025"
                 android:textColor="#000000"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
-            <Space
-                android:layout_width="3dp"
-                android:layout_height="1dp" />
-
             <!-- Forward triangle -->
             <ImageButton
                 android:id="@+id/btn_next_month"
-                android:layout_width="52dp"
-                android:layout_height="52dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:src="@drawable/ic_triangle_right"
                 android:background="@android:color/transparent"
-                android:padding="10dp"
-                android:tint="#333333"/>
+                android:tint="#333333"
+                android:padding="10dp" />
 
             <View
                 android:layout_width="0dp"
@@ -106,9 +101,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="#CC0000" />
-
         </LinearLayout>
-
 
         <!-- Divider under banner -->
         <View
