@@ -56,22 +56,20 @@
             android:gravity="center_vertical"
             android:background="@android:color/white">
 
-            <!-- Back arrow (left) -->
+            <!-- Back triangle (left) -->
             <ImageButton
                 android:id="@+id/btn_prev_month"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:src="@drawable/ic_arrow_back_white"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:src="@drawable/ic_triangle_left"
                 android:background="@android:color/transparent"
-                android:tint="#333333"
-                android:padding="6dp" />
+                android:padding="10dp"
+                android:tint="#333333"/>
 
-            <!-- Small gap -->
             <Space
                 android:layout_width="3dp"
                 android:layout_height="1dp" />
 
-            <!-- Month title -->
             <TextView
                 android:id="@+id/text_month_title"
                 android:layout_width="wrap_content"
@@ -81,28 +79,25 @@
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
-            <!-- Small gap -->
             <Space
                 android:layout_width="3dp"
                 android:layout_height="1dp" />
 
-            <!-- Forward arrow (right of month) -->
+            <!-- Forward triangle -->
             <ImageButton
                 android:id="@+id/btn_next_month"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:src="@drawable/ic_arrow_forward_white"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:src="@drawable/ic_triangle_right"
                 android:background="@android:color/transparent"
-                android:tint="#333333"
-                android:padding="6dp" />
+                android:padding="10dp"
+                android:tint="#333333"/>
 
-            <!-- Spacer pushes total far right -->
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
-            <!-- Total -->
             <TextView
                 android:id="@+id/text_month_total"
                 android:layout_width="wrap_content"
