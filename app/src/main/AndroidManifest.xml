@@ -9,9 +9,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ExpenseTracker">
 
-        <!-- NEW LAUNCHER: prototype screen -->
         <activity
-            android:name=".MainScreenActivity"
+            android:name=".MainScreen"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,13 +18,10 @@
             </intent-filter>
         </activity>
 
-        <!-- The proxy AddExpense (kept, but not launcher now) -->
+        <activity android:name=".MainScreenActivity" android:exported="false"/>
         <activity android:name=".AddExpenseActivity" android:exported="false"/>
-
-        <!-- Original Add-Expense/Main hybrid screen -->
         <activity android:name=".MainActivity" android:exported="false"/>
 
-        <!-- Other screens -->
         <activity android:name=".ViewMenuActivity" android:exported="false" />
         <activity android:name=".ViewAllActivity" android:exported="false" />
         <activity android:name=".DateWiseActivity" android:exported="false" />
@@ -38,7 +34,6 @@
         <activity android:name=".TutorialActivity" android:exported="false"/>
         <activity android:name=".MainLegacyActivity" android:exported="false" />
 
-        <!-- File Provider -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
