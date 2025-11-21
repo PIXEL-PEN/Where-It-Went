@@ -128,29 +128,66 @@
                 android:paddingEnd="16dp"
                 android:gravity="center_vertical">
 
-                <!-- Stacked date -->
+                <!-- Date + Item/Category side-by-side -->
                 <LinearLayout
-                    android:orientation="vertical"
+                    android:orientation="horizontal"
                     android:layout_width="wrap_content"
                     android:layout_height="42dp"
-                    android:gravity="bottom">
+                    android:gravity="center_vertical">
 
-                    <TextView
+                    <!-- Stacked date -->
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="wrap_content"
+                        android:layout_height="42dp"
+                        android:gravity="bottom">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Nov"
+                            android:textSize="13sp"
+                            android:textColor="#666666"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="01"
+                            android:textSize="20sp"
+                            android:textColor="#000000"/>
+                    </LinearLayout>
+
+                    <!-- Item + Category -->
+                    <LinearLayout
+                        android:orientation="vertical"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Nov"
-                        android:textSize="13sp"
-                        android:textColor="#666666"/>
+                        android:layout_marginStart="14dp"
+                        android:gravity="center_vertical">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="01"
-                        android:textSize="20sp"
-                        android:textColor="#000000"/>
+                        <TextView
+                            android:id="@+id/item_1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Item"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#000000"/>
+
+                        <TextView
+                            android:id="@+id/category_1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="CATEGORY"
+                            android:textSize="12sp"
+                            android:textColor="#777777"
+                            android:layout_marginTop="4dp"/>
+
+                    </LinearLayout>
+
                 </LinearLayout>
 
-
+                <!-- Spacer -->
                 <View
                     android:layout_width="0dp"
                     android:layout_height="0dp"
@@ -180,12 +217,15 @@
                         android:textSize="13sp"
                         android:textColor="#333333"/>
                 </LinearLayout>
+
             </LinearLayout>
 
+            <!-- divider -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="@color/dividerGray"/>
+
 
             <!-- Row 2 (sample) -->
             <LinearLayout
