@@ -98,7 +98,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0.00 ₱"
-                android:textSize="18sp"
+                android:textSize="19sp"
                 android:textStyle="bold"
                 android:textColor="#CC0000" />
         </LinearLayout>
@@ -132,25 +132,24 @@
                 <LinearLayout
                     android:orientation="vertical"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
+                    android:layout_height="42dp"
+                    android:gravity="bottom">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Nov"
-                        android:textSize="12sp"
-                        android:layout_marginTop="3dp"
+                        android:textSize="13sp"
                         android:textColor="#666666"/>
-
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="01"
-                        android:textStyle="bold"
-                        android:textSize="18sp"
+                        android:textSize="20sp"
                         android:textColor="#000000"/>
                 </LinearLayout>
+
 
                 <View
                     android:layout_width="0dp"
@@ -170,7 +169,8 @@
                         android:layout_height="wrap_content"
                         android:text="230.00"
                         android:textColor="#333333"
-                        android:textSize="16sp"/>
+                        android:textSize="16sp"
+                        android:textStyle="bold"/>
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -199,22 +199,21 @@
                 <LinearLayout
                     android:orientation="vertical"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
+                    android:layout_height="42dp"
+                    android:gravity="bottom">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Nov"
-                        android:textSize="12sp"
-                        android:layout_marginTop="3dp"
+                        android:textSize="13sp"
                         android:textColor="#666666"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="02"
-                        android:textStyle="bold"
-                        android:textSize="18sp"
+                        android:textSize="20sp"
                         android:textColor="#000000"/>
                 </LinearLayout>
 
@@ -236,7 +235,9 @@
                         android:layout_height="wrap_content"
                         android:text="0.00"
                         android:textColor="#333333"
-                        android:textSize="16sp"/>
+                        android:textSize="16sp"
+                        android:textStyle="bold"/>
+
 
                     <TextView
                         android:layout_width="wrap_content"
