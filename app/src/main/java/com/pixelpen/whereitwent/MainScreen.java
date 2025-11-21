@@ -12,6 +12,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 import android.view.Gravity;
+import android.content.Intent;
+
 
 
 
@@ -39,15 +41,16 @@ public class MainScreen extends AppCompatActivity {
         ImageButton btnPrev = findViewById(R.id.btn_prev_month);
         ImageButton btnNext = findViewById(R.id.btn_next_month);
         ImageButton fabAdd = findViewById(R.id.fab_add);
+        fabAdd.setTranslationY(-90f);
+
+
 
         btnPrev.setOnClickListener(v -> {});
         btnNext.setOnClickListener(v -> {});
 
         fabAdd.setOnClickListener(v -> {
-            Toast.makeText(MainScreen.this, "FAB clicked", Toast.LENGTH_SHORT).show();
-            // Intent removed:
-            // Intent i = new Intent(MainScreen.this, AddExpense.class);
-            // startActivity(i);
+            AddExpenseDialog dialog = new AddExpenseDialog();
+            dialog.show(getSupportFragmentManager(), "ADD_EXPENSE");
         });
 
         buildMonthList();
@@ -66,6 +69,18 @@ public class MainScreen extends AppCompatActivity {
             TextView item = row.findViewById(R.id.text_item);
             TextView category = row.findViewById(R.id.text_category);
             TextView amount = row.findViewById(R.id.text_amount);
+
+            int finalI = i;  // Or use real date values later
+
+            row.setOnClickListener(v -> {
+                Intent intent = new Intent(MainScreen.this, DayDetailActivity.class);
+                intent.putExtra("day", finalI);
+                intent.putExtra("month", "Nov");    // placeholder
+                intent.putExtra("year", 2025);      // placeholder
+                startActivity(intent);
+            });
+
+
 
             monthAbbrev.setText("Nov");
             dayNum.setText(String.format("%02d", i));
