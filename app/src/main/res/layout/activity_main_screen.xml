@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!-- TOP BAR -->
         <RelativeLayout
             android:id="@+id/top_bar_container"
             android:layout_width="match_parent"
@@ -38,84 +39,58 @@
                 android:layout_marginBottom="-6dp"
                 android:src="@drawable/ic_hamburger"
                 android:tint="@android:color/white"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:background="@android:color/transparent"
                 android:padding="10dp" />
         </RelativeLayout>
 
-        <LinearLayout
-            android:id="@+id/month_banner"
-            android:orientation="horizontal"
+
+        <!-- NEW GLOBAL HEADER — LAST 12 MONTHS -->
+        <RelativeLayout
+            android:id="@+id/header_12_months"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:paddingStart="12dp"
+            android:layout_height="64dp"
+            android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:gravity="center_vertical"
             android:background="@android:color/white">
 
-            <ImageButton
-                android:id="@+id/btn_prev_month"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@drawable/ic_triangle_left"
-                android:background="@android:color/transparent"
-                android:tint="#333333"
-                android:padding="10dp" />
-
             <TextView
-                android:id="@+id/text_month_title"
+                android:id="@+id/text_header_12mo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="-10dp"
-                android:layout_marginEnd="-10dp"
-                android:text="November 2025"
-                android:textColor="#000000"
+                android:text="Last 12 Months"
+                android:textColor="@color/colorPrimary"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
-            <ImageButton
-                android:id="@+id/btn_next_month"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@drawable/ic_triangle_right"
-                android:background="@android:color/transparent"
-                android:tint="#333333"
-                android:padding="10dp" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-
             <TextView
-                android:id="@+id/text_month_total"
+                android:id="@+id/text_header_total"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
                 android:text="0.00 ₱"
-                android:textSize="19sp"
-                android:textStyle="bold"
-                android:textColor="#CC0000" />
-        </LinearLayout>
+                android:textColor="#CC0000"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="#000000" />
 
-        <androidx.core.widget.NestedScrollView
-            android:id="@+id/month_scroll"
+
+        <!-- NEW: RECYCLER VIEW FOR 12 MONTH GROUPS -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_month_groups"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:fillViewport="true">
+            android:background="@android:color/white" />
 
-            <LinearLayout
-                android:id="@+id/month_list"
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="4dp" />
-        </androidx.core.widget.NestedScrollView>
 
+        <!-- FAB -->
         <ImageButton
             android:id="@+id/fab_add"
             android:layout_width="56dp"
@@ -128,6 +103,8 @@
             android:tint="@android:color/white" />
     </LinearLayout>
 
+
+    <!-- DRAWER -->
     <include
         android:id="@+id/include_drawer"
         layout="@layout/activity_slider_drawer"
