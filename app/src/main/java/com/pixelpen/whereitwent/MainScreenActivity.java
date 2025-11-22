@@ -10,31 +10,27 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 public class MainScreenActivity extends AppCompatActivity {
 
-    private DrawerLayout drawerLayout;
+    private DrawerLayout drawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
 
-        drawerLayout = findViewById(R.id.drawer_layout);
+        drawer = findViewById(R.id.drawer_layout);
 
         View ham = findViewById(R.id.btn_filter);
         if (ham != null) {
-            ham.setOnClickListener(v -> {
-                if (drawerLayout != null) {
-                    drawerLayout.openDrawer(Gravity.END);
-                }
-            });
+            ham.setOnClickListener(v ->
+                    drawer.openDrawer(Gravity.END));
         }
 
         ImageButton fab = findViewById(R.id.fab_add);
-        if (fab != null) {
-            fab.setOnClickListener(v -> {
-                AddExpenseDialog dlg = new AddExpenseDialog();
-                dlg.show(getSupportFragmentManager(), "ADD_EXPENSE");
-            });
-        }
+        fab.setOnClickListener(v -> openAddDialog());
+    }
 
+    private void openAddDialog() {
+        new AddExpenseDialog()
+                .show(getSupportFragmentManager(), "ADD_EXPENSE");
     }
 }
