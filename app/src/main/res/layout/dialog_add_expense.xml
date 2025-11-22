@@ -18,13 +18,15 @@
             android:gravity="start|center_vertical">
 
 
-        <Spinner
+            <Spinner
                 android:id="@+id/spinner_category"
-                android:layout_width="120dp"
+                android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:background="@android:color/transparent"/>
+                android:paddingEnd="12dp"/>
+
+
+
         </LinearLayout>
 
         <TextView
