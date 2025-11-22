@@ -15,11 +15,10 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical">
+            android:gravity="start|center_vertical">
 
 
-
-            <Spinner
+        <Spinner
                 android:id="@+id/spinner_category"
                 android:layout_width="120dp"
                 android:layout_height="48dp"
@@ -35,6 +34,7 @@
             android:text="Fixed"
             android:textColor="#888888"
             android:textSize="12sp"
+            android:textStyle="bold"
             android:gravity="end"
             android:layout_marginBottom="20dp" />
 
