@@ -48,7 +48,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // We reuse the existing layout that already contains the drawer include
-        setContentView(R.layout.activity_add_expense);
+        setContentView(R.layout.activity_main_reorder);
+
 
         // Drawer + hamburger (keeps using btn_filter to open the drawer)
         drawerLayout = findViewById(R.id.drawer_layout);

@@ -8,4 +8,5 @@
     android:paddingEnd="12dp"
     android:background="#FFFFFF"
     android:textColor="@android:color/black"
-    android:textSize="16sp" />
+    android:textSize="16sp"
+    android:singleLine="true" />

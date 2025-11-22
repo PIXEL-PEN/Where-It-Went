@@ -17,28 +17,25 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/text_category_title"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Groceries"
-                android:textSize="20sp"
-                android:textStyle="bold"/>
+
 
             <Spinner
                 android:id="@+id/spinner_category"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_width="120dp"
+                android:layout_height="48dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:background="@android:color/transparent"/>
         </LinearLayout>
 
         <TextView
             android:id="@+id/text_tag"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Fixed"
             android:textColor="#888888"
             android:textSize="12sp"
+            android:gravity="end"
             android:layout_marginBottom="20dp" />
 
         <EditText
@@ -59,11 +56,12 @@
 
         <TextView
             android:id="@+id/text_date"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="14 Nov 2025"
             android:textSize="16sp"
             android:textStyle="bold"
+            android:gravity="center_vertical"
             android:layout_marginTop="20dp" />
 
         <Button
