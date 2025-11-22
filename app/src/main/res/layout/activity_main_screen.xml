@@ -10,7 +10,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- TOP BAR -->
         <RelativeLayout
             android:id="@+id/top_bar_container"
             android:layout_width="match_parent"
@@ -25,7 +24,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:layout_marginBottom="13dp"
-                android:text="Expenditures"
+                android:text="Last 12 Months"
                 android:textColor="@android:color/white"
                 android:textSize="20sp"
                 android:textStyle="bold" />
@@ -39,58 +38,18 @@
                 android:layout_marginBottom="-6dp"
                 android:src="@drawable/ic_hamburger"
                 android:tint="@android:color/white"
-                android:background="@android:color/transparent"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:padding="10dp" />
         </RelativeLayout>
 
-
-        <!-- NEW GLOBAL HEADER — LAST 12 MONTHS -->
-        <RelativeLayout
-            android:id="@+id/header_12_months"
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:gravity="center_vertical"
-            android:background="@android:color/white">
-
-            <TextView
-                android:id="@+id/text_header_12mo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Last 12 Months"
-                android:textColor="@color/colorPrimary"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/text_header_total"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:text="0.00 ₱"
-                android:textColor="#CC0000"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-        </RelativeLayout>
-
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#000000" />
-
-
-        <!-- NEW: RECYCLER VIEW FOR 12 MONTH GROUPS -->
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_month_groups"
+            android:id="@+id/recycler_months"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:background="@android:color/white" />
+            android:paddingTop="4dp"
+            android:paddingBottom="120dp" />
 
-
-        <!-- FAB -->
         <ImageButton
             android:id="@+id/fab_add"
             android:layout_width="56dp"
@@ -103,8 +62,6 @@
             android:tint="@android:color/white" />
     </LinearLayout>
 
-
-    <!-- DRAWER -->
     <include
         android:id="@+id/include_drawer"
         layout="@layout/activity_slider_drawer"
