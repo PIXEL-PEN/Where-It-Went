@@ -1,47 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@android:color/white">
 
+    <!-- Month header row -->
     <LinearLayout
-        android:id="@+id/group_header"
-        android:orientation="horizontal"
+        android:id="@+id/layout_month_header"
         android:layout_width="match_parent"
-        android:layout_height="54dp"
+        android:layout_height="52dp"
+        android:orientation="horizontal"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:gravity="center_vertical"
-        android:background="@android:color/white">
+        android:gravity="center_vertical">
 
         <TextView
-            android:id="@+id/text_group_month"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Nov 2025"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:textColor="#000"/>
-
-        <View
+            android:id="@+id/text_month_title"
             android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Nov 2025"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#000000" />
 
+        <!-- RESTORED: TOTAL ON RIGHT -->
         <TextView
-            android:id="@+id/text_group_total"
+            android:id="@+id/text_month_total"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0.00 ₱"
-            android:textSize="17sp"
-            android:textStyle="bold"
-            android:textColor="#CC0000"/>
+            android:text="0.00 ₽"
+            android:textSize="16sp"
+            android:textColor="#000000"
+            android:textStyle="bold"/>
     </LinearLayout>
 
+    <!-- Thin divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#DDDDDD" />
+
+    <!-- Container that expands -->
     <LinearLayout
-        android:id="@+id/entries_container"
-        android:orientation="vertical"
+        android:id="@+id/layout_month_children"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"/>
+        android:orientation="vertical"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp" />
+
 </LinearLayout>

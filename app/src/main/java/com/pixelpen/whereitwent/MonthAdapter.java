@@ -1,110 +1,122 @@
 package com.pixelpen.whereitwent;
 
 import android.content.Context;
-import android.content.Intent;
-import android.view.*;
-import android.widget.LinearLayout;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.ImageView;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import java.util.List;
-import java.util.Locale;
 
+public class MonthAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.Holder> {
+    private static final int TYPE_GROUP_HEADER = 0;
+    private static final int TYPE_MONTH = 1;
 
-    private final Context ctx;
-    private final List<MonthGroup> data;
+    private final List<MonthGroup> groups;
     private final LayoutInflater inflater;
 
-    public MonthAdapter(Context c, List<MonthGroup> d) {
-        ctx = c;
-        data = d;
-        inflater = LayoutInflater.from(c);
-    }
-
-    @NonNull
-    @Override
-    public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = inflater.inflate(R.layout.row_month_group, parent, false);
-        return new Holder(v);
+    public MonthAdapter(Context ctx, List<MonthGroup> list) {
+        this.groups = list;
+        this.inflater = LayoutInflater.from(ctx);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull Holder h, int pos) {
-
-        MonthGroup mg = data.get(pos);
-
-        h.textMonth.setText(mg.monthLabel);
-        h.textTotal.setText(String.format(Locale.ENGLISH, "%.2f ₱", mg.total));
-
-        h.containerEntries.removeAllViews();
-
-        if (mg.expanded) {
-            for (Expense e : mg.items) {
-
-                View row = inflater.inflate(R.layout.row_month_entry, h.containerEntries, false);
-
-                String ui = DateUtils.isoToUi(DateUtils.toIso(e.date));
-                String stacked = DateUtils.toMonthStacked(ui);
-
-                String[] parts = stacked.split(" ");
-                h.setText(row, R.id.text_month_abbrev, parts[0]);
-                h.setText(row, R.id.text_day_number, parts.length > 1 ? parts[1] : "--");
-
-                h.setText(row, R.id.text_item, e.description);
-                h.setText(row, R.id.text_category, e.category.toUpperCase());
-                h.setText(row, R.id.text_amount, String.format(Locale.ENGLISH, "%.2f", e.amount));
-
-                row.setOnClickListener(v -> {
-                    Intent i = new Intent(ctx, DayDetailActivity.class);
-                    i.putExtra("day", parts.length > 1 ? Integer.parseInt(parts[1]) : 1);
-                    i.putExtra("month", parts[0]);
-                    i.putExtra("year", mg.monthLabel.substring(mg.monthLabel.length() - 4));
-                    ctx.startActivity(i);
-                });
-
-                h.containerEntries.addView(row);
-
-                View div = new View(ctx);
-                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT, 1);
-                div.setLayoutParams(lp);
-                div.setBackgroundColor(0xFF555555);
-                h.containerEntries.addView(div);
-            }
-        }
-        h.containerEntries.setVisibility(mg.expanded ? View.VISIBLE : View.GONE);
-
-        h.header.setOnClickListener(v -> {
-            mg.expanded = !mg.expanded;
-            notifyItemChanged(pos);
-        });
+    public int getItemViewType(int position) {
+        return groups.get(position).isHeader ? TYPE_GROUP_HEADER : TYPE_MONTH;
     }
 
     @Override
     public int getItemCount() {
-        return data.size();
+        return groups.size();
     }
 
-    static class Holder extends RecyclerView.ViewHolder {
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int type) {
 
-        TextView textMonth, textTotal;
-        LinearLayout containerEntries;
-        LinearLayout header;
-
-        Holder(View v) {
-            super(v);
-            header = v.findViewById(R.id.group_header);
-            textMonth = v.findViewById(R.id.text_group_month);
-            textTotal = v.findViewById(R.id.text_group_total);
-            containerEntries = v.findViewById(R.id.entries_container);
+        if (type == TYPE_GROUP_HEADER) {
+            View v = inflater.inflate(R.layout.row_month_group_header, parent, false);
+            return new VH_Header(v);
         }
 
-        void setText(View row, int id, String value) {
-            ((TextView) row.findViewById(id)).setText(value);
+        View v = inflater.inflate(R.layout.row_month_group, parent, false);
+        return new VH_Month(v);
+    }
+
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder h, int pos) {
+
+        MonthGroup mg = groups.get(pos);
+
+        // ------------------------------------------
+        // HEADER
+        // ------------------------------------------
+        if (h instanceof VH_Header) {
+            ((VH_Header) h).label.setText("Last 12 Months");
+            return;
+        }
+
+        // ------------------------------------------
+        // MONTH ROW
+        // ------------------------------------------
+        VH_Month vh = (VH_Month) h;
+
+        vh.title.setText(mg.monthLabel);
+
+        // Bind total (restored)
+        vh.total.setText(mg.total);
+
+        // Children visibility
+        vh.children.setVisibility(mg.expanded ? View.VISIBLE : View.GONE);
+
+        // Toggle expand/collapse
+        vh.header.setOnClickListener(v -> {
+            mg.expanded = !mg.expanded;
+            vh.children.setVisibility(mg.expanded ? View.VISIBLE : View.GONE);
+        });
+
+        // ------------------------------------------
+        // SAFE CHILD VIEW HANDLING
+        // ------------------------------------------
+        vh.children.removeAllViews();
+
+        for (View child : mg.dayRows) {
+
+            // Fix crash: detach from old parent if exists
+            if (child.getParent() != null) {
+                ((ViewGroup) child.getParent()).removeView(child);
+            }
+
+            vh.children.addView(child);
+        }
+    }
+
+    // ------------------------------------------
+    // VIEW HOLDERS
+    // ------------------------------------------
+
+    static class VH_Header extends RecyclerView.ViewHolder {
+        TextView label;
+        VH_Header(View v) {
+            super(v);
+            label = v.findViewById(R.id.text_group_header);
+        }
+    }
+
+    static class VH_Month extends RecyclerView.ViewHolder {
+        TextView title;
+        TextView total;
+        ViewGroup children;
+        View header;
+
+        VH_Month(View v) {
+            super(v);
+            header = v.findViewById(R.id.layout_month_header);
+            title = v.findViewById(R.id.text_month_title);
+            total = v.findViewById(R.id.text_month_total);
+            children = v.findViewById(R.id.layout_month_children);
         }
     }
 }
