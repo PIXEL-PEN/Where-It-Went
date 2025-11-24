@@ -6,22 +6,18 @@ import java.util.List;
 
 public class MonthGroup {
 
-    // True only for the "Last 12 Months" header row
     public boolean isHeader = false;
-
-    // Example: "Nov 2025"
     public String monthLabel = "";
-
-    // NEW: total for the month
-    public String total = "0.00 ₽";
-
-    // Expanded/collapsed state
     public boolean expanded = false;
 
-    // All child rows (day entries inflated from row_month_entry.xml)
+    // List of inflated day-entry views
     public List<View> dayRows = new ArrayList<>();
 
-    // Constructor for a normal month row
+    // NEW — required for totals
+    public double monthTotal = 0;
+    public String totalFormatted = "";
+
+    // Constructor for normal month rows
     public MonthGroup(String label) {
         this.monthLabel = label;
     }
@@ -30,7 +26,7 @@ public class MonthGroup {
     public static MonthGroup makeHeader() {
         MonthGroup g = new MonthGroup("");
         g.isHeader = true;
-        g.expanded = true;   // header never collapses
+        g.expanded = true;
         return g;
     }
 }

@@ -10,8 +10,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,36 +26,37 @@ import java.util.List;
 public class SettingsActivity extends AppCompatActivity {
 
     private Spinner spinnerCurrency;
-
     private static final int CREATE_CSV_FILE = 2001;
-
     private String csvContent = null;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
+        // Top forward button
         ImageButton btnForward = findViewById(R.id.btn_forward);
         if (btnForward != null) {
             btnForward.setOnClickListener(v -> {
-                startActivity(new Intent(this, MainActivity.class));
+                startActivity(new Intent(this, MainScreen.class));
                 finish();
             });
         }
 
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
 
+        // About text
         TextView about = findViewById(R.id.text_about);
         if (about != null) {
             about.setText(Html.fromHtml(getString(R.string.about_text), Html.FROM_HTML_MODE_LEGACY));
             about.setMovementMethod(LinkMovementMethod.getInstance());
-            about.setLinksClickable(true);
         }
 
+        // -------------------------------
+        // CURRENCY SPINNER (Symbol mode)
+        // -------------------------------
         spinnerCurrency = findViewById(R.id.spinner_currency);
+
         final List<String> currencies = Arrays.asList(
                 "USD — US Dollar ($)",
                 "EUR — Euro (€)",
@@ -74,20 +73,22 @@ public class SettingsActivity extends AppCompatActivity {
                 "VND — Vietnamese Dong (₫)"
         );
 
-        ArrayAdapter<String> currencyAdapter = new ArrayAdapter<>(
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this,
                 R.layout.spinner_item_selected,
                 currencies
         );
-        currencyAdapter.setDropDownViewResource(R.layout.spinner_item_dropdown);
-        spinnerCurrency.setAdapter(currencyAdapter);
+        adapter.setDropDownViewResource(R.layout.spinner_item_dropdown);
+        spinnerCurrency.setAdapter(adapter);
 
-        String defaultCode = currencies.get(0).split(" ")[0];
-        String savedCode = prefs.getString("currency_code", defaultCode);
+        // Load saved symbol (or default)
+        String savedSymbol = prefs.getString("currency_symbol", "$");
 
+        // Restore spinner selection based on symbol
         int restoredIndex = 0;
         for (int i = 0; i < currencies.size(); i++) {
-            if (currencies.get(i).startsWith(savedCode + " ")) {
+            String entry = currencies.get(i);
+            if (entry.contains("(" + savedSymbol + ")")) {
                 restoredIndex = i;
                 break;
             }
@@ -97,15 +98,22 @@ public class SettingsActivity extends AppCompatActivity {
         spinnerCurrency.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String label = currencies.get(position);
-                String code = label.split(" ")[0];
-                prefs.edit().putString("currency_code", code).apply();
+                String entry = currencies.get(position);
+
+                // Extract symbol from final "(...)"
+                String symbol = entry.substring(entry.lastIndexOf('(') + 1, entry.lastIndexOf(')'));
+
+                prefs.edit().putString("currency_symbol", symbol).apply();
             }
-            @Override public void onNothingSelected(AdapterView<?> parent) {}
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
 
 
-
+        // ----------------------------------------------------
+        // EXPORT BUTTON
+        // ----------------------------------------------------
         findViewById(R.id.btn_export).setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("Export Data")
@@ -116,6 +124,9 @@ public class SettingsActivity extends AppCompatActivity {
                     .show();
         });
 
+        // ----------------------------------------------------
+        // RESET BUTTON
+        // ----------------------------------------------------
         findViewById(R.id.btn_reset).setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("Reset Database")
@@ -129,6 +140,9 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
+    // =====================================================
+    // EXPORT → CSV
+    // =====================================================
     private void exportToStorage() {
         StringBuilder sb = new StringBuilder();
         List<Expense> expenses = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
@@ -165,6 +179,9 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
+    // =====================================================
+    // EXPORT → EMAIL
+    // =====================================================
     private void exportAndEmail() {
         try {
             File file = new File(getExternalFilesDir(null), "expenses.html");

@@ -6,6 +6,15 @@ import java.util.Map;
 public class CurrencyUtils {
     private static final Map<String, String> symbols = new HashMap<>();
 
+    // Format a value with commas and a currency symbol
+    public static String format(double value, String symbol) {
+        java.text.NumberFormat nf = java.text.NumberFormat.getNumberInstance(java.util.Locale.US);
+        nf.setMinimumFractionDigits(2);
+        nf.setMaximumFractionDigits(2);
+        return nf.format(value) + " " + symbol;
+    }
+
+
     static {
         symbols.put("USD", "$");
         symbols.put("EUR", "€");

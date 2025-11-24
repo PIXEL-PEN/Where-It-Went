@@ -1,5 +1,6 @@
 package com.pixelpen.whereitwent;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
@@ -10,8 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.Gravity;
-
-import java.util.List;
+import java.util.*;
 
 public class MainScreen extends AppCompatActivity {
 
@@ -23,19 +23,13 @@ public class MainScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
 
-        // Drawer
-        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
-        drawerLayout.setDrawerElevation(16f);
-        drawerLayout.setScrimColor(0x55000000);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        drawer.setDrawerElevation(16f);
+        drawer.setScrimColor(0x55000000);
 
-        View ham = findViewById(R.id.btn_filter);
-        ham.setOnClickListener(v -> drawerLayout.openDrawer(Gravity.END));
+        View btnHam = findViewById(R.id.btn_filter);
+        btnHam.setOnClickListener(v -> drawer.openDrawer(Gravity.END));
 
-        // Recycler setup
-        recyclerMonths = findViewById(R.id.recycler_months);
-        recyclerMonths.setLayoutManager(new LinearLayoutManager(this));
-
-        // FAB -> Add Expense Dialog
         ImageButton fabAdd = findViewById(R.id.fab_add);
         fabAdd.setTranslationY(-90f);
         fabAdd.setOnClickListener(v -> {
@@ -43,28 +37,48 @@ public class MainScreen extends AppCompatActivity {
             dialog.show(getSupportFragmentManager(), "ADD_EXPENSE");
         });
 
-        // Initial load
-        List<MonthGroup> data = MonthBuilder.buildLast12Months(this);
-        adapter = new MonthAdapter(this, data);
-        recyclerMonths.setAdapter(adapter);
+        recyclerMonths = findViewById(R.id.recycler_months);
+        recyclerMonths.setLayoutManager(new LinearLayoutManager(this));
+
+        loadMonths();
     }
 
-    // Called from AddExpenseDialog after a successful save
-    public void refreshAfterAdd() {
+    private void loadMonths() {
+        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
+        String currencySymbol = prefs.getString("currency_symbol", "$");
 
-        // Rebuild month data
-        List<MonthGroup> fresh = MonthBuilder.buildLast12Months(this);
+        List<MonthGroup> data = MonthBuilder.buildLast12Months(this, currencySymbol);
 
-        // Auto-expand the newest month (index 1)
-        if (fresh.size() > 1) {
-            fresh.get(1).expanded = true;
-        }
+        expandCurrentMonth(data);   // expand the active month
 
-        // Reload adapter
-        adapter = new MonthAdapter(this, fresh);
+        adapter = new MonthAdapter(data, currencySymbol);
         recyclerMonths.setAdapter(adapter);
 
-        // Scroll so new entry is visible immediately
-        recyclerMonths.scrollToPosition(1);
+        setupDrawerLinks();
+    }
+
+    private void expandCurrentMonth(List<MonthGroup> groups) {
+        String currentLabel = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.ENGLISH)
+                .format(new java.util.Date());
+
+        for (MonthGroup g : groups) {
+            if (!g.isHeader && g.monthLabel.equals(currentLabel)) {
+                g.expanded = true;
+                break;
+            }
+        }
+    }
+
+    public void refreshAfterAdd() {
+        loadMonths();   // reload everything with new values
+    }
+
+    private void setupDrawerLinks() {
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+
+        findViewById(R.id.linkSettings).setOnClickListener(v -> {
+            startActivity(new android.content.Intent(this, SettingsActivity.class));
+            drawer.closeDrawer(Gravity.END);
+        });
     }
 }
