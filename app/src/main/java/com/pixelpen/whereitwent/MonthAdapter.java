@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.ImageView;
 
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
@@ -50,41 +49,40 @@ public class MonthAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
         MonthGroup mg = groups.get(pos);
 
-        // ------------------------------------------
-        // HEADER
-        // ------------------------------------------
+        // --------------------------------------------------
+        // HEADER ROW ("Last 12 Months")
+        // --------------------------------------------------
         if (h instanceof VH_Header) {
-            ((VH_Header) h).label.setText("Last 12 Months");
+            VH_Header vh = (VH_Header) h;
+            vh.label.setText(mg.monthLabel);
+            vh.total.setText(mg.total);   // <-- FIXED: set header total
             return;
         }
 
-        // ------------------------------------------
+        // --------------------------------------------------
         // MONTH ROW
-        // ------------------------------------------
+        // --------------------------------------------------
         VH_Month vh = (VH_Month) h;
 
         vh.title.setText(mg.monthLabel);
+        vh.total.setText(mg.total);  // month total
 
-        // Bind total (restored)
-        vh.total.setText(mg.total);
-
-        // Children visibility
         vh.children.setVisibility(mg.expanded ? View.VISIBLE : View.GONE);
 
-        // Toggle expand/collapse
+        // Safe expand/collapse without triggering rebind
         vh.header.setOnClickListener(v -> {
             mg.expanded = !mg.expanded;
             vh.children.setVisibility(mg.expanded ? View.VISIBLE : View.GONE);
         });
 
-        // ------------------------------------------
-        // SAFE CHILD VIEW HANDLING
-        // ------------------------------------------
+        // --------------------------------------------------
+        // SAFELY ATTACH CHILD DAY-VIEWS
+        // --------------------------------------------------
         vh.children.removeAllViews();
 
         for (View child : mg.dayRows) {
 
-            // Fix crash: detach from old parent if exists
+            // Prevent "View already has a parent" crash
             if (child.getParent() != null) {
                 ((ViewGroup) child.getParent()).removeView(child);
             }
@@ -93,15 +91,18 @@ public class MonthAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         }
     }
 
-    // ------------------------------------------
+    // --------------------------------------------------
     // VIEW HOLDERS
-    // ------------------------------------------
+    // --------------------------------------------------
 
     static class VH_Header extends RecyclerView.ViewHolder {
         TextView label;
+        TextView total;
+
         VH_Header(View v) {
             super(v);
             label = v.findViewById(R.id.text_group_header);
+            total = v.findViewById(R.id.text_group_total);   // <-- binds header total
         }
     }
 

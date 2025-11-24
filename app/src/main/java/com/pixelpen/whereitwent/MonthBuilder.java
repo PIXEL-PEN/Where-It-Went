@@ -59,18 +59,22 @@ public class MonthBuilder {
 
         // Build each month in descending order (latest first)
         Calendar walker = (Calendar) end.clone();
-
         LayoutInflater inflater = LayoutInflater.from(ctx);
 
         for (int i = 0; i < 12; i++) {
 
-            String key = ISO_FMT.format(walker.getTime());   // yyyy-MM
-            String label = LABEL_FMT.format(walker.getTime()); // "Nov 2025"
+            String key = ISO_FMT.format(walker.getTime());      // yyyy-MM
+            String label = LABEL_FMT.format(walker.getTime());  // "Nov 2025"
 
             MonthGroup group = new MonthGroup(label);
             group.expanded = false;  // collapsed by default
 
             List<Expense> monthList = map.get(key);
+
+            // --------------------------------------------
+            // BUILD ROWS FOR THIS MONTH
+            // --------------------------------------------
+            double total = 0.0;
 
             if (monthList != null && !monthList.isEmpty()) {
 
@@ -105,13 +109,34 @@ public class MonthBuilder {
                     cat.setText(e.category.toUpperCase(Locale.ENGLISH));
                     amt.setText(String.format(Locale.ENGLISH, "%.2f", e.amount));
 
+                    total += e.amount;
                     group.dayRows.add(row);
                 }
             }
 
+            // Store monthly total
+            group.total = String.format(Locale.ENGLISH, "%.2f ₽", total);
+
             list.add(group);
             walker.add(Calendar.MONTH, -1);
         }
+
+        // --------------------------------------------------------
+        // COMPUTE GRAND TOTAL FOR HEADER
+        // --------------------------------------------------------
+        double grand = 0.0;
+
+        for (MonthGroup g : list) {
+            if (!g.isHeader && g.dayRows.size() > 0) {
+                try {
+                    grand += Double.parseDouble(
+                            g.total.replace("₱", "").trim()
+                    );
+                } catch (Exception ignore) {}
+            }
+        }
+
+        header.total = String.format(Locale.ENGLISH, "%.2f ₽", grand);
 
         return list;
     }

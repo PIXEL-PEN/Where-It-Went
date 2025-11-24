@@ -3,7 +3,6 @@ package com.pixelpen.whereitwent;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.os.Bundle;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.*;
@@ -15,7 +14,6 @@ import androidx.fragment.app.DialogFragment;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
-
 
 public class AddExpenseDialog extends DialogFragment {
 
@@ -59,7 +57,7 @@ public class AddExpenseDialog extends DialogFragment {
     }
 
     // ---------------------------------------------------------
-    // CATEGORY SPINNER
+    // CATEGORY SPINNER (unchanged)
     // ---------------------------------------------------------
     private void setupSpinner() {
 
@@ -148,17 +146,14 @@ public class AddExpenseDialog extends DialogFragment {
                 : tag);
     }
 
-    private void reloadCategories(String desiredSelection) {
-        loadCategoriesIntoSpinner(desiredSelection);
-    }
-
     // ---------------------------------------------------------
-    // DATE PICKER
+    // DATE PICKER — corrected for consistent formatting
     // ---------------------------------------------------------
     private void setupDatePicker() {
 
+        // Consistent UI date format: "dd MMM yyyy"
         Calendar today = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
         textDate.setText(sdf.format(today.getTime()));
 
         textDate.setOnClickListener(v -> {
@@ -167,9 +162,12 @@ public class AddExpenseDialog extends DialogFragment {
 
             DatePickerDialog dlg = new DatePickerDialog(requireContext(),
                     (view, yr, mo, day) -> {
+
+                        // Month abbrev without periods (important!)
                         String formatted = String.format(Locale.ENGLISH,
                                 "%02d %s %04d",
                                 day, getMonthAbbrev(mo), yr);
+
                         textDate.setText(formatted);
                     },
                     cal.get(Calendar.YEAR),
@@ -180,14 +178,15 @@ public class AddExpenseDialog extends DialogFragment {
         });
     }
 
+    // Month abbreviations WITHOUT periods
     private String getMonthAbbrev(int i) {
-        String[] m = {"Jan.","Feb.","Mar.","Apr.","May","Jun.",
-                "Jul.","Aug.","Sep.","Oct.","Nov.","Dec."};
+        String[] m = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
         return m[i];
     }
 
     // ---------------------------------------------------------
-    // SAVE BUTTON → SAVE TO DATABASE → CLOSE
+    // SAVE BUTTON — now saves correct ISO dates
     // ---------------------------------------------------------
     private void setupSaveButton() {
 
@@ -206,9 +205,12 @@ public class AddExpenseDialog extends DialogFragment {
 
             double amount = Double.parseDouble(amountStr);
 
-            // Convert UI → ISO before saving
+            // Convert UI → ISO using DateUtils (works now)
             String iso = DateUtils.toIso(uiDate);
-            if (iso == null) iso = uiDate; // fallback
+            if (iso == null) {
+                Toast.makeText(getContext(), "Invalid date format!", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             // Build Expense object
             Expense e = new Expense();
@@ -217,8 +219,22 @@ public class AddExpenseDialog extends DialogFragment {
             e.amount      = amount;
             e.date        = iso;
 
+            // Save to DB
             ExpenseDatabase db = ExpenseDatabase.getDatabase(requireContext());
             db.expenseDao().insert(e);
+
+// TEMP: verify DB write
+            int count = db.expenseDao().getAll().size();
+            Toast.makeText(requireContext(),
+                    "DB now has " + count + " rows",
+                    Toast.LENGTH_LONG).show();
+
+// TEMP: dump database rows for diagnosis
+            List<Expense> dump = db.expenseDao().getAll();
+            for (Expense ex : dump) {
+                android.util.Log.d("DB_DUMP",
+                        ex.id + " | " + ex.date + " | " + ex.description + " | " + ex.amount);
+            }
 
             // Refresh Month View
             if (getActivity() instanceof MainScreen) {
@@ -230,7 +246,7 @@ public class AddExpenseDialog extends DialogFragment {
     }
 
     // ---------------------------------------------------------
-    // CATEGORY MANAGEMENT (unchanged from your stable version)
+    // CATEGORY MANAGEMENT  (unchanged)
     // ---------------------------------------------------------
     private AlertDialog showManageCategoriesDialog() {
         String[] options = {"Add Category", "Edit Tag", "Delete Category", "Reset Defaults"};
@@ -244,7 +260,7 @@ public class AddExpenseDialog extends DialogFragment {
                         case 2: showDeleteCategoryDialog(); break;
                         case 3:
                             CategoryManager.resetToDefault(requireContext());
-                            reloadCategories("Groceries");
+                            loadCategoriesIntoSpinner("Groceries");
                             lastSelectedCategory = "Groceries";
                             Toast.makeText(requireContext(), "Defaults restored", Toast.LENGTH_SHORT).show();
                             break;
@@ -274,6 +290,12 @@ public class AddExpenseDialog extends DialogFragment {
                         Toast.makeText(requireContext(),"Select tag",Toast.LENGTH_SHORT).show();
                         return;
                     }
+
+
+
+
+
+
                     RadioButton rb = dv.findViewById(sel);
                     String tag = rb.getText().toString();
 
@@ -285,7 +307,7 @@ public class AddExpenseDialog extends DialogFragment {
 
                     CategoryManager.saveCategoryWithTag(requireContext(), name, tag);
 
-                    reloadCategories(name);
+                    loadCategoriesIntoSpinner(name);
                     lastSelectedCategory = name;
 
                     Toast.makeText(requireContext(),"Added \""+name+"\" ("+tag+")",Toast.LENGTH_SHORT).show();
@@ -340,7 +362,7 @@ public class AddExpenseDialog extends DialogFragment {
                     CategoryManager.saveCategoryWithTag(requireContext(), cat, newTag);
 
                     lastSelectedCategory = cat;
-                    reloadCategories(cat);
+                    loadCategoriesIntoSpinner(cat);
 
                     Toast.makeText(requireContext(),"Updated "+cat+" → "+newTag,Toast.LENGTH_SHORT).show();
                 })
@@ -378,7 +400,7 @@ public class AddExpenseDialog extends DialogFragment {
                                         ? lastSelectedCategory
                                         : "Groceries";
 
-                                reloadCategories(desired);
+                                loadCategoriesIntoSpinner(desired);
                                 lastSelectedCategory = desired;
 
                                 Toast.makeText(requireContext(),"Deleted \""+toRemove+"\"",Toast.LENGTH_SHORT).show();
