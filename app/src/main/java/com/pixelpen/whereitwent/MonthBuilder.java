@@ -73,28 +73,23 @@ public class MonthBuilder {
                 for (Expense e : monthList) {
                     monthlyTotal += e.amount;
 
-                    View row = inflater.inflate(R.layout.row_month_entry, null, false);
-
                     String ui = DateUtils.isoToUi(DateUtils.toIso(e.date));
                     String shortDate = DateUtils.toMonthStacked(ui);
 
-                    TextView m = row.findViewById(R.id.text_month_abbrev);
-                    TextView d = row.findViewById(R.id.text_day_number);
-                    TextView item = row.findViewById(R.id.text_item);
-                    TextView cat = row.findViewById(R.id.text_category);
-                    TextView amt = row.findViewById(R.id.text_amount);
-
                     String[] parts = shortDate.split(" ");
-                    if (parts.length == 2) {
-                        m.setText(parts[0]);
-                        d.setText(parts[1]);
-                    }
+                    String m = parts.length == 2 ? parts[0] : "";
+                    String d = parts.length == 2 ? parts[1] : "";
 
-                    item.setText(e.description);
-                    cat.setText(e.category.toUpperCase(Locale.ENGLISH));
-                    amt.setText(CurrencyUtils.format(e.amount, currencySymbol));
+                    group.dayRows.add(
+                            new MonthGroup.DayData(
+                                    m,
+                                    d,
+                                    e.description,
+                                    e.category.toUpperCase(Locale.ENGLISH),
+                                    CurrencyUtils.format(e.amount, currencySymbol)
+                            )
+                    );
 
-                    group.dayRows.add(row);
                 }
             }
 

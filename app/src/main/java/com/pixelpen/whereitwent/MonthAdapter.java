@@ -79,18 +79,34 @@ public class MonthAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         vh.children.removeAllViews();
 
         // Add day rows
-        for (int i = 0; i < mg.dayRows.size(); i++) {
-            View child = mg.dayRows.get(i);
+        LayoutInflater inflater = LayoutInflater.from(vh.children.getContext());
+        vh.children.removeAllViews();
 
-            // Highlight newest entry only (top row)
+        for (int i = 0; i < mg.dayRows.size(); i++) {
+
+            MonthGroup.DayData data = mg.dayRows.get(i);
+
+            View row = inflater.inflate(R.layout.row_month_entry, vh.children, false);
+
+            TextView m = row.findViewById(R.id.text_month_abbrev);
+            TextView d = row.findViewById(R.id.text_day_number);
+            TextView item = row.findViewById(R.id.text_item);
+            TextView cat = row.findViewById(R.id.text_category);
+            TextView amt = row.findViewById(R.id.text_amount);
+
+            m.setText(data.monthAbbrev);
+            d.setText(data.dayNumber);
+            item.setText(data.description);
+            cat.setText(data.category);
+            amt.setText(data.amount);
+
             if (i == 0) {
-                child.setBackgroundColor(0xFFFFF4D0); // light amber
-            } else {
-                child.setBackgroundColor(0x00000000); // clear
+                row.setBackgroundColor(0xFFFFF4D0); // amber
             }
 
-            vh.children.addView(child);
+            vh.children.addView(row);
         }
+
     }
 
     // =====================================================
