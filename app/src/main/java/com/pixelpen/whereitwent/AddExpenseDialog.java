@@ -33,7 +33,7 @@ public class AddExpenseDialog extends DialogFragment {
     private Expense editingExpense = null;
 
     // --------------------------------------------------------------------
-    // CREATE INSTANCE FOR EDITING
+    // NEW INSTANCE FOR EDITING
     // --------------------------------------------------------------------
     public static AddExpenseDialog newInstance(int expenseId) {
         AddExpenseDialog d = new AddExpenseDialog();
@@ -60,17 +60,21 @@ public class AddExpenseDialog extends DialogFragment {
         textTag         = v.findViewById(R.id.text_tag);
         btnSave         = v.findViewById(R.id.btn_ok);
 
+        // Detect EDIT mode
         if (getArguments() != null) {
             editingId = getArguments().getInt("expense_id", -1);
         }
 
+        // Load categories first
+        setupSpinner();
+
         if (editingId != null && editingId > 0) {
             loadForEdit(editingId);
         } else {
-            setupSpinner();
-            setupDatePicker();
+            setupDefaultDate();
         }
 
+        setupDatePicker();
         setupSaveButton();
 
         return new AlertDialog.Builder(requireContext())
@@ -80,13 +84,13 @@ public class AddExpenseDialog extends DialogFragment {
     }
 
     // --------------------------------------------------------------------
-    // LOAD EXPENSE FOR EDITING
+    // LOAD EXPENSE INTO FIELDS FOR EDITING
     // --------------------------------------------------------------------
     private void loadForEdit(int id) {
         ExpenseDao dao = ExpenseDatabase.getDatabase(requireContext()).expenseDao();
         editingExpense = dao.getById(id);
 
-        setupSpinner();
+        if (editingExpense == null) return;
 
         inputItem.setText(editingExpense.description);
         inputAmount.setText(String.valueOf(editingExpense.amount));
@@ -99,12 +103,10 @@ public class AddExpenseDialog extends DialogFragment {
             suppressSpinnerCallback = false;
             updateTagLineFor(editingExpense.category);
         }
-
-        setupDatePicker();
     }
 
     // --------------------------------------------------------------------
-    // SPINNER
+    // SPINNER SETUP (Manage Categories FIXED)
     // --------------------------------------------------------------------
     private void setupSpinner() {
 
@@ -117,14 +119,16 @@ public class AddExpenseDialog extends DialogFragment {
 
                 String selected = categories.get(position);
 
-                if (selected.equals("➕ Manage Categories")) {
+                // ⭐ FIXED: MAKE MATCH ALWAYS WORK
+                if (selected != null &&
+                        selected.trim().toLowerCase(Locale.ENGLISH).contains("manage categories")) {
                     showManageCategoriesDialog();
                     return;
                 }
 
-                if (!selected.equals("⋯")) {
-                    currentCategoryTag = selected;
+                if (!"⋯".equals(selected)) {
                     lastSelectedCategory = selected;
+                    currentCategoryTag   = selected;
                     updateTagLineFor(selected);
                 }
             }
@@ -165,8 +169,8 @@ public class AddExpenseDialog extends DialogFragment {
                 R.layout.spinner_item_selected,
                 categories
         );
-        categoryAdapter.setDropDownViewResource(R.layout.spinner_item_dropdown);
 
+        categoryAdapter.setDropDownViewResource(R.layout.spinner_item_dropdown);
         spinnerCategory.setAdapter(categoryAdapter);
 
         int idx = categories.indexOf(desiredSelection);
@@ -177,11 +181,7 @@ public class AddExpenseDialog extends DialogFragment {
         spinnerCategory.setSelection(idx);
         suppressSpinnerCallback = false;
 
-        String sel = categories.get(idx);
-        if (!sel.equals("⋯") && !sel.equals("➕ Manage Categories")) {
-            lastSelectedCategory = sel;
-            updateTagLineFor(sel);
-        }
+        updateTagLineFor(categories.get(idx));
     }
 
     private void updateTagLineFor(String category) {
@@ -194,14 +194,13 @@ public class AddExpenseDialog extends DialogFragment {
     // --------------------------------------------------------------------
     // DATE PICKER
     // --------------------------------------------------------------------
-    private void setupDatePicker() {
-
+    private void setupDefaultDate() {
         Calendar today = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
+        textDate.setText(sdf.format(today.getTime()));
+    }
 
-        if (editingExpense == null) {
-            textDate.setText(sdf.format(today.getTime()));
-        }
+    private void setupDatePicker() {
 
         textDate.setOnClickListener(v -> {
 
@@ -225,16 +224,15 @@ public class AddExpenseDialog extends DialogFragment {
     }
 
     private String getMonthAbbrev(int i) {
-        String[] m = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+        String[] m = {"Jan","Feb","Mar","Apr","May","Jun",
+                "Jul","Aug","Sep","Oct","Nov","Dec"};
         return m[i];
     }
 
     // --------------------------------------------------------------------
-    // SAVE BUTTON  (handles INSERT + UPDATE)
+    // SAVE BUTTON (INSERT + UPDATE)
     // --------------------------------------------------------------------
     private void setupSaveButton() {
-
         btnSave.setOnClickListener(v -> {
 
             String category = spinnerCategory.getSelectedItem().toString();
@@ -248,33 +246,40 @@ public class AddExpenseDialog extends DialogFragment {
             }
 
             double amount = Double.parseDouble(amountStr);
-
             String iso = toIso(uiDate);
             if (iso == null) {
-                Toast.makeText(getContext(), "Invalid date format!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Invalid date", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             ExpenseDao dao = ExpenseDatabase.getDatabase(requireContext()).expenseDao();
 
             if (editingExpense != null) {
+                // UPDATE
                 editingExpense.category    = category;
                 editingExpense.description = item;
                 editingExpense.amount      = amount;
                 editingExpense.date        = iso;
+
                 dao.update(editingExpense);
+
+                Toast.makeText(requireContext(), "Item updated", Toast.LENGTH_SHORT).show();
 
                 if (getActivity() instanceof DayDetailActivity) {
                     ((DayDetailActivity) getActivity()).refreshAfterEdit();
                 }
             }
             else {
+                // INSERT
                 Expense e = new Expense();
                 e.category    = category;
                 e.description = item;
                 e.amount      = amount;
                 e.date        = iso;
+
                 dao.insert(e);
+
+                Toast.makeText(requireContext(), "Item added", Toast.LENGTH_SHORT).show();
 
                 if (getActivity() instanceof MainScreen) {
                     ((MainScreen) getActivity()).refreshAfterAdd();
@@ -311,12 +316,162 @@ public class AddExpenseDialog extends DialogFragment {
     }
 
     // --------------------------------------------------------------------
-    // Category management placeholders
-    // (unchanged — your original implementations remain)
+    // MANAGE CATEGORY DIALOGS (unchanged)
     // --------------------------------------------------------------------
-    private AlertDialog showManageCategoriesDialog() { return null; }
-    private void showAddCategoryDialog() { }
-    private void showEditCategoryDialog() { }
-    private void showTagChangeDialog(String cat) { }
-    private void showDeleteCategoryDialog() { }
+    private AlertDialog showManageCategoriesDialog() {
+        String[] options = {"Add Category", "Edit Tag", "Delete Category", "Reset Defaults"};
+
+        return new AlertDialog.Builder(requireContext())
+                .setTitle("Manage Categories")
+                .setItems(options, (dialog, which) -> {
+                    switch (which) {
+                        case 0: showAddCategoryDialog(); break;
+                        case 1: showEditCategoryDialog(); break;
+                        case 2: showDeleteCategoryDialog(); break;
+                        case 3:
+                            CategoryManager.resetToDefault(requireContext());
+                            loadCategoriesIntoSpinner("Groceries");
+                            lastSelectedCategory = "Groceries";
+                            Toast.makeText(requireContext(), "Defaults restored", Toast.LENGTH_SHORT).show();
+                            break;
+                    }
+                })
+                .show();
+    }
+
+    private void showAddCategoryDialog() {
+        View dv = requireActivity().getLayoutInflater()
+                .inflate(R.layout.dialog_add_category_tagged, null);
+
+        EditText input = dv.findViewById(R.id.edit_category_name);
+        RadioGroup rg  = dv.findViewById(R.id.radio_tag_group);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Add Category")
+                .setView(dv)
+                .setPositiveButton("Add", (d,w) ->{
+                    String name = input.getText().toString().trim();
+                    if (name.isEmpty()) {
+                        Toast.makeText(requireContext(),"Enter name",Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    int sel = rg.getCheckedRadioButtonId();
+                    if (sel == -1) {
+                        Toast.makeText(requireContext(),"Select tag",Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    RadioButton rb = dv.findViewById(sel);
+                    String tag = rb.getText().toString();
+
+                    List<String> cur = CategoryManager.getOrderedCategories(requireContext());
+                    if (cur.contains(name)) {
+                        Toast.makeText(requireContext(),"Exists",Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    CategoryManager.saveCategoryWithTag(requireContext(), name, tag);
+                    loadCategoriesIntoSpinner(name);
+                    lastSelectedCategory = name;
+
+                    Toast.makeText(requireContext(),"Added \""+name+"\" ("+tag+")",Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void showEditCategoryDialog() {
+        List<String> editable = new ArrayList<>();
+        for (String c : CategoryManager.getOrderedCategories(requireContext())) {
+            if (!CategoryManager.isDefaultCategory(c)) editable.add(c);
+        }
+        if (editable.isEmpty()) {
+            Toast.makeText(requireContext(),"No editable categories",Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Collections.sort(editable,String.CASE_INSENSITIVE_ORDER);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Edit Tag")
+                .setItems(editable.toArray(new String[0]),
+                        (d,w)-> showTagChangeDialog(editable.get(w)))
+                .show();
+    }
+
+    private void showTagChangeDialog(String cat) {
+        View dv = requireActivity().getLayoutInflater()
+                .inflate(R.layout.dialog_add_category_tagged, null);
+
+        RadioGroup rg = dv.findViewById(R.id.radio_tag_group);
+        EditText name = dv.findViewById(R.id.edit_category_name);
+
+        name.setText(cat);
+        name.setEnabled(false);
+
+        String currentTag = CategoryManager.getTagForCategory(requireContext(), cat);
+
+        if (currentTag.equals("Fixed")) rg.check(R.id.radio_fixed);
+        else if (currentTag.equals("Necessity")) rg.check(R.id.radio_basic);
+        else rg.check(R.id.radio_discretionary);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Change Tag")
+                .setView(dv)
+                .setPositiveButton("Save", (d,w)->{
+                    int sel = rg.getCheckedRadioButtonId();
+                    RadioButton rb = dv.findViewById(sel);
+                    String newTag = rb.getText().toString();
+
+                    CategoryManager.saveCategoryWithTag(requireContext(), cat, newTag);
+
+                    lastSelectedCategory = cat;
+                    loadCategoriesIntoSpinner(cat);
+
+                    Toast.makeText(requireContext(),"Updated "+cat+" → "+newTag,Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void showDeleteCategoryDialog() {
+
+        List<String> deletable = new ArrayList<>();
+        for (String c : CategoryManager.getOrderedCategories(requireContext())) {
+            if (!CategoryManager.isDefaultCategory(c)) deletable.add(c);
+        }
+        if (deletable.isEmpty()) {
+            Toast.makeText(requireContext(),"Nothing to delete",Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Collections.sort(deletable, String.CASE_INSENSITIVE_ORDER);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Delete Category")
+                .setItems(deletable.toArray(new String[0]), (d,w)->{
+
+                    String toRemove = deletable.get(w);
+
+                    new AlertDialog.Builder(requireContext())
+                            .setTitle("Confirm Delete")
+                            .setMessage("Delete \""+toRemove+"\" permanently?")
+                            .setPositiveButton("Delete", (dd, ww)->{
+                                CategoryManager.removeCategory(requireContext(), toRemove);
+
+                                List<String> fresh = CategoryManager.getOrderedCategories(requireContext());
+                                String desired = fresh.contains(lastSelectedCategory)
+                                        ? lastSelectedCategory
+                                        : "Groceries";
+
+                                loadCategoriesIntoSpinner(desired);
+                                lastSelectedCategory = desired;
+
+                                Toast.makeText(requireContext(),"Deleted \""+toRemove+"\"",Toast.LENGTH_SHORT).show();
+                            })
+                            .setNegativeButton("Cancel", null)
+                            .show();
+                })
+                .show();
+    }
 }
