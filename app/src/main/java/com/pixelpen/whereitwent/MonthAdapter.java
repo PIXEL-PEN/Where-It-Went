@@ -16,11 +16,9 @@ public class MonthAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private static final int TYPE_MONTH  = 1;
 
     private final List<MonthGroup> groups;
-    private final String currencySymbol;
 
-    public MonthAdapter(List<MonthGroup> groups, String currencySymbol) {
+    public MonthAdapter(List<MonthGroup> groups) {
         this.groups = groups;
-        this.currencySymbol = currencySymbol;
     }
 
     @Override
@@ -48,72 +46,69 @@ public class MonthAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-
+    public void onBindViewHolder(RecyclerView.ViewHolder h, int position) {
         MonthGroup mg = groups.get(position);
 
-        // --------------------------------------------------
-        // HEADER ROW
-        // --------------------------------------------------
-        if (holder instanceof VH_Header) {
-            VH_Header vh = (VH_Header) holder;
+        // HEADER
+        if (h instanceof VH_Header) {
+            VH_Header vh = (VH_Header) h;
             vh.title.setText("Last 12 Months");
             vh.total.setText(mg.totalFormatted);
             return;
         }
 
-        // --------------------------------------------------
         // MONTH ROW
-        // --------------------------------------------------
-        VH_Month vh = (VH_Month) holder;
+        VH_Month vh = (VH_Month) h;
 
         vh.title.setText(mg.monthLabel);
         vh.total.setText(mg.totalFormatted);
 
         // Expand/collapse
         vh.children.setVisibility(mg.expanded ? View.VISIBLE : View.GONE);
-
         vh.header.setOnClickListener(v -> {
             mg.expanded = !mg.expanded;
             notifyItemChanged(position);
         });
 
-        // --------------------------------------------------
-        // Populate children (day rows)
-        // --------------------------------------------------
-
-        vh.children.removeAllViews();
-
+        // ---- CHILD ROWS ----
         LayoutInflater inflater = LayoutInflater.from(vh.children.getContext());
+        vh.children.removeAllViews();
 
         for (int i = 0; i < mg.dayRows.size(); i++) {
 
-            View child = mg.dayRows.get(i);
+            MonthGroup.DayData data = mg.dayRows.get(i);
 
-            // Highlight newest entry
-            if (i == 0) {
-                child.setBackgroundColor(0xFFFFF4D0);  // light amber
-            } else {
-                child.setBackgroundColor(0x00000000);  // clear
-            }
+            View row = inflater.inflate(R.layout.row_month_entry, vh.children, false);
 
-            // Click → DayDetail
-            child.setOnClickListener(v -> {
-                String iso = (String) child.getTag();
-                if (iso != null) {
-                    Intent intent = new Intent(v.getContext(), DayDetailActivity.class);
-                    intent.putExtra("selected_date", iso);
-                    v.getContext().startActivity(intent);
-                }
+            row.setTag(data.iso);
+
+            TextView m = row.findViewById(R.id.text_month_abbrev);
+            TextView d = row.findViewById(R.id.text_day_number);
+            TextView item = row.findViewById(R.id.text_item);
+            TextView cat = row.findViewById(R.id.text_category);
+            TextView amt = row.findViewById(R.id.text_amount);
+
+            m.setText(data.monthAbbrev);
+            d.setText(data.dayNumber);
+            item.setText(data.description);
+            cat.setText(data.category);
+            amt.setText(data.amount);
+
+            // highlight newest
+            row.setBackgroundColor(i == 0 ? 0xFFFFF4D0 : 0x00000000);
+
+            // click → DayDetailActivity
+            row.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), DayDetailActivity.class);
+                intent.putExtra("selected_date", data.iso);
+                v.getContext().startActivity(intent);
             });
 
-            vh.children.addView(child);
+            vh.children.addView(row);
         }
     }
 
-    // =====================================================
-    // HEADER HOLDER
-    // =====================================================
+    // --- HEADER HOLDER ---
     static class VH_Header extends RecyclerView.ViewHolder {
         TextView title, total;
 
@@ -124,9 +119,7 @@ public class MonthAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         }
     }
 
-    // =====================================================
-    // MONTH HOLDER
-    // =====================================================
+    // --- MONTH HOLDER ---
     static class VH_Month extends RecyclerView.ViewHolder {
         View header;
         TextView title;

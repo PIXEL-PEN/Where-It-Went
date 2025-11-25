@@ -9,7 +9,16 @@ public class MonthGroup {
     public boolean isHeader = false;
     public String monthLabel = "";
     public boolean expanded = false;   // <-- default collapsed
-    public List<View> dayRows = new ArrayList<>();
+    public static class DayData {
+        public String iso;
+        public String monthAbbrev;
+        public String dayNumber;
+        public String description;
+        public String category;
+        public String amount;   // formatted
+    }
+
+    public List<DayData> dayRows = new ArrayList<>();
 
     // Totals (computed by MonthBuilder)
     public double monthTotal = 0;

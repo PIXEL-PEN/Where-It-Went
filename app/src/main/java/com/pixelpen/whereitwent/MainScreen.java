@@ -1,5 +1,6 @@
 package com.pixelpen.whereitwent;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
@@ -11,7 +12,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.Gravity;
-import java.util.*;
+
+import java.util.List;
 
 public class MainScreen extends AppCompatActivity {
 
@@ -23,62 +25,52 @@ public class MainScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        drawer.setDrawerElevation(16f);
-        drawer.setScrimColor(0x55000000);
+        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
+        drawerLayout.setDrawerElevation(16f);
+        drawerLayout.setScrimColor(0x55000000);
 
-        View btnHam = findViewById(R.id.btn_filter);
-        btnHam.setOnClickListener(v -> drawer.openDrawer(Gravity.END));
+        View ham = findViewById(R.id.btn_filter);
+        if (ham != null) {
+            ham.setOnClickListener(v -> drawerLayout.openDrawer(Gravity.END));
+        }
 
-        ImageButton fabAdd = findViewById(R.id.fab_add);
-        fabAdd.setTranslationY(-90f);
-        fabAdd.setOnClickListener(v -> {
-            AddExpenseDialog dialog = new AddExpenseDialog();
-            dialog.show(getSupportFragmentManager(), "ADD_EXPENSE");
-        });
+        View linkSettings = findViewById(R.id.linkSettings);
+        if (linkSettings != null) {
+            linkSettings.setOnClickListener(v -> {
+                startActivity(new Intent(MainScreen.this, SettingsActivity.class));
+                drawerLayout.closeDrawer(Gravity.END);
+            });
+        }
+
+        // Currency from settings
+        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
+        String code = prefs.getString("currency_code", "USD");
+        String symbol = CurrencyUtils.symbolFor(code);
 
         recyclerMonths = findViewById(R.id.recycler_months);
         recyclerMonths.setLayoutManager(new LinearLayoutManager(this));
 
-        loadMonths();
-    }
-
-    private void loadMonths() {
-        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        String currencySymbol = prefs.getString("currency_symbol", "$");
-
-        List<MonthGroup> data = MonthBuilder.buildLast12Months(this, currencySymbol);
-
-        expandCurrentMonth(data);   // expand the active month
-
-        adapter = new MonthAdapter(data, currencySymbol);
+        List<MonthGroup> data = MonthBuilder.buildLast12Months(this, symbol);
+        adapter = new MonthAdapter(data);
         recyclerMonths.setAdapter(adapter);
 
-        setupDrawerLinks();
-    }
-
-    private void expandCurrentMonth(List<MonthGroup> groups) {
-        String currentLabel = new java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.ENGLISH)
-                .format(new java.util.Date());
-
-        for (MonthGroup g : groups) {
-            if (!g.isHeader && g.monthLabel.equals(currentLabel)) {
-                g.expanded = true;
-                break;
-            }
+        ImageButton fabAdd = findViewById(R.id.fab_add);
+        if (fabAdd != null) {
+            fabAdd.setTranslationY(-90f);
+            fabAdd.setOnClickListener(v -> {
+                AddExpenseDialog dialog = new AddExpenseDialog();
+                dialog.show(getSupportFragmentManager(), "ADD_EXPENSE");
+            });
         }
     }
 
     public void refreshAfterAdd() {
-        loadMonths();   // reload everything with new values
-    }
+        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
+        String code = prefs.getString("currency_code", "USD");
+        String symbol = CurrencyUtils.symbolFor(code);
 
-    private void setupDrawerLinks() {
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-
-        findViewById(R.id.linkSettings).setOnClickListener(v -> {
-            startActivity(new android.content.Intent(this, SettingsActivity.class));
-            drawer.closeDrawer(Gravity.END);
-        });
+        List<MonthGroup> fresh = MonthBuilder.buildLast12Months(this, symbol);
+        adapter = new MonthAdapter(fresh);
+        recyclerMonths.setAdapter(adapter);
     }
 }
