@@ -23,10 +23,18 @@ public class MonthBuilder {
         Map<String, List<Expense>> map = new HashMap<>();
         double grandTotal = 0;
 
+        // Also track newest ISO date for auto-expand
+        String newestIso = null;
+
         // Group by yyyy-MM
         for (Expense e : all) {
             String iso = DateUtils.toIso(e.date);
             if (iso == null) continue;
+
+            // capture newest ISO
+            if (newestIso == null || iso.compareTo(newestIso) > 0) {
+                newestIso = iso;
+            }
 
             String ym = iso.substring(0, 7);
 
@@ -92,6 +100,20 @@ public class MonthBuilder {
 
             list.add(group);
             cal.add(Calendar.MONTH, -1);
+        }
+
+        // ---------------------------------------------------
+        // AUTO-EXPAND NEWEST MONTH (last added expense)
+        // ---------------------------------------------------
+        if (newestIso != null) {
+            String newestYM = newestIso.substring(0, 7); // yyyy-MM
+
+            for (MonthGroup g : list) {
+                if (!g.isHeader && DateUtils.matchesMonth(g.monthLabel, newestYM)) {
+                    g.expanded = true;
+                    break;
+                }
+            }
         }
 
         return list;

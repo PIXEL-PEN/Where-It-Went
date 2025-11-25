@@ -139,6 +139,17 @@ public class DateUtils {
         }
     }
 
+    public static boolean matchesMonth(String monthLabel, String ym) {
+        try {
+            Date d = new SimpleDateFormat("MMM yyyy", Locale.ENGLISH).parse(monthLabel);
+            String produced = new SimpleDateFormat("yyyy-MM", Locale.ENGLISH).format(d);
+            return produced.equals(ym);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+
     // --------------------------------------------
     // 6) ISO → Pretty UI ("22 Nov 2025")
     // --------------------------------------------
