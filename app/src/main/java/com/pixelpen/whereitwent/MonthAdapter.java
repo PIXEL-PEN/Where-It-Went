@@ -134,7 +134,11 @@ public class MonthAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
             // Highlight newest entry
             if (i == 0) {
-                row.setBackgroundColor(0xFFFFF4D0); // amber
+                row.setBackgroundColor(0xFFFFFAF2);
+
+
+
+
             } else {
                 row.setBackgroundColor(0x00000000); // transparent
             }
