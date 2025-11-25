@@ -13,6 +13,9 @@ public class MonthBuilder {
     private static final SimpleDateFormat LABEL_FMT =
             new SimpleDateFormat("MMM yyyy", Locale.ENGLISH);
 
+    /**
+     * Build MonthGroup list (header + last 12 months)
+     */
     public static List<MonthGroup> buildLast12Months(Context ctx, String currencySymbol) {
 
         List<MonthGroup> list = new ArrayList<>();
@@ -20,28 +23,16 @@ public class MonthBuilder {
         ExpenseDatabase db = ExpenseDatabase.getDatabase(ctx);
         List<Expense> all = db.expenseDao().getAll();
 
+        // Group by yyyy-MM
         Map<String, List<Expense>> map = new HashMap<>();
         double grandTotal = 0;
 
-        // Also track newest ISO date for auto-expand
-        String newestIso = null;
-
-        // Group by yyyy-MM
         for (Expense e : all) {
             String iso = DateUtils.toIso(e.date);
             if (iso == null) continue;
 
-            // capture newest ISO
-            if (newestIso == null || iso.compareTo(newestIso) > 0) {
-                newestIso = iso;
-            }
-
             String ym = iso.substring(0, 7);
-
-            if (!map.containsKey(ym))
-                map.put(ym, new ArrayList<>());
-
-            map.get(ym).add(e);
+            map.computeIfAbsent(ym, k -> new ArrayList<>()).add(e);
 
             grandTotal += e.amount;
         }
@@ -52,24 +43,25 @@ public class MonthBuilder {
         header.totalFormatted = CurrencyUtils.format(grandTotal, currencySymbol);
         list.add(header);
 
-        // Build last 12 months (descending)
+        // Build 12 months descending
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.DAY_OF_MONTH, 1);
 
         for (int i = 0; i < 12; i++) {
 
-            String key   = ISO_FMT.format(cal.getTime());
-            String label = LABEL_FMT.format(cal.getTime());
+            String key = ISO_FMT.format(cal.getTime());      // yyyy-MM
+            String label = LABEL_FMT.format(cal.getTime());  // "Nov 2025"
 
             MonthGroup group = new MonthGroup(label);
-            group.expanded = false;
+            group.expanded = false; // default collapsed
 
             List<Expense> monthList = map.get(key);
             double monthlyTotal = 0;
 
             if (monthList != null && !monthList.isEmpty()) {
 
-                Collections.sort(monthList, (a, b) -> {
+                // Sort newest first
+                monthList.sort((a, b) -> {
                     String ia = DateUtils.toIso(a.date);
                     String ib = DateUtils.toIso(b.date);
                     if (ia == null || ib == null) return 0;
@@ -77,16 +69,25 @@ public class MonthBuilder {
                 });
 
                 for (Expense e : monthList) {
+
                     monthlyTotal += e.amount;
 
                     MonthGroup.DayData dd = new MonthGroup.DayData();
                     dd.iso = DateUtils.toIso(e.date);
 
+                    // UI → stacked "Nov 24"
                     String ui = DateUtils.isoToUi(dd.iso);
-                    String[] parts = DateUtils.toMonthStacked(ui).split(" ");
+                    String stacked = DateUtils.toMonthStacked(ui);
+                    String[] parts = stacked.split(" ");
 
-                    dd.monthAbbrev = parts[0];
-                    dd.dayNumber   = parts[1];
+                    if (parts.length == 2) {
+                        dd.monthAbbrev = parts[0];
+                        dd.dayNumber   = parts[1];
+                    } else {
+                        dd.monthAbbrev = "";
+                        dd.dayNumber   = "";
+                    }
+
                     dd.description = e.description;
                     dd.category    = e.category.toUpperCase(Locale.ENGLISH);
                     dd.amount      = CurrencyUtils.format(e.amount, currencySymbol);
@@ -95,25 +96,12 @@ public class MonthBuilder {
                 }
             }
 
+            // Totals
             group.monthTotal = monthlyTotal;
             group.totalFormatted = CurrencyUtils.format(monthlyTotal, currencySymbol);
 
             list.add(group);
             cal.add(Calendar.MONTH, -1);
-        }
-
-        // ---------------------------------------------------
-        // AUTO-EXPAND NEWEST MONTH (last added expense)
-        // ---------------------------------------------------
-        if (newestIso != null) {
-            String newestYM = newestIso.substring(0, 7); // yyyy-MM
-
-            for (MonthGroup g : list) {
-                if (!g.isHeader && DateUtils.matchesMonth(g.monthLabel, newestYM)) {
-                    g.expanded = true;
-                    break;
-                }
-            }
         }
 
         return list;
