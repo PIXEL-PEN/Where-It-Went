@@ -20,6 +20,9 @@ public class MainScreen extends AppCompatActivity {
     private RecyclerView recyclerMonths;
     private MonthAdapter adapter;
 
+    // ★ NEW: flag so we expand after AddExpense succeeds
+    private boolean shouldAutoExpand = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,7 +45,6 @@ public class MainScreen extends AppCompatActivity {
             });
         }
 
-        // Currency from settings
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         String code = prefs.getString("currency_code", "USD");
         String symbol = CurrencyUtils.symbolFor(code);
@@ -60,16 +62,63 @@ public class MainScreen extends AppCompatActivity {
             fabAdd.setOnClickListener(v -> {
                 AddExpenseDialog dialog = new AddExpenseDialog();
                 dialog.show(getSupportFragmentManager(), "ADD_EXPENSE");
+
+                // ★ Mark that we should auto-expand on resume
+                shouldAutoExpand = true;
             });
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (shouldAutoExpand) {
+            shouldAutoExpand = false;
+            refreshAfterAdd(true);
+        }
+    }
+
+    // Original method (legacy callers)
     public void refreshAfterAdd() {
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         String code = prefs.getString("currency_code", "USD");
         String symbol = CurrencyUtils.symbolFor(code);
 
         List<MonthGroup> fresh = MonthBuilder.buildLast12Months(this, symbol);
+
+        // ★ EXPAND NEWEST MONTH (item after header)
+        if (fresh.size() > 1) {
+            fresh.get(1).expanded = true;
+        }
+
+        adapter = new MonthAdapter(fresh);
+        recyclerMonths.setAdapter(adapter);
+    }
+
+
+    // Updated internal version
+    private void refreshAfterAdd(boolean expandFirstMonth) {
+
+        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
+        String code = prefs.getString("currency_code", "USD");
+        String symbol = CurrencyUtils.symbolFor(code);
+
+        List<MonthGroup> fresh = MonthBuilder.buildLast12Months(this, symbol);
+
+        // ★ EXPAND NEWEST MONTH (index 0)
+        if (expandFirstMonth && fresh.size() > 1) {
+
+            for (int i = 0; i < fresh.size(); i++) {
+                if (!fresh.get(i).isHeader) {
+                    fresh.get(i).expanded = (i == 1);
+                    // WHY index 1?
+                    // Because index 0 is the static header ("Last 12 Months")
+                    break;
+                }
+            }
+        }
+
         adapter = new MonthAdapter(fresh);
         recyclerMonths.setAdapter(adapter);
     }
