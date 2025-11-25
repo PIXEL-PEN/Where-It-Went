@@ -30,7 +30,7 @@ public class DayDetailActivity extends AppCompatActivity {
     // Incoming is yyyy-MM-dd
     private final SimpleDateFormat incoming = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
     // Display as "dd MMM. yyyy"
-    private final SimpleDateFormat displayOut = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
+    private final SimpleDateFormat displayOut = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
 
     // App accepts multiple input formats historically
     private final String[] parsePatterns = new String[] {
@@ -49,29 +49,39 @@ public class DayDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_day_detail);
 
+        // Back button
+        findViewById(R.id.btn_back).setOnClickListener(v -> finish());
+
+        // Get banner from XML (this is the only banner now)
+        TextView banner = findViewById(R.id.daydetail_banner);
+
+        // Container for expenses (below the banner)
         expensesContainer = findViewById(R.id.daydetail_container);
+
         LayoutInflater inflater = LayoutInflater.from(this);
 
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         String code = prefs.getString("currency_code", "THB");
         String symbol = CurrencyUtils.symbolFor(code);
 
-        String selectedDateRaw = getIntent().getStringExtra("selected_date"); // yyyy-MM-dd
+        String selectedDateRaw = getIntent().getStringExtra("selected_date");
         if (selectedDateRaw == null) return;
+
+        // Set banner text to formatted date
+        banner.setText(formatDisplay(selectedDateRaw));
 
         Date target = parseWith(incoming, selectedDateRaw);
         if (target == null) return;
 
-        // Normalize target to day (Y/M/D only)
+        // Normalize to YMD only
         Calendar tgt = asYMD(target);
 
-        // Load ALL, then filter by same calendar day (handles mixed formats in DB)
+        // Load all expenses and filter by same day
         List<Expense> all = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
         List<Expense> expenses = new ArrayList<>();
         for (Expense e : all) {
             Date d = parseAny(e.date);
             if (d == null) {
-                // Fallback: exact string match if parse fails
                 if (selectedDateRaw.equals(e.date)) {
                     expenses.add(e);
                 }
@@ -85,29 +95,15 @@ public class DayDetailActivity extends AppCompatActivity {
 
         expensesContainer.removeAllViews();
 
-        // Banner
-        TextView banner = new TextView(this);
-        banner.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(29)
-        ));
-        banner.setBackgroundColor(0xFFE1C699);
-        banner.setText(formatDisplay(selectedDateRaw));
-        banner.setTextSize(16);
-        banner.setTypeface(Typeface.DEFAULT_BOLD);
-        banner.setTextColor(0xFF000000);
-        banner.setGravity(android.view.Gravity.CENTER_VERTICAL | android.view.Gravity.START);
-        banner.setPadding(dp(16), 0, 0, 0);
-        expensesContainer.addView(banner);
-
         double total = 0.0;
 
+        // Render expense rows
         for (Expense e : expenses) {
             View row = inflater.inflate(R.layout.item_expense_date_row, expensesContainer, false);
 
             TextView textDescription = row.findViewById(R.id.text_description);
-            TextView textCategory   = row.findViewById(R.id.text_category);
-            TextView textAmount     = row.findViewById(R.id.text_amount);
+            TextView textCategory    = row.findViewById(R.id.text_category);
+            TextView textAmount      = row.findViewById(R.id.text_amount);
 
             textDescription.setText(e.description);
             textCategory.setText(e.category);
@@ -115,10 +111,12 @@ public class DayDetailActivity extends AppCompatActivity {
             String formatted = String.format(Locale.ENGLISH, "%.2f %s", e.amount, symbol);
             SpannableString display = new SpannableString(formatted);
             int start = formatted.length() - symbol.length();
-            display.setSpan(new RelativeSizeSpan(0.85f), start, formatted.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            display.setSpan(new RelativeSizeSpan(0.85f),
+                    start,
+                    formatted.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             textAmount.setText(display);
 
-            // Click → edit/delete dialog
             row.setOnClickListener(v -> {
                 String details = "Category: " + e.category + "\n"
                         + "Date: " + safeDisplay(e.date) + "\n"
@@ -128,17 +126,16 @@ public class DayDetailActivity extends AppCompatActivity {
                 AlertDialog dialog = new AlertDialog.Builder(DayDetailActivity.this)
                         .setTitle("Expense Details")
                         .setMessage(details)
-                        .setNegativeButton("CLOSE", (d, which) -> d.dismiss())
-                        .setNeutralButton("DELETE", (d, which) -> {
+                        .setNegativeButton("CLOSE", (d, w) -> d.dismiss())
+                        .setNeutralButton("DELETE", (d, w) -> {
                             ExpenseDatabase.getDatabase(DayDetailActivity.this)
-                                    .expenseDao()
-                                    .delete(e);
+                                    .expenseDao().delete(e);
                             recreate();
                         })
-                        .setPositiveButton("EDIT", (d, which) -> {
-                            Intent intent = new Intent(DayDetailActivity.this, AddExpenseActivity.class);
-                            intent.putExtra("expense_id", e.id);
-                            startActivity(intent);
+                        .setPositiveButton("EDIT", (d, w) -> {
+                            Intent i = new Intent(DayDetailActivity.this, AddExpenseActivity.class);
+                            i.putExtra("expense_id", e.id);
+                            startActivity(i);
                         })
                         .create();
 
@@ -158,7 +155,7 @@ public class DayDetailActivity extends AppCompatActivity {
             total += e.amount;
         }
 
-        // TOTAL row
+        // TOTAL row (unchanged)
         LinearLayout totalRow = new LinearLayout(this);
         totalRow.setOrientation(LinearLayout.HORIZONTAL);
         totalRow.setPadding(dp(12), dp(12), dp(12), dp(12));
@@ -181,12 +178,11 @@ public class DayDetailActivity extends AppCompatActivity {
 
         SpannableString totalDisplay = new SpannableString(totalFormatted);
         int s2 = totalFormatted.length() - symbol.length();
-        totalDisplay.setSpan(
-                new RelativeSizeSpan(0.85f),
+        totalDisplay.setSpan(new RelativeSizeSpan(0.85f),
                 s2,
                 totalFormatted.length(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-        );
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
         amountTv.setText(totalDisplay);
         amountTv.setTextSize(18);
         amountTv.setTypeface(Typeface.DEFAULT_BOLD);
@@ -196,6 +192,7 @@ public class DayDetailActivity extends AppCompatActivity {
         totalRow.addView(amountTv);
         expensesContainer.addView(totalRow);
     }
+
 
     private int dp(int dps) {
         float density = getResources().getDisplayMetrics().density;
