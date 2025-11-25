@@ -26,7 +26,7 @@ public class MonthBuilder {
         Map<String, List<Expense>> map = new HashMap<>();
         double grandTotal = 0;
 
-        // Group by yyyy-MM
+        // Group by yyyy-MM and compute grand total
         for (Expense e : all) {
             String iso = DateUtils.toIso(e.date);
             if (iso == null) continue;
@@ -40,11 +40,13 @@ public class MonthBuilder {
             grandTotal += e.amount;
         }
 
+        // HEADER
         MonthGroup header = MonthGroup.makeHeader();
         header.monthLabel = "Last 12 Months";
         header.totalFormatted = CurrencyUtils.format(grandTotal, currencySymbol);
         list.add(header);
 
+        // Build 12 months backwards
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.DAY_OF_MONTH, 1);
 
@@ -59,44 +61,57 @@ public class MonthBuilder {
             group.expanded = false;
 
             List<Expense> monthList = map.get(key);
-            double monthlyTotal = 0;
+            double monthTotal = 0;
 
             if (monthList != null && !monthList.isEmpty()) {
 
-                Collections.sort(monthList, (a, b) -> {
+                // Sort newest first
+                monthList.sort((a, b) -> {
                     String ia = DateUtils.toIso(a.date);
                     String ib = DateUtils.toIso(b.date);
                     if (ia == null || ib == null) return 0;
-                    return ib.compareTo(ia); // newest first
+                    return ib.compareTo(ia);
                 });
 
+                // Build rows
                 for (Expense e : monthList) {
-                    monthlyTotal += e.amount;
+                    monthTotal += e.amount;
+
+                    View row = inflater.inflate(R.layout.row_month_entry, null, false);
+                    // Tag row with ISO date for DayDetailActivity
+                    String isoDate = DateUtils.toIso(e.date);
+                    row.setTag(isoDate);
+
+
 
                     String ui = DateUtils.isoToUi(DateUtils.toIso(e.date));
-                    String shortDate = DateUtils.toMonthStacked(ui);
+                    String stacked = DateUtils.toMonthStacked(ui);
 
-                    String[] parts = shortDate.split(" ");
-                    String m = parts.length == 2 ? parts[0] : "";
-                    String d = parts.length == 2 ? parts[1] : "";
+                    TextView m = row.findViewById(R.id.text_month_abbrev);
+                    TextView d = row.findViewById(R.id.text_day_number);
+                    TextView item = row.findViewById(R.id.text_item);
+                    TextView cat = row.findViewById(R.id.text_category);
+                    TextView amt = row.findViewById(R.id.text_amount);
 
-                    group.dayRows.add(
-                            new MonthGroup.DayData(
-                                    m,
-                                    d,
-                                    e.description,
-                                    e.category.toUpperCase(Locale.ENGLISH),
-                                    CurrencyUtils.format(e.amount, currencySymbol)
-                            )
-                    );
+                    String[] parts = stacked.split(" ");
+                    if (parts.length == 2) {
+                        m.setText(parts[0]);
+                        d.setText(parts[1]);
+                    }
 
+                    item.setText(e.description);
+                    cat.setText(e.category.toUpperCase(Locale.ENGLISH));
+                    amt.setText(CurrencyUtils.format(e.amount, currencySymbol));
+
+                    group.dayRows.add(row);
                 }
             }
 
-            group.monthTotal = monthlyTotal;
-            group.totalFormatted = CurrencyUtils.format(monthlyTotal, currencySymbol);
+            group.monthTotal = monthTotal;
+            group.totalFormatted = CurrencyUtils.format(monthTotal, currencySymbol);
 
             list.add(group);
+
             cal.add(Calendar.MONTH, -1);
         }
 

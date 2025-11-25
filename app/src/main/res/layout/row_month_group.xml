@@ -30,7 +30,7 @@
             android:id="@+id/text_month_total"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0.00 ₽"
+            android:text=""
             android:textSize="16sp"
             android:textColor="#000000"
             android:textStyle="bold"/>

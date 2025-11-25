@@ -8,42 +8,21 @@ public class MonthGroup {
 
     public boolean isHeader = false;
     public String monthLabel = "";
-    public boolean expanded = false;
+    public boolean expanded = false;   // <-- default collapsed
+    public List<View> dayRows = new ArrayList<>();
 
-    // List of inflated day-entry views
-    public static class DayData {
-        public final String monthAbbrev;
-        public final String dayNumber;
-        public final String description;
-        public final String category;
-        public final String amount;
-
-        public DayData(String m, String d, String desc, String cat, String amt) {
-            monthAbbrev = m;
-            dayNumber = d;
-            description = desc;
-            category = cat;
-            amount = amt;
-        }
-    }
-
-    public List<DayData> dayRows = new ArrayList<>();
-
-
-    // NEW — required for totals
+    // Totals (computed by MonthBuilder)
     public double monthTotal = 0;
     public String totalFormatted = "";
 
-    // Constructor for normal month rows
     public MonthGroup(String label) {
         this.monthLabel = label;
     }
 
-    // Constructor for header row
     public static MonthGroup makeHeader() {
         MonthGroup g = new MonthGroup("");
         g.isHeader = true;
-        g.expanded = true;
+        g.expanded = false;   // <-- IMPORTANT: header collapsed on start
         return g;
     }
 }
