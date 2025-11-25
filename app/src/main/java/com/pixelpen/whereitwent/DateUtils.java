@@ -6,159 +6,106 @@ import java.util.Locale;
 
 public class DateUtils {
 
-    // --------------------------------------------
-    // 1) INTERNAL SAVE FORMAT
-    // --------------------------------------------
-    public static final SimpleDateFormat ISO_FORMAT =
-            new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+    // --------------------------------------------------------
+    // PUBLIC: Convert ANY supported format → ISO yyyy-MM-dd
+    // --------------------------------------------------------
+    public static String toIso(String raw) {
+        if (raw == null || raw.trim().isEmpty()) return null;
+        raw = raw.trim();
 
-    // --------------------------------------------
-    // 2) UI DISPLAY FORMAT (UPDATED — NO DOTS)
-    // --------------------------------------------
-    public static final SimpleDateFormat UI_FORMAT =
-            new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
-
-    // --------------------------------------------
-    // 3) ALL LEGACY FORMATS (EXPANDED)
-    //    MUST include *both* dotted and non-dotted forms
-    // --------------------------------------------
-    private static final SimpleDateFormat[] LEGACY_FORMATS = new SimpleDateFormat[] {
-
-            // A: "22 Nov 2025"
-            new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH),
-
-            // B: "22 Nov. 2025"
-            new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH),
-
-            // C: "07 Oct 2025"
-            new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH),
-
-            // D: "07 Oct. 2025"
-            new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH),
-
-            // E: "7 October 2025"
-            new SimpleDateFormat("d MMMM yyyy", Locale.ENGLISH),
-
-            // F: "Wednesday 14 September 2025"
-            new SimpleDateFormat("EEEE dd MMMM yyyy", Locale.ENGLISH),
-
-            // G: "Wed September 14 2025"
-            new SimpleDateFormat("EEE MMMM dd yyyy", Locale.ENGLISH),
-
-            // H: "Wed. September 14 2025"
-            new SimpleDateFormat("EEE. MMMM dd yyyy", Locale.ENGLISH)
-    };
-
-    // --------------------------------------------
-// Convert *any* UI/legacy string → ISO yyyy-MM-dd
-// --------------------------------------------
-    public static String toIso(String legacyDate) {
-
-        if (legacyDate == null || legacyDate.trim().isEmpty())
-            return null;
-
-        String cleaned = legacyDate.trim().replaceAll(" +", " ");
-
-        // 1) Already in ISO yyyy-MM-dd → return directly
-        if (cleaned.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            return cleaned;
+        // 1) Already ISO
+        if (raw.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            return raw;
         }
 
-        // 2) Try "22 Nov. 2025"
-        try {
-            SimpleDateFormat fmt = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
-            fmt.setLenient(true);
-            Date d = fmt.parse(cleaned);
-            return ISO_FORMAT.format(d);
-        } catch (Exception ignored) {}
+        // 2) Try dd MMM yyyy  (25 Nov 2025)
+        String[] fmts = {
+                "dd MMM yyyy",
+                "dd MMM. yyyy",
+                "d MMM yyyy",
+                "d MMM. yyyy",
+                "dd MMMM yyyy",
+                "d MMMM yyyy",
+                "dd/MM/yyyy",
+                "MM/dd/yyyy"
+        };
 
-        // 3) Try "22 Nov 2025"
-        try {
-            SimpleDateFormat fmt = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
-            fmt.setLenient(true);
-            Date d = fmt.parse(cleaned);
-            return ISO_FORMAT.format(d);
-        } catch (Exception ignored) {}
+        for (String f : fmts) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat(f, Locale.ENGLISH);
+                sdf.setLenient(false);
+                Date d = sdf.parse(raw);
+                if (d != null) {
+                    SimpleDateFormat iso = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+                    return iso.format(d);
+                }
+            } catch (Exception ignore) {}
+        }
 
-        // 4) Try "7 October 2025"
-        try {
-            SimpleDateFormat fmt = new SimpleDateFormat("d MMMM yyyy", Locale.ENGLISH);
-            fmt.setLenient(true);
-            Date d = fmt.parse(cleaned);
-            return ISO_FORMAT.format(d);
-        } catch (Exception ignored) {}
-
-        // 5) Try "Wednesday 14 September 2025"
-        try {
-            SimpleDateFormat fmt = new SimpleDateFormat("EEEE dd MMMM yyyy", Locale.ENGLISH);
-            fmt.setLenient(true);
-            Date d = fmt.parse(cleaned);
-            return ISO_FORMAT.format(d);
-        } catch (Exception ignored) {}
-
-        // 6) Try "Wed. September 14 2025"
-        try {
-            SimpleDateFormat fmt = new SimpleDateFormat("EEE. MMMM dd yyyy", Locale.ENGLISH);
-            fmt.setLenient(true);
-            Date d = fmt.parse(cleaned);
-            return ISO_FORMAT.format(d);
-        } catch (Exception ignored) {}
-
-        // 7) Try "Wed September 14 2025"
-        try {
-            SimpleDateFormat fmt = new SimpleDateFormat("EEE MMMM dd yyyy", Locale.ENGLISH);
-            fmt.setLenient(true);
-            Date d = fmt.parse(cleaned);
-            return ISO_FORMAT.format(d);
-        } catch (Exception ignored) {}
-
-        // Parsing failed
+        // Nothing matched
         return null;
     }
 
-
-    // --------------------------------------------
-    // 5) Convert UI date → "MMM dd" (stacked month view)
-    //    Accepts both dotted and non-dotted inputs
-    // --------------------------------------------
-    public static String toMonthStacked(String uiDate) {
-
-        if (uiDate == null || uiDate.length() < 6) return uiDate;
-
-        // Clean dotted month abbrev → non-dotted
-        String cleaned = uiDate.replace(".", "");
-
-        try {
-            // Try non-dotted first
-            Date d = UI_FORMAT.parse(cleaned);
-
-            SimpleDateFormat stacked = new SimpleDateFormat("MMM dd", Locale.ENGLISH);
-            return stacked.format(d);
-        } catch (Exception e) {
-            return cleaned;
-        }
-    }
-
-    public static boolean matchesMonth(String monthLabel, String ym) {
-        try {
-            Date d = new SimpleDateFormat("MMM yyyy", Locale.ENGLISH).parse(monthLabel);
-            String produced = new SimpleDateFormat("yyyy-MM", Locale.ENGLISH).format(d);
-            return produced.equals(ym);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-
-    // --------------------------------------------
-    // 6) ISO → Pretty UI ("22 Nov 2025")
-    // --------------------------------------------
+    // --------------------------------------------------------
+    // PUBLIC: Convert ISO → UI "dd MMM yyyy"
+    // --------------------------------------------------------
     public static String isoToUi(String iso) {
+        if (iso == null) return null;
+
+        // Already UI?
+        if (iso.matches("\\d{2} \\w{3} ?\\.? \\d{4}")) {
+            return iso.replace(".", "");
+        }
+
         try {
-            Date d = ISO_FORMAT.parse(iso);
-            return UI_FORMAT.format(d);
+            SimpleDateFormat i = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+            SimpleDateFormat o = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
+            Date d = i.parse(iso);
+            return o.format(d);
         } catch (Exception e) {
             return iso;
         }
+    }
+
+    // --------------------------------------------------------
+    // PUBLIC: Convert ISO → Stacked month/day like "Nov 25"
+    // --------------------------------------------------------
+    public static String toMonthStacked(String raw) {
+        if (raw == null) return "";
+
+        raw = raw.trim();
+
+        // When input is ISO yyyy-MM-dd
+        if (raw.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            try {
+                SimpleDateFormat iso = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+                Date d = iso.parse(raw);
+                SimpleDateFormat m = new SimpleDateFormat("MMM", Locale.ENGLISH);
+                SimpleDateFormat day = new SimpleDateFormat("dd", Locale.ENGLISH);
+                return m.format(d) + " " + day.format(d);
+            } catch (Exception e) {
+                return "";
+            }
+        }
+
+        // When input is already UI, e.g. "25 Nov 2025"
+        if (raw.matches("\\d{1,2} \\w{3} ?\\.? \\d{4}")) {
+            try {
+                raw = raw.replace(".", "");
+                SimpleDateFormat ui = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
+                Date d = ui.parse(raw);
+                SimpleDateFormat m = new SimpleDateFormat("MMM", Locale.ENGLISH);
+                SimpleDateFormat day = new SimpleDateFormat("dd", Locale.ENGLISH);
+                return m.format(d) + " " + day.format(d);
+            } catch (Exception e) {
+                return "";
+            }
+        }
+
+        // Otherwise, try to convert via ISO
+        String iso = toIso(raw);
+        if (iso != null) return toMonthStacked(iso);
+
+        return "";
     }
 }

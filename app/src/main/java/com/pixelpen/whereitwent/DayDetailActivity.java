@@ -27,12 +27,9 @@ public class DayDetailActivity extends AppCompatActivity {
 
     private LinearLayout expensesContainer;
 
-    // Incoming is yyyy-MM-dd
     private final SimpleDateFormat incoming = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-    // Display as "dd MMM. yyyy"
     private final SimpleDateFormat displayOut = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
 
-    // App accepts multiple input formats historically
     private final String[] parsePatterns = new String[] {
             "yyyy-MM-dd",
             "dd/MM/yyyy",
@@ -49,15 +46,11 @@ public class DayDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_day_detail);
 
-        // Back button
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
 
-        // Get banner from XML (this is the only banner now)
         TextView banner = findViewById(R.id.daydetail_banner);
 
-        // Container for expenses (below the banner)
         expensesContainer = findViewById(R.id.daydetail_container);
-
         LayoutInflater inflater = LayoutInflater.from(this);
 
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
@@ -67,43 +60,36 @@ public class DayDetailActivity extends AppCompatActivity {
         String selectedDateRaw = getIntent().getStringExtra("selected_date");
         if (selectedDateRaw == null) return;
 
-        // Set banner text to formatted date
         banner.setText(formatDisplay(selectedDateRaw));
 
         Date target = parseWith(incoming, selectedDateRaw);
         if (target == null) return;
 
-        // Normalize to YMD only
         Calendar tgt = asYMD(target);
 
-        // Load all expenses and filter by same day
         List<Expense> all = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
         List<Expense> expenses = new ArrayList<>();
         for (Expense e : all) {
             Date d = parseAny(e.date);
             if (d == null) {
-                if (selectedDateRaw.equals(e.date)) {
-                    expenses.add(e);
-                }
+                if (selectedDateRaw.equals(e.date)) expenses.add(e);
                 continue;
             }
             Calendar cal = asYMD(d);
-            if (sameYMD(tgt, cal)) {
-                expenses.add(e);
-            }
+            if (sameYMD(tgt, cal)) expenses.add(e);
         }
 
         expensesContainer.removeAllViews();
 
         double total = 0.0;
 
-        // Render expense rows
         for (Expense e : expenses) {
+
             View row = inflater.inflate(R.layout.item_expense_date_row, expensesContainer, false);
 
             TextView textDescription = row.findViewById(R.id.text_description);
-            TextView textCategory    = row.findViewById(R.id.text_category);
-            TextView textAmount      = row.findViewById(R.id.text_amount);
+            TextView textCategory   = row.findViewById(R.id.text_category);
+            TextView textAmount     = row.findViewById(R.id.text_amount);
 
             textDescription.setText(e.description);
             textCategory.setText(e.category);
@@ -115,9 +101,11 @@ public class DayDetailActivity extends AppCompatActivity {
                     start,
                     formatted.length(),
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
             textAmount.setText(display);
 
             row.setOnClickListener(v -> {
+
                 String details = "Category: " + e.category + "\n"
                         + "Date: " + safeDisplay(e.date) + "\n"
                         + "Item: " + e.description + "\n"
@@ -129,13 +117,13 @@ public class DayDetailActivity extends AppCompatActivity {
                         .setNegativeButton("CLOSE", (d, w) -> d.dismiss())
                         .setNeutralButton("DELETE", (d, w) -> {
                             ExpenseDatabase.getDatabase(DayDetailActivity.this)
-                                    .expenseDao().delete(e);
-                            recreate();
+                                    .expenseDao()
+                                    .delete(e);
+                            refreshAfterEdit();
                         })
                         .setPositiveButton("EDIT", (d, w) -> {
-                            Intent i = new Intent(DayDetailActivity.this, AddExpenseActivity.class);
-                            i.putExtra("expense_id", e.id);
-                            startActivity(i);
+                            AddExpenseDialog dlg = AddExpenseDialog.newInstance(e.id);
+                            dlg.show(getSupportFragmentManager(), "EDIT_EXPENSE");
                         })
                         .create();
 
@@ -144,7 +132,6 @@ public class DayDetailActivity extends AppCompatActivity {
 
             expensesContainer.addView(row);
 
-            // Divider
             View divider = new View(this);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, 1);
@@ -155,7 +142,6 @@ public class DayDetailActivity extends AppCompatActivity {
             total += e.amount;
         }
 
-        // TOTAL row (unchanged)
         LinearLayout totalRow = new LinearLayout(this);
         totalRow.setOrientation(LinearLayout.HORIZONTAL);
         totalRow.setPadding(dp(12), dp(12), dp(12), dp(12));
@@ -182,7 +168,6 @@ public class DayDetailActivity extends AppCompatActivity {
                 s2,
                 totalFormatted.length(),
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
         amountTv.setText(totalDisplay);
         amountTv.setTextSize(18);
         amountTv.setTypeface(Typeface.DEFAULT_BOLD);
@@ -193,6 +178,12 @@ public class DayDetailActivity extends AppCompatActivity {
         expensesContainer.addView(totalRow);
     }
 
+    // --------------------------------------------------------------------
+    // CALLED AFTER DELETE OR EDIT
+    // --------------------------------------------------------------------
+    public void refreshAfterEdit() {
+        recreate();
+    }
 
     private int dp(int dps) {
         float density = getResources().getDisplayMetrics().density;
