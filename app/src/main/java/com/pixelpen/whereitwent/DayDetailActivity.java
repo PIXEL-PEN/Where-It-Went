@@ -49,13 +49,14 @@ public class DayDetailActivity extends AppCompatActivity {
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
 
         TextView banner = findViewById(R.id.daydetail_banner);
-
         expensesContainer = findViewById(R.id.daydetail_container);
         LayoutInflater inflater = LayoutInflater.from(this);
 
+        // ----------------------------------------------------
+        // FIXED: load proper symbol (not old currency_code)
+        // ----------------------------------------------------
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        String code = prefs.getString("currency_code", "THB");
-        String symbol = CurrencyUtils.symbolFor(code);
+        String symbol = prefs.getString("currency_symbol", "$");
 
         String selectedDateRaw = getIntent().getStringExtra("selected_date");
         if (selectedDateRaw == null) return;
@@ -178,9 +179,6 @@ public class DayDetailActivity extends AppCompatActivity {
         expensesContainer.addView(totalRow);
     }
 
-    // --------------------------------------------------------------------
-    // CALLED AFTER DELETE OR EDIT
-    // --------------------------------------------------------------------
     public void refreshAfterEdit() {
         recreate();
     }

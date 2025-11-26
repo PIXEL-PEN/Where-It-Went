@@ -17,18 +17,17 @@ import java.util.List;
 
 public class MainScreen extends AppCompatActivity {
 
-    // ⭐ Allow DayDetailActivity to request a refresh after edit
     public static MainScreen instance;
 
     private RecyclerView recyclerMonths;
     private MonthAdapter adapter;
+    private String currencySymbol;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
 
-        // Register instance
         instance = this;
 
         DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
@@ -48,18 +47,21 @@ public class MainScreen extends AppCompatActivity {
             });
         }
 
-        // Currency from settings
+        // ------------------------------------------------------
+        // LOAD SAVED CURRENCY SYMBOL (SettingsActivity stores this)
+        // ------------------------------------------------------
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        String code = prefs.getString("currency_code", "USD");
-        String symbol = CurrencyUtils.symbolFor(code);
+        currencySymbol = prefs.getString("currency_symbol", "$");
 
         recyclerMonths = findViewById(R.id.recycler_months);
         recyclerMonths.setLayoutManager(new LinearLayoutManager(this));
 
-        List<MonthGroup> data = MonthBuilder.buildLast12Months(this, symbol);
+        // Build Month View using correct symbol
+        List<MonthGroup> data = MonthBuilder.buildLast12Months(this, currencySymbol);
         adapter = new MonthAdapter(data);
         recyclerMonths.setAdapter(adapter);
 
+        // FAB → Add Expense dialog
         ImageButton fabAdd = findViewById(R.id.fab_add);
         if (fabAdd != null) {
             fabAdd.setTranslationY(-90f);
@@ -73,16 +75,18 @@ public class MainScreen extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        instance = null;   // prevent memory leaks
+        instance = null;
     }
 
-    // ⭐ Called for NEW and EDITED expenses
+    // ------------------------------------------------------
+    // CALLED AFTER BOTH NEW + EDITED EXPENSES
+    // ------------------------------------------------------
     public void refreshAfterAdd() {
-        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        String code = prefs.getString("currency_code", "USD");
-        String symbol = CurrencyUtils.symbolFor(code);
 
-        List<MonthGroup> fresh = MonthBuilder.buildLast12Months(this, symbol);
+        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
+        currencySymbol = prefs.getString("currency_symbol", "$");
+
+        List<MonthGroup> fresh = MonthBuilder.buildLast12Months(this, currencySymbol);
         adapter = new MonthAdapter(fresh);
         recyclerMonths.setAdapter(adapter);
     }
