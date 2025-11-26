@@ -39,7 +39,13 @@ public class MainScreen extends AppCompatActivity {
             ham.setOnClickListener(v -> drawerLayout.openDrawer(Gravity.END));
         }
 
+        // Drawer links
         View linkSettings = findViewById(R.id.linkSettings);
+        View linkCategories = findViewById(R.id.linkCategoryFilter);
+        View linkManageCategories = findViewById(R.id.linkManageCategories);
+        View linkDistribution = findViewById(R.id.linkDistribution);
+        View linkTutorial = findViewById(R.id.linkTutorial);
+
         if (linkSettings != null) {
             linkSettings.setOnClickListener(v -> {
                 startActivity(new Intent(MainScreen.this, SettingsActivity.class));
@@ -47,21 +53,44 @@ public class MainScreen extends AppCompatActivity {
             });
         }
 
-        // ------------------------------------------------------
-        // LOAD SAVED CURRENCY SYMBOL (SettingsActivity stores this)
-        // ------------------------------------------------------
+        if (linkCategories != null) {
+            linkCategories.setOnClickListener(v -> {
+                startActivity(new Intent(MainScreen.this, CategoryWiseActivity.class));
+                drawerLayout.closeDrawer(Gravity.END);
+            });
+        }
+
+        // Edit Categories (currently no Activity exists, so disable)
+        if (linkManageCategories != null) {
+            linkManageCategories.setOnClickListener(v -> {
+                drawerLayout.closeDrawer(Gravity.END);
+            });
+        }
+
+        if (linkDistribution != null) {
+            linkDistribution.setOnClickListener(v -> {
+                startActivity(new Intent(MainScreen.this, DistributionActivity.class));
+                drawerLayout.closeDrawer(Gravity.END);
+            });
+        }
+
+        if (linkTutorial != null) {
+            linkTutorial.setOnClickListener(v -> {
+                startActivity(new Intent(MainScreen.this, TutorialActivity.class));
+                drawerLayout.closeDrawer(Gravity.END);
+            });
+        }
+
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         currencySymbol = prefs.getString("currency_symbol", "$");
 
         recyclerMonths = findViewById(R.id.recycler_months);
         recyclerMonths.setLayoutManager(new LinearLayoutManager(this));
 
-        // Build Month View using correct symbol
         List<MonthGroup> data = MonthBuilder.buildLast12Months(this, currencySymbol);
         adapter = new MonthAdapter(data);
         recyclerMonths.setAdapter(adapter);
 
-        // FAB → Add Expense dialog
         ImageButton fabAdd = findViewById(R.id.fab_add);
         if (fabAdd != null) {
             fabAdd.setTranslationY(-90f);
@@ -78,11 +107,7 @@ public class MainScreen extends AppCompatActivity {
         instance = null;
     }
 
-    // ------------------------------------------------------
-    // CALLED AFTER BOTH NEW + EDITED EXPENSES
-    // ------------------------------------------------------
     public void refreshAfterAdd() {
-
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         currencySymbol = prefs.getString("currency_symbol", "$");
 

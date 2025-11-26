@@ -65,10 +65,11 @@ public class CategoryWiseActivity extends AppCompatActivity {
         ImageButton btnBack = findViewById(R.id.btn_back);
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> {
-                startActivity(new Intent(this, MainActivity.class));
+                startActivity(new Intent(this, MainScreen.class));
                 finish();
             });
         }
+
 
         boolean shouldOpen = getIntent().getBooleanExtra("open_filter", false);
         if (shouldOpen) {

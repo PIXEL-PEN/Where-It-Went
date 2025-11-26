@@ -47,11 +47,14 @@ public class DistributionActivity extends AppCompatActivity {
         super.onCreate(b);
         setContentView(R.layout.activity_distribution);
 
-        ImageButton back = findViewById(R.id.btn_back);
-        if (back != null) back.setOnClickListener(v -> {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-        });
+        ImageButton btnBack = findViewById(R.id.btn_back);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                startActivity(new Intent(this, MainScreen.class));
+                finish();
+            });
+        }
+
 
         SimplePieView pie = findViewById(R.id.pie);
 
