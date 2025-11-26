@@ -18,10 +18,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".MainScreenActivity" android:exported="false"/>
         <activity android:name=".AddExpenseActivity" android:exported="false"/>
         <activity android:name=".MainActivity" android:exported="false"/>
-
         <activity android:name=".ViewMenuActivity" android:exported="false" />
         <activity android:name=".ViewAllActivity" android:exported="false" />
         <activity android:name=".DateWiseActivity" android:exported="false" />
