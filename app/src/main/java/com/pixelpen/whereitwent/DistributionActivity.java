@@ -66,8 +66,7 @@ public class DistributionActivity extends AppCompatActivity {
         TextView discDelta  = findViewById(R.id.legend_disc_delta);
 
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        String code = prefs.getString("currency_code", "THB");
-        String symbol = CurrencyUtils.symbolFor(code);
+        String symbol = prefs.getString("currency_symbol", "$");
         DecimalFormat money = new DecimalFormat("#,##0.##");
 
         List<Expense> all = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
