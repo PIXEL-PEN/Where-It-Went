@@ -281,14 +281,21 @@ public class AddExpenseDialog extends DialogFragment {
             ExpenseDao dao = ExpenseDatabase.getDatabase(requireContext()).expenseDao();
 
             if (editingExpense != null) {
+
                 editingExpense.category = category;
                 editingExpense.description = item;
                 editingExpense.amount = amount;
                 editingExpense.date = iso;
                 dao.update(editingExpense);
 
+                // Refresh DayDetail screen
                 if (getActivity() instanceof DayDetailActivity) {
                     ((DayDetailActivity) getActivity()).refreshAfterEdit();
+                }
+
+                // Also refresh Month view if MainScreen is alive
+                if (MainScreen.instance != null) {
+                    MainScreen.instance.refreshAfterAdd();
                 }
 
             } else {
@@ -313,10 +320,9 @@ public class AddExpenseDialog extends DialogFragment {
                     ((MainScreen) getActivity()).refreshAfterAdd();
                 }
             }
-
             dismiss();
         });
-    }
+    }   // <-- THIS BRACE MUST BE HERE, ENDING setupSaveButton()
 
 
     // --------------------------------------------------------------------
@@ -343,6 +349,8 @@ public class AddExpenseDialog extends DialogFragment {
             return iso;
         }
     }
+
+
 
 
             // --------------------------------------------------------------------
@@ -524,5 +532,5 @@ public class AddExpenseDialog extends DialogFragment {
                         .show();
 
 
-    }
-}
+            }
+        }
