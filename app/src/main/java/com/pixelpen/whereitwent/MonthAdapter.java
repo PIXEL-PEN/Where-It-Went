@@ -132,15 +132,11 @@ public class MonthAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 }
             });
 
-            // Highlight newest entry
-            if (i == 0) {
-                row.setBackgroundColor(0xFFFFFAF2);
-
-
-
-
+            // Highlight all child rows when expanded
+            if (mg.expanded) {
+                row.setBackgroundColor(0xFFFFFAF2);   // pale amber
             } else {
-                row.setBackgroundColor(0x00000000); // transparent
+                row.setBackgroundColor(0x00000000);   // transparent
             }
 
             vh.children.addView(row);
