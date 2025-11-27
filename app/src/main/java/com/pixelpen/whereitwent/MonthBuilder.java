@@ -13,6 +13,9 @@ public class MonthBuilder {
     private static final SimpleDateFormat LABEL_FMT =
             new SimpleDateFormat("MMM yyyy", Locale.ENGLISH);
 
+    // Stores the last built month list for auto-expand
+    public static List<MonthGroup> lastBuilt = new ArrayList<>();
+
     /**
      * Build MonthGroup list (header + last 12 months)
      */
@@ -53,7 +56,8 @@ public class MonthBuilder {
             String label = LABEL_FMT.format(cal.getTime());  // "Nov 2025"
 
             MonthGroup group = new MonthGroup(label);
-            group.expanded = false; // default collapsed
+            group.expanded = false;
+            group.isoMonth = key;   // <<< REQUIRED FOR AUTO-EXPAND
 
             List<Expense> monthList = map.get(key);
             double monthlyTotal = 0;
@@ -75,7 +79,6 @@ public class MonthBuilder {
                     MonthGroup.DayData dd = new MonthGroup.DayData();
                     dd.iso = DateUtils.toIso(e.date);
 
-                    // UI → stacked "Nov 24"
                     String ui = DateUtils.isoToUi(dd.iso);
                     String stacked = DateUtils.toMonthStacked(ui);
                     String[] parts = stacked.split(" ");
@@ -104,6 +107,25 @@ public class MonthBuilder {
             cal.add(Calendar.MONTH, -1);
         }
 
+        // Save for auto-expand lookup
+        lastBuilt = list;
+
         return list;
+    }
+
+    /**
+     * Find index of a month (yyyy-MM) in the last-built month list.
+     */
+    public static int findMonthIndex(String monthKey) {
+        if (monthKey == null) return -1;
+
+        for (int i = 0; i < lastBuilt.size(); i++) {
+            MonthGroup mg = lastBuilt.get(i);
+            if (!mg.isHeader && monthKey.equals(mg.isoMonth)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 }

@@ -8,19 +8,20 @@ public class MonthGroup {
 
     public boolean isHeader = false;
     public String monthLabel = "";
-    public boolean expanded = false;   // <-- default collapsed
+    public String isoMonth = "";
+    public boolean expanded = false;
+
     public static class DayData {
         public String iso;
         public String monthAbbrev;
         public String dayNumber;
         public String description;
         public String category;
-        public String amount;   // formatted
+        public String amount;
     }
 
     public List<DayData> dayRows = new ArrayList<>();
 
-    // Totals (computed by MonthBuilder)
     public double monthTotal = 0;
     public String totalFormatted = "";
 
@@ -31,7 +32,7 @@ public class MonthGroup {
     public static MonthGroup makeHeader() {
         MonthGroup g = new MonthGroup("");
         g.isHeader = true;
-        g.expanded = false;   // <-- IMPORTANT: header collapsed on start
+        g.expanded = false;
         return g;
     }
 }

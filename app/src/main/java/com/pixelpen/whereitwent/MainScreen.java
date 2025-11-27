@@ -18,6 +18,7 @@ import java.util.List;
 public class MainScreen extends AppCompatActivity {
 
     public static MainScreen instance;
+    public static int expandMonthIndex = -1;
 
     private RecyclerView recyclerMonths;
     private MonthAdapter adapter;
@@ -108,11 +109,36 @@ public class MainScreen extends AppCompatActivity {
     }
 
     public void refreshAfterAdd() {
+
+        // Reload currency
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         currencySymbol = prefs.getString("currency_symbol", "$");
 
+        // Rebuild data
         List<MonthGroup> fresh = MonthBuilder.buildLast12Months(this, currencySymbol);
+
+        // Determine which month to expand
+        int idx = expandMonthIndex;
+        expandMonthIndex = -1;
+
+        // Apply expand state
+        for (int i = 0; i < fresh.size(); i++) {
+            MonthGroup mg = fresh.get(i);
+
+            if (!mg.isHeader && i == idx) {
+                mg.expanded = true;
+            } else {
+                mg.expanded = false;
+            }
+        }
+
+        // Rebind adapter
         adapter = new MonthAdapter(fresh);
         recyclerMonths.setAdapter(adapter);
+
+        // Optional: smooth scroll into view
+        if (idx >= 0) {
+            recyclerMonths.post(() -> recyclerMonths.smoothScrollToPosition(idx));
+        }
     }
 }
