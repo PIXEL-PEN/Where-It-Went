@@ -39,6 +39,9 @@ public class CategoryWiseActivity extends AppCompatActivity {
     private LinearLayout categoryContainer;
     private LayoutInflater inflater;
 
+    private String currentSymbol;
+
+
     // Formats
     private final SimpleDateFormat FRIENDLY = new SimpleDateFormat("dd MMM. yyyy", Locale.ENGLISH);
     private final SimpleDateFormat ISO = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
@@ -127,18 +130,23 @@ public class CategoryWiseActivity extends AppCompatActivity {
 
 
 
-
-
     @Override
     protected void onResume() {
         super.onResume();
         render();
     }
 
-
-
     private void render() {
-        // Load base data (no global DateRangeCutoff — neutralized)
+
+        // Always reload currency
+        String symbol = getSharedPreferences("settings", MODE_PRIVATE)
+                .getString("currency_symbol", "$");
+
+        DecimalFormat money = new DecimalFormat("#,##0.00");
+
+        // ---------------------------------------
+        // Load base data
+        // ---------------------------------------
         List<Expense> base = (overrideFiltered != null)
                 ? overrideFiltered
                 : ExpenseDatabase.getDatabase(this).expenseDao().getAll();
@@ -179,10 +187,6 @@ public class CategoryWiseActivity extends AppCompatActivity {
         Collections.sort(customs, String::compareToIgnoreCase);
         ordered.addAll(customs);
 
-        // Currency
-        String code = getSharedPreferences("settings", MODE_PRIVATE).getString("currency_code", "THB");
-        String symbol = CurrencyUtils.symbolFor(code);
-        DecimalFormat money = new DecimalFormat("#,##0.00");
 
         // Build UI
         categoryContainer.removeAllViews();
