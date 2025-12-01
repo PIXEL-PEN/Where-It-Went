@@ -134,7 +134,8 @@ public class MonthAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
             // Highlight all child rows when expanded
             if (mg.expanded) {
-                row.setBackgroundColor(0xFFFFFAF2);   // pale amber
+                row.setBackgroundColor(0xFFFFFEF9); // VERY PALE AMBER
+
             } else {
                 row.setBackgroundColor(0x00000000);   // transparent
             }
