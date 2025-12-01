@@ -67,9 +67,21 @@ public class MainScreen extends AppCompatActivity {
         // Edit Categories (currently no Activity exists, so disable)
         if (linkManageCategories != null) {
             linkManageCategories.setOnClickListener(v -> {
+
                 drawerLayout.closeDrawer(Gravity.END);
+
+                // Create AddExpenseDialog instance
+                AddExpenseDialog dialog = new AddExpenseDialog();
+
+                // Mark that we want it to immediately open Manage Categories
+                Bundle args = new Bundle();
+                args.putBoolean("open_manage_categories", true);
+                dialog.setArguments(args);
+
+                dialog.show(getSupportFragmentManager(), "MANAGE_CATEGORIES");
             });
         }
+
 
         if (linkDistribution != null) {
             linkDistribution.setOnClickListener(v -> {

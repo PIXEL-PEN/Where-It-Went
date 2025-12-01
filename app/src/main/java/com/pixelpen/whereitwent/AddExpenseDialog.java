@@ -73,6 +73,14 @@ public class AddExpenseDialog extends DialogFragment {
 
         setupSaveButton();
 
+        if (getArguments() != null && getArguments().getBoolean("open_manage_categories", false)) {
+            // Wait until dialog is visible, then show Manage Categories
+            v.postDelayed(() -> showManageCategoriesDialog(), 100);
+        }
+
+
+
+
         return new AlertDialog.Builder(requireContext())
                 .setView(v)
                 .setCancelable(true)
