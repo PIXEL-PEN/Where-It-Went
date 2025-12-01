@@ -49,15 +49,52 @@
         </LinearLayout>
     </RelativeLayout>
 
+    <!-- THIS MONTH LABEL + DIVIDER -->
+    <RelativeLayout
+        android:id="@+id/pie_label_block"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/top_bar_container"
+        android:layout_marginTop="12dp">
+
+        <LinearLayout
+            android:id="@+id/pie_label_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:paddingStart="16dp">
+
+            <TextView
+                android:id="@+id/pie_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="This Month"
+                android:textSize="15sp"
+                android:textColor="#444444"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+
+        <View
+            android:id="@+id/pie_label_divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_below="@id/pie_label_container"
+            android:layout_marginTop="6dp"
+            android:background="#CCCCCC"/>
+    </RelativeLayout>
+
+
+    <!-- MAIN CONTENT BELOW BLOCK -->
     <LinearLayout
         android:id="@+id/content"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/top_bar_container"
+        android:layout_below="@id/pie_label_block"
         android:gravity="center"
         android:padding="16dp"
-        android:layout_marginTop="-160dp">
+        android:layout_marginTop="-150dp">
 
         <com.pixelpen.whereitwent.SimplePieView
             android:id="@+id/pie"
@@ -206,6 +243,6 @@
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:layout_marginTop="38dp" />
-
     </LinearLayout>
+
 </RelativeLayout>
