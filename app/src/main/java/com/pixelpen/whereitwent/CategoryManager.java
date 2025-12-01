@@ -31,7 +31,7 @@ public class CategoryManager {
         DEFAULTS.put("Utilities",  TAG_FIXED);
         DEFAULTS.put("Bills",      TAG_FIXED);
         DEFAULTS.put("Transport",  TAG_FIXED);
-        DEFAULTS.put("Other",      TAG_FIXED); // default bucket, still Fixed
+        DEFAULTS.put("Other",      TAG_FIXED);
     }
 
     // ----- Public helpers for tags -----
@@ -40,21 +40,18 @@ public class CategoryManager {
         return TAG_OFF.equalsIgnoreCase(normalizeTag(tag));
     }
 
-    /** For distribution: count only non Off-Budget. */
     public static boolean isCountedInDistribution(String tag) {
         return !isOffBudgetTag(tag);
     }
 
-    /** Normalize legacy/messy inputs to canonical set. */
     public static String normalizeTag(String tag) {
         if (tag == null) return TAG_FIXED;
         String t = tag.trim();
         if (t.equalsIgnoreCase(TAG_FIXED)) return TAG_FIXED;
         if (t.equalsIgnoreCase(TAG_BASIC)) return TAG_BASIC;
-        if (t.equalsIgnoreCase("Necessities")) return TAG_BASIC; // legacy -> Necessity
+        if (t.equalsIgnoreCase("Necessities")) return TAG_BASIC;
         if (t.equalsIgnoreCase(TAG_DISC)) return TAG_DISC;
         if (t.equalsIgnoreCase(TAG_OFF))  return TAG_OFF;
-        // Fallback: keep the system stable
         return TAG_FIXED;
     }
 
@@ -66,9 +63,9 @@ public class CategoryManager {
             try {
                 JSONObject obj = new JSONObject();
                 obj.put("name", item.name);
-                obj.put("tag",  normalizeTag(item.tag));
+                obj.put("tag", normalizeTag(item.tag));
                 array.put(obj);
-            } catch (JSONException ignored) { }
+            } catch (JSONException ignored) {}
         }
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         prefs.edit().putString(KEY_CATEGORIES, array.toString()).apply();
@@ -80,7 +77,6 @@ public class CategoryManager {
         List<CategoryItem> list = new ArrayList<>();
 
         if (json == null) {
-            // First run: seed defaults
             for (Map.Entry<String, String> e : DEFAULTS.entrySet()) {
                 list.add(new CategoryItem(e.getKey(), e.getValue()));
             }
@@ -97,7 +93,6 @@ public class CategoryManager {
                 if (!name.isEmpty()) list.add(new CategoryItem(name, tag));
             }
         } catch (JSONException e) {
-            // Legacy recovery: old plain list of names (Fixed by default)
             list.clear();
             String[] legacy = json.replace("[", "")
                     .replace("]", "")
@@ -107,12 +102,10 @@ public class CategoryManager {
                 String nm = raw.trim();
                 if (!nm.isEmpty()) list.add(new CategoryItem(nm, TAG_FIXED));
             }
-            // Ensure defaults exist at least
             ensureDefaultsPresent(list);
             saveCategoryList(context, list);
         }
 
-        // Ensure all defaults exist (in case prefs were edited externally)
         boolean changed = ensureDefaultsPresent(list);
         if (changed) saveCategoryList(context, list);
 
@@ -121,18 +114,14 @@ public class CategoryManager {
 
     private static boolean ensureDefaultsPresent(List<CategoryItem> list) {
         boolean changed = false;
-        // Build a quick lookup
-        boolean[] present = new boolean[DEFAULTS.size()];
         for (CategoryItem it : list) {
             if (DEFAULTS.containsKey(it.name)) {
-                // Force default tag to Fixed
                 if (!TAG_FIXED.equals(it.tag)) {
                     it.tag = TAG_FIXED;
                     changed = true;
                 }
             }
         }
-        // Add any missing defaults at their canonical tag
         for (Map.Entry<String, String> e : DEFAULTS.entrySet()) {
             if (!containsName(list, e.getKey())) {
                 list.add(new CategoryItem(e.getKey(), e.getValue()));
@@ -149,13 +138,12 @@ public class CategoryManager {
         return false;
     }
 
-    // ----- Public API used by UI -----
+    // ----- Public API -----
 
-    /** Defaults first (in DEFAULTS order), then customs (in insertion order). */
     public static List<String> getOrderedCategories(Context context) {
         List<CategoryItem> items = getCategoryItems(context);
         List<String> names = new ArrayList<>();
-        // Add defaults in defined order
+
         for (String def : DEFAULTS.keySet()) {
             for (CategoryItem it : items) {
                 if (it.name.equals(def)) {
@@ -164,17 +152,21 @@ public class CategoryManager {
                 }
             }
         }
-        // Add customs preserving stored order
         for (CategoryItem it : items) {
             if (!DEFAULTS.containsKey(it.name)) names.add(it.name);
         }
         return names;
     }
 
-    /** Returns canonical tag for a category (defaults are always Fixed). */
+    /** ✨ FIXED — now correctly returns Off-Budget tag */
     public static String getTagForCategory(Context context, String categoryName) {
         if (categoryName == null) return TAG_FIXED;
         String key = categoryName.trim();
+
+        // NEW: explicitly map Off-Budget category name → Off-Budget tag
+        if (key.equalsIgnoreCase("Off-Budget"))
+            return TAG_OFF;
+
         if (DEFAULTS.containsKey(key)) return TAG_FIXED;
         for (CategoryItem item : getCategoryItems(context)) {
             if (item.name.equals(key)) return normalizeTag(item.tag);
@@ -182,11 +174,10 @@ public class CategoryManager {
         return TAG_FIXED;
     }
 
-    /** Create or update a custom category + tag. Defaults are immutable (always Fixed). */
     public static void saveCategoryWithTag(Context context, String name, String tag) {
         if (name == null || name.trim().isEmpty()) return;
         String nm = name.trim();
-        if (DEFAULTS.containsKey(nm)) return; // built-ins stay Fixed
+        if (DEFAULTS.containsKey(nm)) return;
 
         List<CategoryItem> list = getCategoryItems(context);
         boolean exists = false;
@@ -201,7 +192,6 @@ public class CategoryManager {
         saveCategoryList(context, list);
     }
 
-    /** Restore only the defaults (customs removed). */
     public static void resetToDefault(Context context) {
         List<CategoryItem> list = new ArrayList<>();
         for (Map.Entry<String, String> e : DEFAULTS.entrySet()) {
@@ -210,11 +200,10 @@ public class CategoryManager {
         saveCategoryList(context, list);
     }
 
-    /** Remove a custom category. Defaults cannot be removed. */
     public static void removeCategory(Context context, String name) {
         if (name == null || name.trim().isEmpty()) return;
         String nm = name.trim();
-        if (isDefaultCategory(nm)) return;
+        if (DEFAULTS.containsKey(nm)) return;
 
         List<CategoryItem> list = getCategoryItems(context);
         List<CategoryItem> updated = new ArrayList<>();
@@ -230,8 +219,6 @@ public class CategoryManager {
         if (categoryName == null) return false;
         return DEFAULTS.containsKey(categoryName.trim());
     }
-
-    // ----- Model -----
 
     private static class CategoryItem {
         String name;

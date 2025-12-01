@@ -14,6 +14,8 @@ import androidx.fragment.app.DialogFragment;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import android.text.InputType;
+
 
 public class AddExpenseDialog extends DialogFragment {
 
@@ -55,7 +57,10 @@ public class AddExpenseDialog extends DialogFragment {
 
         spinnerCategory = v.findViewById(R.id.spinner_category);
         inputItem = v.findViewById(R.id.input_item);
+        inputItem.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+
         inputAmount = v.findViewById(R.id.input_amount);
+
         textDate = v.findViewById(R.id.text_date);
         textTag = v.findViewById(R.id.text_tag);
         btnSave = v.findViewById(R.id.btn_ok);
