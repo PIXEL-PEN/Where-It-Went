@@ -307,10 +307,10 @@ public class AddExpenseDialog extends DialogFragment {
                 e.date = iso;
                 dao.insert(e);
 
+                // ✔ Auto-expand the month on MainScreen
                 if (getActivity() instanceof MainScreen) {
-
                     try {
-                        String monthKey = iso.substring(0, 7);
+                        String monthKey = iso.substring(0, 7);  // yyyy-MM
                         int idx = MonthBuilder.findMonthIndex(monthKey);
                         MainScreen.expandMonthIndex = idx;
                     } catch (Exception ex) {
@@ -320,6 +320,7 @@ public class AddExpenseDialog extends DialogFragment {
                     ((MainScreen) getActivity()).refreshAfterAdd();
                 }
             }
+
             dismiss();
         });
     }   // <-- THIS BRACE MUST BE HERE, ENDING setupSaveButton()

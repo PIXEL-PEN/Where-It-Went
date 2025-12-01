@@ -20,14 +20,17 @@ public class MainScreen extends AppCompatActivity {
     public static MainScreen instance;
     public static int expandMonthIndex = -1;
 
+
     private RecyclerView recyclerMonths;
     private MonthAdapter adapter;
     private String currencySymbol;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
+
 
         instance = this;
 
@@ -109,11 +112,36 @@ public class MainScreen extends AppCompatActivity {
     }
 
     public void refreshAfterAdd() {
+
+        // Reload currency
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
         currencySymbol = prefs.getString("currency_symbol", "$");
 
+        // Rebuild data
         List<MonthGroup> fresh = MonthBuilder.buildLast12Months(this, currencySymbol);
+
+        // Determine which month should auto-expand
+        int idx = expandMonthIndex;
+        expandMonthIndex = -1;
+
+        // Apply expand state
+        for (int i = 0; i < fresh.size(); i++) {
+            MonthGroup mg = fresh.get(i);
+
+            if (!mg.isHeader && i == idx) {
+                mg.expanded = true;    // auto-expand this month
+            } else {
+                mg.expanded = false;
+            }
+        }
+
+        // Rebind adapter
         adapter = new MonthAdapter(fresh);
         recyclerMonths.setAdapter(adapter);
+
+        // Optional: scroll into view
+        if (idx >= 0) {
+            recyclerMonths.post(() -> recyclerMonths.smoothScrollToPosition(idx));
+        }
     }
 }
