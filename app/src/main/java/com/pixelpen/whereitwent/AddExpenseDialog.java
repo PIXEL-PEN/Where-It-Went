@@ -84,8 +84,6 @@ public class AddExpenseDialog extends DialogFragment {
         }
 
 
-
-
         return new AlertDialog.Builder(requireContext())
                 .setView(v)
                 .setCancelable(true)
@@ -365,186 +363,201 @@ public class AddExpenseDialog extends DialogFragment {
     }
 
 
+    // --------------------------------------------------------------------
+    // MANAGE CATEGORIES (FULL WORKING IMPLEMENTATION)
+    // --------------------------------------------------------------------
+    private void showManageCategoriesDialog() {
+
+        View dv = requireActivity().getLayoutInflater()
+                .inflate(R.layout.dialog_manage_categories, null);
+
+        TextView btnAdd = dv.findViewById(R.id.btn_add);
+        TextView btnEdit = dv.findViewById(R.id.btn_edit);
+        TextView btnDelete = dv.findViewById(R.id.btn_delete);
+        TextView btnReset = dv.findViewById(R.id.btn_reset);
+        TextView btnCancel = dv.findViewById(R.id.btn_cancel);
+
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setTitle("Manage Categories")
+                .setView(dv)
+                .create();
+
+        btnAdd.setOnClickListener(v -> {
+            dialog.dismiss();
+            showAddCategoryDialog();
+        });
+
+        btnEdit.setOnClickListener(v -> {
+            dialog.dismiss();
+            showEditCategoryDialog();
+        });
+
+        btnDelete.setOnClickListener(v -> {
+            dialog.dismiss();
+            showDeleteCategoryDialog();
+        });
+
+        btnReset.setOnClickListener(v -> {
+
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Reset Defaults")
+                    .setMessage("Are you sure you want to reset all categories to default? This will remove your custom categories.")
+                    .setPositiveButton("Yes, Reset", (d, w) -> {
+                        CategoryManager.resetToDefault(requireContext());
+                        setupSpinner();
+                        Toast.makeText(requireContext(),
+                                "Defaults restored", Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        });
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+    private void showAddCategoryDialog() {
+
+        View dv = requireActivity().getLayoutInflater()
+                .inflate(R.layout.dialog_add_category_tagged, null);
+
+        EditText input = dv.findViewById(R.id.edit_category_name);
+        RadioGroup rg = dv.findViewById(R.id.radio_tag_group);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Add Category")
+                .setView(dv)
+                .setPositiveButton("Add", (x, y) -> {
+                    String name = input.getText().toString().trim();
+                    if (name.isEmpty()) return;
+
+                    int sel = rg.getCheckedRadioButtonId();
+                    if (sel == -1) return;
+
+                    RadioButton rb = dv.findViewById(sel);
+                    String tag = rb.getText().toString();
+
+                    List<String> cur = CategoryManager.getOrderedCategories(requireContext());
+                    if (cur.contains(name)) return;
+
+                    // Save category + tag
+                    CategoryManager.saveCategoryWithTag(requireContext(), name, tag);
+
+                    // Ensure spinner reopens at the new category
+                    lastSelectedCategory = name;
+
+                    // Reload and select it
+                    suppressSpinnerCallback = true;
+                    loadCategoriesIntoSpinner(name);
+                    suppressSpinnerCallback = false;
+
+                    Toast.makeText(requireContext(),
+                            "Added \"" + name + "\"", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
 
 
-            // --------------------------------------------------------------------
-            // MANAGE CATEGORIES (FULL WORKING IMPLEMENTATION)
-            // --------------------------------------------------------------------
-            private AlertDialog showManageCategoriesDialog () {
+    private void showEditCategoryDialog() {
 
-                String[] options = {"Add Category", "Edit Tag", "Delete Category", "Reset Defaults"};
-
-                return new AlertDialog.Builder(requireContext())
-                        .setTitle("Manage Categories")
-                        .setItems(options, (d, which) -> {
-
-                            switch (which) {
-
-                                case 0:
-                                    showAddCategoryDialog();
-                                    break;
-
-                                case 1:
-                                    showEditCategoryDialog();
-                                    break;
-
-                                case 2:
-                                    showDeleteCategoryDialog();
-                                    break;
-
-                                case 3:
-                                    CategoryManager.resetToDefault(requireContext());
-                                    setupSpinner();
-                                    Toast.makeText(requireContext(), "Defaults restored",
-                                            Toast.LENGTH_SHORT).show();
-                                    break;
-                            }
-                        })
-                        .show();
-            }
-
-            private void showAddCategoryDialog () {
-
-                View dv = requireActivity().getLayoutInflater()
-                        .inflate(R.layout.dialog_add_category_tagged, null);
-
-                EditText input = dv.findViewById(R.id.edit_category_name);
-                RadioGroup rg = dv.findViewById(R.id.radio_tag_group);
-
-                new AlertDialog.Builder(requireContext())
-                        .setTitle("Add Category")
-                        .setView(dv)
-                        .setPositiveButton("Add", (x, y) -> {
-                            String name = input.getText().toString().trim();
-                            if (name.isEmpty()) return;
-
-                            int sel = rg.getCheckedRadioButtonId();
-                            if (sel == -1) return;
-
-                            RadioButton rb = dv.findViewById(sel);
-                            String tag = rb.getText().toString();
-
-                            List<String> cur = CategoryManager.getOrderedCategories(requireContext());
-                            if (cur.contains(name)) return;
-
-                            // Save category + tag
-                            CategoryManager.saveCategoryWithTag(requireContext(), name, tag);
-
-                            // Ensure spinner reopens at the new category
-                            lastSelectedCategory = name;
-
-                            // Reload and select it
-                            suppressSpinnerCallback = true;
-                            loadCategoriesIntoSpinner(name);
-                            suppressSpinnerCallback = false;
-
-                            Toast.makeText(requireContext(),
-                                    "Added \"" + name + "\"", Toast.LENGTH_SHORT).show();
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .show();
-            }
-
-
-            private void showEditCategoryDialog () {
-
-                List<String> items = new ArrayList<>();
-                for (String c : CategoryManager.getOrderedCategories(requireContext())) {
-                    if (!CategoryManager.isDefaultCategory(c))
-                        items.add(c);
-                }
-
-                if (items.isEmpty()) {
-                    Toast.makeText(requireContext(), "No editable categories",
-                            Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                Collections.sort(items, String.CASE_INSENSITIVE_ORDER);
-
-                new AlertDialog.Builder(requireContext())
-                        .setTitle("Edit Tag")
-                        .setItems(items.toArray(new String[0]), (d, w) ->
-                                showTagChangeDialog(items.get(w)))
-                        .show();
-            }
-
-            private void showTagChangeDialog (String cat){
-
-                View dv = requireActivity().getLayoutInflater()
-                        .inflate(R.layout.dialog_add_category_tagged, null);
-
-                RadioGroup rg = dv.findViewById(R.id.radio_tag_group);
-                EditText name = dv.findViewById(R.id.edit_category_name);
-
-                name.setText(cat);
-                name.setEnabled(false);
-
-                String curTag = CategoryManager.getTagForCategory(requireContext(), cat);
-                if ("Fixed".equals(curTag)) rg.check(R.id.radio_fixed);
-                else if ("Necessity".equals(curTag)) rg.check(R.id.radio_basic);
-                else rg.check(R.id.radio_discretionary);
-
-                new AlertDialog.Builder(requireContext())
-                        .setTitle("Change Tag")
-                        .setView(dv)
-                        .setPositiveButton("Save", (dialog, w) -> {
-
-                            int sel = rg.getCheckedRadioButtonId();
-                            RadioButton rb = dv.findViewById(sel);
-                            String newTag = rb.getText().toString();
-
-                            CategoryManager.saveCategoryWithTag(requireContext(), cat, newTag);
-
-                            lastSelectedCategory = cat;
-                            setupSpinner();
-
-                            Toast.makeText(requireContext(),
-                                    "Updated tag", Toast.LENGTH_SHORT).show();
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .show();
-            }
-
-            private void showDeleteCategoryDialog () {
-
-                List<String> deletable = new ArrayList<>();
-                for (String c : CategoryManager.getOrderedCategories(requireContext())) {
-                    if (!CategoryManager.isDefaultCategory(c))
-                        deletable.add(c);
-                }
-
-                if (deletable.isEmpty()) {
-                    Toast.makeText(requireContext(), "Nothing to delete",
-                            Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                Collections.sort(deletable, String.CASE_INSENSITIVE_ORDER);
-
-                new AlertDialog.Builder(requireContext())
-                        .setTitle("Delete Category")
-                        .setItems(deletable.toArray(new String[0]), (d, w) -> {
-
-                            String toRemove = deletable.get(w);
-
-                            new AlertDialog.Builder(requireContext())
-                                    .setTitle("Confirm Delete")
-                                    .setMessage("Delete \"" + toRemove + "\" permanently?")
-                                    .setPositiveButton("Delete", (d2, w2) -> {
-
-                                        CategoryManager.removeCategory(requireContext(), toRemove);
-                                        setupSpinner();
-
-                                        Toast.makeText(requireContext(),
-                                                "Deleted \"" + toRemove + "\"",
-                                                Toast.LENGTH_SHORT).show();
-                                    })
-                                    .setNegativeButton("Cancel", null)
-                                    .show();
-                        })
-                        .show();
-
-
-            }
+        List<String> items = new ArrayList<>();
+        for (String c : CategoryManager.getOrderedCategories(requireContext())) {
+            if (!CategoryManager.isDefaultCategory(c))
+                items.add(c);
         }
+
+        if (items.isEmpty()) {
+            Toast.makeText(requireContext(), "No editable categories",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Collections.sort(items, String.CASE_INSENSITIVE_ORDER);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Edit Tag")
+                .setItems(items.toArray(new String[0]), (d, w) ->
+                        showTagChangeDialog(items.get(w)))
+                .show();
+    }
+
+    private void showTagChangeDialog(String cat) {
+
+        View dv = requireActivity().getLayoutInflater()
+                .inflate(R.layout.dialog_add_category_tagged, null);
+
+        RadioGroup rg = dv.findViewById(R.id.radio_tag_group);
+        EditText name = dv.findViewById(R.id.edit_category_name);
+
+        name.setText(cat);
+        name.setEnabled(false);
+
+        String curTag = CategoryManager.getTagForCategory(requireContext(), cat);
+        if ("Fixed".equals(curTag)) rg.check(R.id.radio_fixed);
+        else if ("Necessity".equals(curTag)) rg.check(R.id.radio_basic);
+        else rg.check(R.id.radio_discretionary);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Change Tag")
+                .setView(dv)
+                .setPositiveButton("Save", (dialog, w) -> {
+
+                    int sel = rg.getCheckedRadioButtonId();
+                    RadioButton rb = dv.findViewById(sel);
+                    String newTag = rb.getText().toString();
+
+                    CategoryManager.saveCategoryWithTag(requireContext(), cat, newTag);
+
+                    lastSelectedCategory = cat;
+                    setupSpinner();
+
+                    Toast.makeText(requireContext(),
+                            "Updated tag", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void showDeleteCategoryDialog() {
+
+        List<String> deletable = new ArrayList<>();
+        for (String c : CategoryManager.getOrderedCategories(requireContext())) {
+            if (!CategoryManager.isDefaultCategory(c))
+                deletable.add(c);
+        }
+
+        if (deletable.isEmpty()) {
+            Toast.makeText(requireContext(), "Nothing to delete",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Collections.sort(deletable, String.CASE_INSENSITIVE_ORDER);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Delete Category")
+                .setItems(deletable.toArray(new String[0]), (d, w) -> {
+
+                    String toRemove = deletable.get(w);
+
+                    new AlertDialog.Builder(requireContext())
+                            .setTitle("Confirm Delete")
+                            .setMessage("Delete \"" + toRemove + "\" permanently?")
+                            .setPositiveButton("Delete", (d2, w2) -> {
+
+                                CategoryManager.removeCategory(requireContext(), toRemove);
+                                setupSpinner();
+
+                                Toast.makeText(requireContext(),
+                                        "Deleted \"" + toRemove + "\"",
+                                        Toast.LENGTH_SHORT).show();
+                            })
+                            .setNegativeButton("Cancel", null)
+                            .show();
+                })
+                .setNegativeButton("Cancel", null)   // ⭐ THIS IS THE MISSING LINE
+                .show();
+    }
+}
