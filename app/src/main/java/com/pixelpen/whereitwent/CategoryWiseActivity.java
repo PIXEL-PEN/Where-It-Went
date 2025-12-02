@@ -494,13 +494,11 @@ public class CategoryWiseActivity extends AppCompatActivity {
                     recreate();
                 })
                 .setPositiveButton("EDIT", (a, b) -> {
-                    Intent i = new Intent(this, AddExpenseActivity.class);
-                    i.putExtra("expense_id", e.id);
-                    startActivity(i);
+                    AddExpenseDialog dialog = AddExpenseDialog.newInstance(e.id);
+                    dialog.show(getSupportFragmentManager(), "EDIT_EXPENSE");
                 })
                 .show();
     }
-
 
     // ==================================
     // FILTER DIALOG (DOTLESS EDITION)
