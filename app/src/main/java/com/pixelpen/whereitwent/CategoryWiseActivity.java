@@ -274,12 +274,22 @@ public class CategoryWiseActivity extends AppCompatActivity {
             categoryContainer.addView(section);
         }
     }
-
     private void showDetails(Expense e, String cat, String symbol) {
-        String msg = "Category: " + cat +
+
+        // Fetch canonical tag for this category
+        String tag = CategoryManager.getTagForCategory(this, cat);
+
+        String catLine;
+        if (tag != null && !tag.trim().isEmpty()) {
+            catLine = "Category: " + cat + " (" + tag + ")";
+        } else {
+            catLine = "Category: " + cat;
+        }
+
+        String msg = catLine +
                 "\nDate: " + safeFriendly(e.date) +
                 "\nItem: " + e.description +
-                "\nAmount: " + e.amount + " " + symbol;
+                "\nAmount: " + String.format(Locale.ENGLISH, "%.2f %s", e.amount, symbol);
 
         new AlertDialog.Builder(this)
                 .setTitle("Expense Details")
@@ -297,6 +307,7 @@ public class CategoryWiseActivity extends AppCompatActivity {
                 })
                 .show();
     }
+
 
     // ==================================
     // FILTER DIALOG (DOTLESS EDITION)

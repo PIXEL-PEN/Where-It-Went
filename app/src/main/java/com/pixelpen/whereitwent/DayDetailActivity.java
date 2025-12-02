@@ -106,11 +106,21 @@ public class DayDetailActivity extends AppCompatActivity {
             textAmount.setText(display);
 
             row.setOnClickListener(v -> {
+// Get tag for category
+                String tag = CategoryManager.getTagForCategory(DayDetailActivity.this, e.category);
+                String catLine;
 
-                String details = "Category: " + e.category + "\n"
-                        + "Date: " + safeDisplay(e.date) + "\n"
-                        + "Item: " + e.description + "\n"
-                        + "Amount: " + String.format(Locale.ENGLISH, "%.2f %s", e.amount, symbol);
+                if (tag != null && !tag.trim().isEmpty()) {
+                    catLine = "Category: " + e.category + " (" + tag + ")";
+                } else {
+                    catLine = "Category: " + e.category;
+                }
+
+                String details =
+                        catLine + "\n"
+                                + "Date: " + safeDisplay(e.date) + "\n"
+                                + "Item: " + e.description + "\n"
+                                + "Amount: " + String.format(Locale.ENGLISH, "%.2f %s", e.amount, symbol);
 
                 AlertDialog dialog = new AlertDialog.Builder(DayDetailActivity.this)
                         .setTitle("Expense Details")
