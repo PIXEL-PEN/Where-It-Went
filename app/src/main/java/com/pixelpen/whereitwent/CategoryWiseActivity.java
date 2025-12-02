@@ -129,22 +129,41 @@ public class CategoryWiseActivity extends AppCompatActivity {
                 return e2.id - e1.id;
             });
         }
-
-        // Order categories
+// --------------------------------------------
+// ORDER CATEGORIES:
+// 1. Fixed top six (in defined order)
+// 2. All custom categories A → Z
+// --------------------------------------------
         List<String> allCats = new ArrayList<>(byCategory.keySet());
         List<String> ordered = new ArrayList<>();
 
+// 1. Fixed top: add only the ones that exist
         for (String fixed : FIXED_TOP_ORDER) {
-            for (String real : allCats)
-                if (real.equalsIgnoreCase(fixed)) ordered.add(real);
+            for (String real : allCats) {
+                if (real.equalsIgnoreCase(fixed)) {
+                    ordered.add(real);
+                }
+            }
         }
 
+// 2. Collect custom (non-fixed) categories
+        List<String> customCats = new ArrayList<>();
         for (String c : allCats) {
-            boolean fixed = false;
-            for (String f : FIXED_TOP_ORDER)
-                if (c.equalsIgnoreCase(f)) fixed = true;
-            if (!fixed) ordered.add(c);
+            boolean isFixed = false;
+            for (String f : FIXED_TOP_ORDER) {
+                if (c.equalsIgnoreCase(f)) {
+                    isFixed = true;
+                    break;
+                }
+            }
+            if (!isFixed) customCats.add(c);
         }
+
+// 3. Sort all custom categories A → Z
+        Collections.sort(customCats, String.CASE_INSENSITIVE_ORDER);
+
+// 4. Append sorted custom categories
+        ordered.addAll(customCats);
 
         categoryContainer.removeAllViews();
 
@@ -250,9 +269,43 @@ public class CategoryWiseActivity extends AppCompatActivity {
 
             TextView left = new TextView(this);
             left.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
-            left.setText(cat);
+
+            String tag = CategoryManager.getTagForCategory(this, cat);
+            String displayName = cat;
+
+// If Off-Budget → append and style smaller + non-bold
+            if ("Off-Budget".equalsIgnoreCase(tag)) {
+                displayName = cat + " (Off-Budget)";
+
+                SpannableString span = new SpannableString(displayName);
+
+                int start = displayName.indexOf("(");
+                int end = displayName.length();
+
+                if (start >= 0) {
+                    // Make "(Off-Budget)" smaller
+                    span.setSpan(new RelativeSizeSpan(0.70f),
+                            start,
+                            end,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                    // Make "(Off-Budget)" NON-bold
+                    span.setSpan(new android.text.style.StyleSpan(Typeface.NORMAL),
+                            start,
+                            end,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
+
+                // Important: still bold the category name (before parent styles it)
+                left.setTypeface(Typeface.DEFAULT_BOLD);
+                left.setText(span);
+
+            } else {
+                left.setTypeface(Typeface.DEFAULT_BOLD);
+                left.setText(displayName);
+            }
+
             left.setTextSize(16);
-            left.setTypeface(Typeface.DEFAULT_BOLD);
             left.setTextColor(accentText);
 
             TextView right = new TextView(this);
