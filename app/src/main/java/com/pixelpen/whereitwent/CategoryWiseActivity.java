@@ -129,42 +129,44 @@ public class CategoryWiseActivity extends AppCompatActivity {
                 return e2.id - e1.id;
             });
         }
-// --------------------------------------------
-// ORDER CATEGORIES:
-// 1. Fixed top six (in defined order)
-// 2. All custom categories A → Z
-// --------------------------------------------
+
+        // -----------------------------
+        // ORDER CATEGORIES:
+        // 1. Fixed top
+        // 2. Custom non–Off-Budget A→Z
+        // 3. Spacer
+        // 4. Off-Budget A→Z
+        // -----------------------------
         List<String> allCats = new ArrayList<>(byCategory.keySet());
+
+        List<String> orderedFixed = new ArrayList<>();
+        List<String> orderedCustom = new ArrayList<>();
+        List<String> orderedOffBudget = new ArrayList<>();
+
+        for (String cat : allCats) {
+            String tag = CategoryManager.getTagForCategory(this, cat);
+
+            if (containsIgnoreCase(FIXED_TOP_ORDER, cat)) {
+                orderedFixed.add(cat);
+            } else if ("Off-Budget".equalsIgnoreCase(tag)) {
+                orderedOffBudget.add(cat);
+            } else {
+                orderedCustom.add(cat);
+            }
+        }
+
+        Collections.sort(orderedCustom, String.CASE_INSENSITIVE_ORDER);
+        Collections.sort(orderedOffBudget, String.CASE_INSENSITIVE_ORDER);
+
+        // Final sequence = fixed → custom → off-budget
         List<String> ordered = new ArrayList<>();
+        ordered.addAll(orderedFixed);
+        ordered.addAll(orderedCustom);
 
-// 1. Fixed top: add only the ones that exist
-        for (String fixed : FIXED_TOP_ORDER) {
-            for (String real : allCats) {
-                if (real.equalsIgnoreCase(fixed)) {
-                    ordered.add(real);
-                }
-            }
-        }
+        boolean needSpacerBeforeOffBudget =
+                !orderedOffBudget.isEmpty();
 
-// 2. Collect custom (non-fixed) categories
-        List<String> customCats = new ArrayList<>();
-        for (String c : allCats) {
-            boolean isFixed = false;
-            for (String f : FIXED_TOP_ORDER) {
-                if (c.equalsIgnoreCase(f)) {
-                    isFixed = true;
-                    break;
-                }
-            }
-            if (!isFixed) customCats.add(c);
-        }
-
-// 3. Sort all custom categories A → Z
-        Collections.sort(customCats, String.CASE_INSENSITIVE_ORDER);
-
-// 4. Append sorted custom categories
-        ordered.addAll(customCats);
-
+        // Prepare UI
         categoryContainer.removeAllViews();
 
         String code = getSharedPreferences("settings", MODE_PRIVATE)
@@ -174,18 +176,17 @@ public class CategoryWiseActivity extends AppCompatActivity {
 
         int accentText = ContextCompat.getColor(this, R.color.colorAccent2);
 
+        // RENDER FIXED + CUSTOM FIRST
         for (String cat : ordered) {
             List<Expense> items = byCategory.get(cat);
             if (items == null || items.isEmpty()) continue;
 
-            boolean isFixed = false;
-            for (String f : FIXED_TOP_ORDER)
-                if (cat.equalsIgnoreCase(f)) isFixed = true;
+            boolean isFixed = containsIgnoreCase(FIXED_TOP_ORDER, cat);
 
             double catTotal = 0;
             for (Expense e : items) catTotal += e.amount;
 
-            // --- Build rows ---
+            // Build rows (UNCHANGED)
             LinearLayout section = new LinearLayout(this);
             section.setOrientation(LinearLayout.VERTICAL);
             LinearLayout.LayoutParams sectionLp = new LinearLayout.LayoutParams(
@@ -229,7 +230,6 @@ public class CategoryWiseActivity extends AppCompatActivity {
                 }
             }
 
-            // --- Total row ---
             LinearLayout totalRow = new LinearLayout(this);
             totalRow.setOrientation(LinearLayout.HORIZONTAL);
             totalRow.setPadding(dp(12), dp(10), dp(12), dp(12));
@@ -257,7 +257,6 @@ public class CategoryWiseActivity extends AppCompatActivity {
             totalRow.addView(amtTv);
             section.addView(totalRow);
 
-            // --- Header ---
             LinearLayout header = new LinearLayout(this);
             LinearLayout.LayoutParams hlp =
                     new LinearLayout.LayoutParams(-1, dp(32));
@@ -273,33 +272,21 @@ public class CategoryWiseActivity extends AppCompatActivity {
             String tag = CategoryManager.getTagForCategory(this, cat);
             String displayName = cat;
 
-// If Off-Budget → append and style smaller + non-bold
             if ("Off-Budget".equalsIgnoreCase(tag)) {
                 displayName = cat + " (Off-Budget)";
-
                 SpannableString span = new SpannableString(displayName);
-
                 int start = displayName.indexOf("(");
                 int end = displayName.length();
-
                 if (start >= 0) {
-                    // Make "(Off-Budget)" smaller
                     span.setSpan(new RelativeSizeSpan(0.70f),
-                            start,
-                            end,
+                            start, end,
                             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-                    // Make "(Off-Budget)" NON-bold
                     span.setSpan(new android.text.style.StyleSpan(Typeface.NORMAL),
-                            start,
-                            end,
+                            start, end,
                             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
-
-                // Important: still bold the category name (before parent styles it)
                 left.setTypeface(Typeface.DEFAULT_BOLD);
                 left.setText(span);
-
             } else {
                 left.setTypeface(Typeface.DEFAULT_BOLD);
                 left.setText(displayName);
@@ -326,10 +313,153 @@ public class CategoryWiseActivity extends AppCompatActivity {
             categoryContainer.addView(header);
             categoryContainer.addView(section);
         }
+
+        // --------------------------------------
+        // Insert spacer *only if* Off-Budget exists
+        // --------------------------------------
+        if (needSpacerBeforeOffBudget) {
+            View spacer = new View(this);
+            spacer.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, dp(12)));
+            categoryContainer.addView(spacer);
+        }
+
+        // --------------------------------------
+        // RENDER OFF-BUDGET LAST (unchanged UI)
+        // --------------------------------------
+        for (String cat : orderedOffBudget) {
+            List<Expense> items = byCategory.get(cat);
+            if (items == null || items.isEmpty()) continue;
+
+            boolean isFixed = false; // off-budget is never fixed
+
+            double catTotal = 0;
+            for (Expense e : items) catTotal += e.amount;
+
+            LinearLayout section = new LinearLayout(this);
+            section.setOrientation(LinearLayout.VERTICAL);
+            LinearLayout.LayoutParams sectionLp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            sectionLp.setMargins(dp(12), 0, dp(12), dp(8));
+            section.setLayoutParams(sectionLp);
+            section.setBackgroundColor(0xFFFFFFFF);
+            if (Build.VERSION.SDK_INT >= 21) section.setElevation(1f);
+
+            for (int i = 0; i < items.size(); i++) {
+                Expense e = items.get(i);
+                View row = inflater.inflate(R.layout.item_expense_date_row, section, false);
+
+                TextView tDesc = row.findViewById(R.id.text_description);
+                TextView tCat = row.findViewById(R.id.text_category);
+                TextView tAmt = row.findViewById(R.id.text_amount);
+
+                tDesc.setText(e.description);
+                tCat.setText(safeFriendly(e.date));
+
+                String amt = money.format(e.amount) + " " + symbol;
+                SpannableString span = new SpannableString(amt);
+                span.setSpan(new RelativeSizeSpan(0.85f),
+                        amt.length() - symbol.length(),
+                        amt.length(),
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                tAmt.setText(span);
+
+                row.setOnClickListener(v -> showDetails(e, cat, symbol));
+                section.addView(row);
+
+                if (i < items.size() - 1) {
+                    View div = new View(this);
+                    LinearLayout.LayoutParams lp =
+                            new LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT, dp(1));
+                    lp.setMargins(dp(12), 0, dp(12), 0);
+                    div.setLayoutParams(lp);
+                    div.setBackgroundColor(0x1A000000);
+                    section.addView(div);
+                }
+            }
+
+            LinearLayout totalRow = new LinearLayout(this);
+            totalRow.setOrientation(LinearLayout.HORIZONTAL);
+            totalRow.setPadding(dp(12), dp(10), dp(12), dp(12));
+
+            TextView lab = new TextView(this);
+            lab.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
+            lab.setText("TOTAL");
+            lab.setTextSize(15);
+            lab.setTypeface(Typeface.DEFAULT_BOLD);
+            lab.setTextColor(0xFFB71C1C);
+
+            TextView amtTv = new TextView(this);
+            String totalFormatted = money.format(catTotal) + " " + symbol;
+            SpannableString span2 = new SpannableString(totalFormatted);
+            span2.setSpan(new RelativeSizeSpan(0.85f),
+                    totalFormatted.length() - symbol.length(),
+                    totalFormatted.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            amtTv.setText(span2);
+            amtTv.setTextSize(15);
+            amtTv.setTypeface(Typeface.DEFAULT_BOLD);
+            amtTv.setTextColor(0xFFB71C1C);
+
+            totalRow.addView(lab);
+            totalRow.addView(amtTv);
+            section.addView(totalRow);
+
+            LinearLayout header = new LinearLayout(this);
+            LinearLayout.LayoutParams hlp =
+                    new LinearLayout.LayoutParams(-1, dp(32));
+            hlp.setMargins(dp(12), dp(8), dp(12), dp(4));
+            header.setLayoutParams(hlp);
+            header.setPadding(dp(12), dp(4), dp(12), dp(4));
+            header.setBackgroundColor(HEADER_BG_CUSTOM);
+            header.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+            TextView left = new TextView(this);
+            left.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
+
+            String tag = CategoryManager.getTagForCategory(this, cat);
+            String displayName = cat + " (Off-Budget)";
+
+            SpannableString span = new SpannableString(displayName);
+            int start = displayName.indexOf("(");
+            int end = displayName.length();
+            if (start >= 0) {
+                span.setSpan(new RelativeSizeSpan(0.70f),
+                        start, end,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                span.setSpan(new android.text.style.StyleSpan(Typeface.NORMAL),
+                        start, end,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+
+            left.setTypeface(Typeface.DEFAULT_BOLD);
+            left.setText(span);
+            left.setTextSize(16);
+            left.setTextColor(accentText);
+
+            TextView right = new TextView(this);
+            right.setText(money.format(catTotal) + " " + symbol);
+            right.setTextSize(14);
+            right.setTypeface(Typeface.DEFAULT_BOLD);
+            right.setTextColor(accentText);
+
+            header.addView(left);
+            header.addView(right);
+
+            section.setVisibility(View.GONE);
+            header.setOnClickListener(v -> {
+                section.setVisibility(section.getVisibility() == View.VISIBLE
+                        ? View.GONE : View.VISIBLE);
+            });
+
+            categoryContainer.addView(header);
+            categoryContainer.addView(section);
+        }
     }
+
     private void showDetails(Expense e, String cat, String symbol) {
 
-        // Fetch canonical tag for this category
         String tag = CategoryManager.getTagForCategory(this, cat);
 
         String catLine;
@@ -369,7 +499,6 @@ public class CategoryWiseActivity extends AppCompatActivity {
 
         List<Expense> all = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
 
-        // Build category list
         List<String> defaults = new ArrayList<>(FIXED_TOP_ORDER);
         List<String> customs = new ArrayList<>();
         for (Expense e : all) {
@@ -387,7 +516,6 @@ public class CategoryWiseActivity extends AppCompatActivity {
         if (!customs.isEmpty()) categories.add("⋯");
         categories.addAll(customs);
 
-        // Spinner
         ArrayAdapter<String> adapter =
                 new ArrayAdapter<String>(this,
                         android.R.layout.simple_spinner_item,
@@ -428,7 +556,6 @@ public class CategoryWiseActivity extends AppCompatActivity {
         txtEnd.setPadding(0, dp(4), 0, dp(10));
         layout.addView(txtEnd);
 
-        // Available range update
         spinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(android.widget.AdapterView<?> p, View v, int pos, long id) {
                 String sel = categories.get(pos);
@@ -455,7 +582,6 @@ public class CategoryWiseActivity extends AppCompatActivity {
             @Override public void onNothingSelected(android.widget.AdapterView<?> p) {}
         });
 
-        // Date pickers
         View.OnClickListener pickDate = clickView -> {
             boolean pickingStart = (clickView == txtStart);
 
@@ -484,7 +610,6 @@ public class CategoryWiseActivity extends AppCompatActivity {
         txtStart.setOnClickListener(pickDate);
         txtEnd.setOnClickListener(pickDate);
 
-        // APPLY BUTTON
         DialogInterface.OnClickListener applyListener =
                 (dialog, whichButton) -> {
                     String selCat = spinner.getSelectedItem().toString();
@@ -494,7 +619,6 @@ public class CategoryWiseActivity extends AppCompatActivity {
                     String endFriendly =
                             txtEnd.getText().toString().replace("▶ End Date: ", "").trim();
 
-                    // If no manual date chosen → fallback to available range
                     if (startFriendly.contains("(") || endFriendly.contains("(")) {
                         String avail = txtAvailable.getText().toString();
                         if (avail.startsWith("Available: ") && avail.contains("–")) {
@@ -509,7 +633,6 @@ public class CategoryWiseActivity extends AppCompatActivity {
                     String startIso = friendlyToIso(startFriendly);
                     String endIso = friendlyToIso(endFriendly);
 
-                    // Java-based inclusive range filter
                     List<Expense> ranged = new ArrayList<>();
                     for (Expense e : all) {
                         java.util.Date d = tryParseAny(e.date);
