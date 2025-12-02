@@ -101,6 +101,16 @@ public class CategoryWiseActivity extends AppCompatActivity {
         render();
     }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            overrideFiltered = null;
+            render();
+        }
+    }
+
+
     // ===========================
     // RENDER CATEGORY LIST
     // ===========================
@@ -169,9 +179,9 @@ public class CategoryWiseActivity extends AppCompatActivity {
         // Prepare UI
         categoryContainer.removeAllViews();
 
-        String code = getSharedPreferences("settings", MODE_PRIVATE)
-                .getString("currency_code", "THB");
-        String symbol = CurrencyUtils.symbolFor(code);
+        String symbol = getSharedPreferences("settings", MODE_PRIVATE)
+                .getString("currency_symbol", "$");
+
         DecimalFormat money = new DecimalFormat("#,##0.00");
 
         int accentText = ContextCompat.getColor(this, R.color.colorAccent2);
