@@ -101,14 +101,7 @@ public class CategoryWiseActivity extends AppCompatActivity {
         render();
     }
 
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (hasFocus) {
-            overrideFiltered = null;
-            render();
-        }
-    }
+
 
 
     // ===========================
