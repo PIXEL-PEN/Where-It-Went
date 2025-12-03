@@ -28,13 +28,7 @@ public class MainScreenActivity extends AppCompatActivity {
             });
         }
 
-        ImageButton fab = findViewById(R.id.fab_add);
-        if (fab != null) {
-            fab.setOnClickListener(v -> {
-                AddExpenseDialog dlg = new AddExpenseDialog();
-                dlg.show(getSupportFragmentManager(), "ADD_EXPENSE");
-            });
-        }
+
 
     }
 }
