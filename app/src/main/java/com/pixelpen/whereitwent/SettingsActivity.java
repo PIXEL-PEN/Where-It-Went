@@ -23,6 +23,11 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+import java.util.Date;
+
+
 public class SettingsActivity extends AppCompatActivity {
 
     private Spinner spinnerCurrency;
@@ -140,6 +145,25 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
+    private String fmt(String iso) {
+        try {
+            SimpleDateFormat inFmt  = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+            Date d = inFmt.parse(iso);
+
+            // Output format: 03 Dec 2025
+            SimpleDateFormat outFmt = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
+            return outFmt.format(d);
+        } catch (Exception e) {
+            return iso;
+        }
+    }
+    private String fileDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+        return sdf.format(new Date());
+    }
+
+
+
     // =====================================================
     // EXPORT → CSV
     // =====================================================
@@ -150,14 +174,17 @@ public class SettingsActivity extends AppCompatActivity {
             sb.append(e.category).append(",")
                     .append(e.description).append(",")
                     .append(e.amount).append(",")
-                    .append(e.date).append("\n");
+                    .append(fmt(e.date)).append("\n");
+
         }
         csvContent = sb.toString();
 
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("text/csv");
-        intent.putExtra(Intent.EXTRA_TITLE, "expenses.csv");
+        intent.putExtra(Intent.EXTRA_TITLE,
+                "Expenses_" + fileDate() + ".csv");
+
         startActivityForResult(intent, CREATE_CSV_FILE);
     }
 
@@ -184,7 +211,11 @@ public class SettingsActivity extends AppCompatActivity {
     // =====================================================
     private void exportAndEmail() {
         try {
-            File file = new File(getExternalFilesDir(null), "expenses.html");
+            File file = new File(
+                    getExternalFilesDir(null),
+                    "Expenses_" + fileDate() + ".html"
+            );
+
             FileWriter writer = new FileWriter(file);
 
             writer.append("<html><body><h2>Expenses Export</h2><table border='1'>");
@@ -195,7 +226,8 @@ public class SettingsActivity extends AppCompatActivity {
                         .append("<td>").append(e.category).append("</td>")
                         .append("<td>").append(e.description).append("</td>")
                         .append("<td>").append(String.valueOf(e.amount)).append("</td>")
-                        .append("<td>").append(e.date).append("</td>")
+                        .append("<td>").append(fmt(e.date)).append("</td>")
+
                         .append("</tr>");
             }
             writer.append("</table></body></html>");

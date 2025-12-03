@@ -6,6 +6,10 @@ import android.net.Uri;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.OutputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class ExportUtils {
 
@@ -37,6 +41,24 @@ public class ExportUtils {
         } catch (Exception e) {
             e.printStackTrace(); // shows details in logcat
             return false;
+        }
+    }
+
+    /**
+     * Convert ISO date (yyyy-MM-dd) → dd MMM yyyy  (e.g., 19 Sep 2025)
+     * Use this for CSV/HTML export when those functions go back in.
+     */
+    public static String toExportDate(String iso) {
+        try {
+            SimpleDateFormat inFmt  = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+            Date d = inFmt.parse(iso);
+
+            // ✔ This produces “19 Sep 2025” (no final period)
+            SimpleDateFormat outFmt = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
+            return outFmt.format(d);
+
+        } catch (Exception e) {
+            return iso;  // fallback
         }
     }
 }
