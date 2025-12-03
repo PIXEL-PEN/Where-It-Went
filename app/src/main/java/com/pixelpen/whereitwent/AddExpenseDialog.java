@@ -16,6 +16,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import android.text.InputType;
 
+import android.content.DialogInterface;
+
 
 public class AddExpenseDialog extends DialogFragment {
 
@@ -476,12 +478,21 @@ public class AddExpenseDialog extends DialogFragment {
 
         Collections.sort(items, String.CASE_INSENSITIVE_ORDER);
 
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Edit Tag")
-                .setItems(items.toArray(new String[0]), (d, w) ->
-                        showTagChangeDialog(items.get(w)))
-                .show();
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Edit Tag");
+
+        // List items callback remains identical (NO CHANGE IN LOGIC)
+        builder.setItems(items.toArray(new String[0]), (d, w) ->
+                showTagChangeDialog(items.get(w)));
+
+        // ⭐ Add Cancel button BEFORE creating dialog
+        builder.setNegativeButton("Cancel", null);
+
+        // ⭐ Now create+show the dialog
+        AlertDialog dlg = builder.create();
+        dlg.show();
     }
+
 
     private void showTagChangeDialog(String cat) {
 
@@ -499,25 +510,40 @@ public class AddExpenseDialog extends DialogFragment {
         else if ("Necessity".equals(curTag)) rg.check(R.id.radio_basic);
         else rg.check(R.id.radio_discretionary);
 
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Change Tag")
-                .setView(dv)
-                .setPositiveButton("Save", (dialog, w) -> {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Change Tag");
 
-                    int sel = rg.getCheckedRadioButtonId();
-                    RadioButton rb = dv.findViewById(sel);
-                    String newTag = rb.getText().toString();
+// Add buttons FIRST
+        builder.setPositiveButton("Save", (dialog, w) -> {
 
-                    CategoryManager.saveCategoryWithTag(requireContext(), cat, newTag);
+            int sel = rg.getCheckedRadioButtonId();
+            RadioButton rb = dv.findViewById(sel);
+            String newTag = rb.getText().toString();
 
-                    lastSelectedCategory = cat;
-                    setupSpinner();
+            CategoryManager.saveCategoryWithTag(requireContext(), cat, newTag);
 
-                    Toast.makeText(requireContext(),
-                            "Updated tag", Toast.LENGTH_SHORT).show();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+            lastSelectedCategory = cat;
+            setupSpinner();
+
+            Toast.makeText(requireContext(),
+                    "Updated tag", Toast.LENGTH_SHORT).show();
+        });
+
+        builder.setNegativeButton("Cancel", null);
+
+// THEN attach the custom view — important!
+        builder.setView(dv);
+
+// Now create + show
+        AlertDialog dlg = builder.create();
+        dlg.show();
+
+
+
+// Optional: normalize visual appearance
+        dlg.getButton(DialogInterface.BUTTON_NEGATIVE).setAllCaps(false);
+        dlg.getButton(DialogInterface.BUTTON_POSITIVE).setAllCaps(false);
+
     }
 
     private void showDeleteCategoryDialog() {
