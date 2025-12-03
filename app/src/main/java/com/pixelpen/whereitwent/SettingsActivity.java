@@ -169,15 +169,19 @@ public class SettingsActivity extends AppCompatActivity {
     // =====================================================
     private void exportToStorage() {
         StringBuilder sb = new StringBuilder();
+
+// ADD HEADER
+        sb.append("Category,Item,Amount,Date\n");
+
         List<Expense> expenses = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
         for (Expense e : expenses) {
             sb.append(e.category).append(",")
                     .append(e.description).append(",")
                     .append(e.amount).append(",")
                     .append(fmt(e.date)).append("\n");
-
         }
         csvContent = sb.toString();
+
 
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -219,7 +223,7 @@ public class SettingsActivity extends AppCompatActivity {
             FileWriter writer = new FileWriter(file);
 
             writer.append("<html><body><h2>Expenses Export</h2><table border='1'>");
-            writer.append("<tr><th>Category</th><th>Description</th><th>Amount</th><th>Date</th></tr>");
+            writer.append("<tr><th>Category</th><th>Item</th><th>Amount</th><th>Date</th></tr>");
             List<Expense> expenses = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
             for (Expense e : expenses) {
                 writer.append("<tr>")
