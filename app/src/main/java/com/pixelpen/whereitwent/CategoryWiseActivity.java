@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import android.content.DialogInterface;
+import android.util.Log;
 
 
 
@@ -44,8 +45,8 @@ public class CategoryWiseActivity extends AppCompatActivity {
     private final SimpleDateFormat FRIENDLY = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
     private final SimpleDateFormat ISO = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
 
-    private static final int HEADER_BG_CUSTOM = 0xFFBFCBD3;
-    private static final int HEADER_BG_FIXED = 0xFFFFE0B2;
+    private static final int HEADER_BG_CUSTOM = 0xFFE6D2A3;   // new beige
+    private static final int HEADER_BG_FIXED  = 0xFFBBCCD4;   // correct gray from screenshot
 
     private static final List<String> FIXED_TOP_ORDER = Arrays.asList(
             "Groceries", "Rent", "Utilities", "Bills", "Transport", "Other"
@@ -186,6 +187,9 @@ public class CategoryWiseActivity extends AppCompatActivity {
 
             boolean isFixed = containsIgnoreCase(FIXED_TOP_ORDER, cat);
 
+
+
+
             double catTotal = 0;
             for (Expense e : items) catTotal += e.amount;
 
@@ -266,8 +270,20 @@ public class CategoryWiseActivity extends AppCompatActivity {
             hlp.setMargins(dp(12), dp(8), dp(12), dp(4));
             header.setLayoutParams(hlp);
             header.setPadding(dp(12), dp(4), dp(12), dp(4));
-            header.setBackgroundColor(isFixed ? HEADER_BG_FIXED : HEADER_BG_CUSTOM);
             header.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+            String catTag = CategoryManager.getTagForCategory(this, cat);
+
+
+            boolean isOffBudget = orderedOffBudget.contains(cat);
+
+            boolean isFixedOrOff = isFixed || isOffBudget;
+
+            int bgColor = isFixedOrOff ? HEADER_BG_FIXED : HEADER_BG_CUSTOM;
+
+            header.setBackgroundColor(bgColor);
+
+
 
             TextView left = new TextView(this);
             left.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
@@ -415,7 +431,8 @@ public class CategoryWiseActivity extends AppCompatActivity {
             hlp.setMargins(dp(12), dp(8), dp(12), dp(4));
             header.setLayoutParams(hlp);
             header.setPadding(dp(12), dp(4), dp(12), dp(4));
-            header.setBackgroundColor(HEADER_BG_CUSTOM);
+            header.setBackgroundColor(HEADER_BG_FIXED);
+
             header.setGravity(android.view.Gravity.CENTER_VERTICAL);
 
             TextView left = new TextView(this);
