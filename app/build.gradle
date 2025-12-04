@@ -16,17 +16,34 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // ----------------------------------------------------
+    // SIGNING CONFIGS
+    // ----------------------------------------------------
+
+
+    // ----------------------------------------------------
+    // BUILD TYPES
+    // ----------------------------------------------------
     buildTypes {
+        debug {
+
+        }
         release {
+            applicationIdSuffix ".release"         // unique for release builds
+            resValue "string", "app_name", "WhereItWent"
+
+
+
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                     'proguard-rules.pro'
         }
-        debug { }
     }
 
-    // Flavors (single dimension)
+    // ----------------------------------------------------
+    // FLAVOR DIMENSIONS
+    // ----------------------------------------------------
     flavorDimensions "mode"
 
     productFlavors {
@@ -44,13 +61,15 @@ android {
         }
     }
 
-    // ✔ CUSTOM APK FILE NAMES
+    // ----------------------------------------------------
+    // CUSTOM APK NAMES
+    // ----------------------------------------------------
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
 
-            def flavor = variant.flavorName       // dev / stable
-            def type = variant.buildType.name     // debug / release
-            def base = "WhereItWent"              // clean visible name
+            def flavor = variant.flavorName
+            def type = variant.buildType.name
+            def base = "WhereItWent"
 
             if (flavor == "dev") {
                 outputFileName = "${base}-DEV-${type}.apk"

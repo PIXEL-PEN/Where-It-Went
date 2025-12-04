@@ -153,7 +153,13 @@ public class MainScreen extends AppCompatActivity {
 
         // Optional: scroll into view
         if (idx >= 0) {
-            recyclerMonths.post(() -> recyclerMonths.smoothScrollToPosition(idx));
+            recyclerMonths.post(() -> {
+                LinearLayoutManager lm = (LinearLayoutManager) recyclerMonths.getLayoutManager();
+                if (lm != null) {
+                    lm.scrollToPositionWithOffset(idx, 0); // align item TOP
+                }
+            });
         }
+
     }
 }
