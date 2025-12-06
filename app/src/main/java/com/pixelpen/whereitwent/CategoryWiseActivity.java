@@ -101,6 +101,11 @@ public class CategoryWiseActivity extends AppCompatActivity {
         super.onResume();
         render();
     }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        overrideFiltered = null;   // always reset filtering when leaving screen
+    }
 
 
 
@@ -109,9 +114,43 @@ public class CategoryWiseActivity extends AppCompatActivity {
     // RENDER CATEGORY LIST
     // ===========================
     private void render() {
-        List<Expense> base = (overrideFiltered != null)
-                ? overrideFiltered
-                : ExpenseDatabase.getDatabase(this).expenseDao().getAll();
+        List<Expense> base;
+
+        if (overrideFiltered != null) {
+            base = overrideFiltered;   // filter dialog result
+        } else {
+            // default: ONLY show current month
+            String[] range = currentMonthRange();
+            String startIso = range[0];
+            String endIso = range[1];
+
+            List<Expense> all = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
+
+            base = new ArrayList<>();
+
+            for (Expense e : all) {
+                String cat = (e.category == null ? "" : e.category.trim());
+                String tag = CategoryManager.getTagForCategory(this, cat);
+
+                // ALWAYS include Off-Budget (all-time)
+                if ("Off-Budget".equalsIgnoreCase(tag)) {
+                    base.add(e);
+                    continue;
+                }
+
+                // Normal categories → current month only
+                java.util.Date d = tryParseAny(e.date);
+                if (d != null) {
+                    String iso = ISO.format(d);
+                    if (iso.compareTo(startIso) >= 0 &&
+                            iso.compareTo(endIso)   <= 0)
+                    {
+                        base.add(e);
+                    }
+                }
+            }
+
+        }
 
         Map<String, List<Expense>> byCategory = new LinkedHashMap<>();
         for (Expense e : base) {
@@ -365,9 +404,6 @@ public class CategoryWiseActivity extends AppCompatActivity {
         customOffDiv.setBackgroundColor(0x33000000);  // subtle gray divider
         categoryContainer.addView(customOffDiv);
 
-// --------------------------------------
-// RENDER OFF-BUDGET LAST (unchanged UI)
-// --------------------------------------
 
 
 
@@ -770,6 +806,24 @@ public class CategoryWiseActivity extends AppCompatActivity {
         if (a == null || b == null) return false;
         return a.equalsIgnoreCase(b);
     }
+
+    private String[] currentMonthRange() {
+        Calendar cal = Calendar.getInstance();
+
+
+        int Y = cal.get(Calendar.YEAR);
+        int M = cal.get(Calendar.MONTH);
+
+        cal.set(Y, M, 1, 0, 0, 0);
+        String start = ISO.format(cal.getTime());
+
+        cal.set(Y, M, cal.getActualMaximum(Calendar.DAY_OF_MONTH), 23, 59, 59);
+        String end = ISO.format(cal.getTime());
+
+        return new String[]{start, end};
+    }
+
+
 
     private static boolean containsIgnoreCase(List<String> list, String probe) {
         for (String s : list)
