@@ -159,16 +159,25 @@ public class CategoryWiseActivity extends AppCompatActivity {
             }
         }
 
+// ★ Keep FIXED categories in the exact order of FIXED_TOP_ORDER
+        Collections.sort(orderedFixed, (a, b) ->
+                Integer.compare(
+                        indexIn(FIXED_TOP_ORDER, a),
+                        indexIn(FIXED_TOP_ORDER, b)
+                ));
+
+// Existing sorts (unchanged)
         Collections.sort(orderedCustom, String.CASE_INSENSITIVE_ORDER);
         Collections.sort(orderedOffBudget, String.CASE_INSENSITIVE_ORDER);
 
-        // Final sequence = fixed → custom → off-budget
+// Final sequence = fixed → custom → off-budget
         List<String> ordered = new ArrayList<>();
         ordered.addAll(orderedFixed);
         ordered.addAll(orderedCustom);
 
         boolean needSpacerBeforeOffBudget =
                 !orderedOffBudget.isEmpty();
+
 
         // Prepare UI
         categoryContainer.removeAllViews();
@@ -179,6 +188,9 @@ public class CategoryWiseActivity extends AppCompatActivity {
         DecimalFormat money = new DecimalFormat("#,##0.00");
 
         int accentText = ContextCompat.getColor(this, R.color.colorAccent2);
+
+
+
 
         // RENDER FIXED + CUSTOM FIRST
         for (String cat : ordered) {
@@ -342,6 +354,22 @@ public class CategoryWiseActivity extends AppCompatActivity {
                     LinearLayout.LayoutParams.MATCH_PARENT, dp(12)));
             categoryContainer.addView(spacer);
         }
+
+        // ----- divider between CUSTOM and OFF-BUDGET -----
+        View customOffDiv = new View(this);
+        LinearLayout.LayoutParams divLp =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT, dp(1));
+        divLp.setMargins(dp(12), dp(3), dp(12), dp(7));  // new tighter spacing (total ~10dp)
+        customOffDiv.setLayoutParams(divLp);
+        customOffDiv.setBackgroundColor(0x33000000);  // subtle gray divider
+        categoryContainer.addView(customOffDiv);
+
+// --------------------------------------
+// RENDER OFF-BUDGET LAST (unchanged UI)
+// --------------------------------------
+
+
 
         // --------------------------------------
         // RENDER OFF-BUDGET LAST (unchanged UI)
@@ -719,6 +747,14 @@ public class CategoryWiseActivity extends AppCompatActivity {
         if (d != null) return FRIENDLY.format(d);
         return raw;
     }
+
+    private int indexIn(List<String> list, String value) {
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).equalsIgnoreCase(value)) return i;
+        }
+        return Integer.MAX_VALUE;
+    }
+
 
     private String friendlyToIso(String text) {
         if (text == null || text.trim().isEmpty()) return "1970-01-01";
