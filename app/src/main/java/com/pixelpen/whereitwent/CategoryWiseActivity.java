@@ -41,6 +41,11 @@ public class CategoryWiseActivity extends AppCompatActivity {
     private LinearLayout categoryContainer;
     private LayoutInflater inflater;
 
+    private String filterStartFriendly = null;
+    private String filterEndFriendly = null;
+
+
+
     // ***** FORMATTERS (NO DOTS) *****
     private final SimpleDateFormat FRIENDLY = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
     private final SimpleDateFormat ISO = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
@@ -115,6 +120,23 @@ public class CategoryWiseActivity extends AppCompatActivity {
     // ===========================
     private void render() {
         List<Expense> base;
+        TextView monthHeader = findViewById(R.id.text_month_header);
+
+        if (overrideFiltered != null && filterStartFriendly != null && filterEndFriendly != null) {
+            // Filter mode → show chosen range
+            monthHeader.setText("Range: " + filterStartFriendly + " – " + filterEndFriendly);
+        } else {
+            // Normal mode → show current month
+            Calendar cal = Calendar.getInstance();
+            String title = new SimpleDateFormat("MMMM yyyy", Locale.ENGLISH).format(cal.getTime());
+            monthHeader.setText(title);
+
+            // Clear filter labels when not filtered
+            filterStartFriendly = null;
+            filterEndFriendly = null;
+        }
+
+
 
         if (overrideFiltered != null) {
             base = overrideFiltered;   // filter dialog result
@@ -734,6 +756,8 @@ public class CategoryWiseActivity extends AppCompatActivity {
                         for (Expense e : ranged)
                             if (equalsIgnoreCase(selCat, e.category)) result.add(e);
                     }
+                    filterStartFriendly = startFriendly;
+                    filterEndFriendly = endFriendly;
 
                     overrideFiltered = result;
                     render();

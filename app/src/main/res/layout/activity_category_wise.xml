@@ -75,6 +75,30 @@
         </RelativeLayout>
 
         <!-- Scrollable category container -->
+
+        <TextView
+            android:id="@+id/text_month_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:textSize="13sp"
+            android:textColor="#555555"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            android:background="#22000000"/>
+
+
+
+
+
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
