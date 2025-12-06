@@ -67,6 +67,11 @@ public class CategoryWiseActivity extends AppCompatActivity {
         inflater = LayoutInflater.from(this);
         categoryContainer = findViewById(R.id.categorywise_container);
 
+        ImageButton menu = findViewById(R.id.btn_menu);
+        menu.setOnClickListener(v -> showOverflowMenu());
+
+
+
         ImageButton btnBack = findViewById(R.id.btn_back);
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> {
@@ -100,6 +105,42 @@ public class CategoryWiseActivity extends AppCompatActivity {
 
         openFilterDialogWithDelay();
     }
+
+    private void showOverflowMenu() {
+        String[] items = new String[]{
+                "Date Range Filter",
+                "Category Manager",
+                "Distribution"
+        };
+
+        new AlertDialog.Builder(this)
+                .setTitle("Actions")
+                .setItems(items, (dlg, which) -> {
+
+                    switch (which) {
+
+                        case 0: // Date Range Filter
+                            showFilterDialog();
+                            break;
+
+                        case 1: // Category Manager
+                            AddExpenseDialog d = new AddExpenseDialog();
+                            Bundle args = new Bundle();
+                            args.putBoolean("open_manage_categories", true);
+                            d.setArguments(args);
+                            d.show(getSupportFragmentManager(), "MANAGE_CATEGORIES");
+                            break;
+
+                        case 2: // Distribution
+                            startActivity(new Intent(this, DistributionActivity.class));
+                            break;
+                    }
+
+                })
+                .show();
+    }
+
+
 
     @Override
     protected void onResume() {
