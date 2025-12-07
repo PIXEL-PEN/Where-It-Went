@@ -246,6 +246,24 @@ public class AddExpenseDialog extends DialogFragment {
             DatePickerDialog dlg = new DatePickerDialog(requireContext(),
                     (view, yr, mo, day) -> {
 
+                        // --- BLOCK FUTURE DATES ---
+                        Calendar todayCal = Calendar.getInstance();
+                        todayCal.set(Calendar.HOUR_OF_DAY, 0);
+                        todayCal.set(Calendar.MINUTE, 0);
+                        todayCal.set(Calendar.SECOND, 0);
+                        todayCal.set(Calendar.MILLISECOND, 0);
+
+                        Calendar chosen = Calendar.getInstance();
+                        chosen.set(yr, mo, day, 0, 0, 0);
+
+                        if (chosen.after(todayCal)) {
+                            Toast.makeText(requireContext(),
+                                    "Future dates are not allowed",
+                                    Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        // --------------------------
+
                         String formatted = String.format(Locale.ENGLISH,
                                 "%02d %s %04d",
                                 day, getMonthAbbrev(mo), yr);
