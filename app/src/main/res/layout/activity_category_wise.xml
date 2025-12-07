@@ -60,11 +60,13 @@
 
             <ImageButton
                 android:id="@+id/btn_menu"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:padding="6dp"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:padding="2dp"
                 android:background="@android:color/transparent"
-                android:src="@drawable/baseline_more_horiz_24"
+                android:src="@drawable/baseline_more_horiz_35"
+
+                android:scaleType="centerInside"
                 android:contentDescription="Menu"
                 android:tint="@android:color/white"
 
@@ -72,8 +74,7 @@
                 android:layout_alignParentBottom="true"
 
                 android:layout_marginEnd="4dp"
-                android:layout_marginBottom="0dp" />
-
+                android:layout_marginBottom="-2dp" />
 
             <!-- HORIZONTAL MENU BUTTON OPTION (CURRENTLY DISABLED) -->
             <!--
