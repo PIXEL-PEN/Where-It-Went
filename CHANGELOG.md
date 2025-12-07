@@ -1,4 +1,45 @@
 # Changelog
+
+## **v2.0 — Full UI/UX Overhaul + Navigation Redesign (2025-02-XX)**
+**A major upgrade focused on clarity, speed, and modernized interaction.**
+
+### Added
+- **New Month View (Accordion Layout):** clean collapsible rows with dynamic totals.
+- **New Add-Expense Dialog:** Add Expense now opens in a modal dialog from the FAB.
+- **Adaptive version banner:** About screen now shows `v.X`, build variant, and date.
+- **Automatic variant detection:** dev / debug / release shown accurately.
+- **Off-Budget all-time summary block** in Distribution screen.
+- **New distribution legend styling** with proper alignment and stable typography.
+
+### Improved
+- **Distribution Screen:**
+  - Currency selection now reliably propagates across views.
+  - Legend totals and deltas fully recalculated on resume.
+  - Layout spacing corrected; top “This Month” block visually aligned.
+- **Main Screen:**
+  - Rewritten from static XML rows to dynamic programmatic inflation.
+  - Smoother month switching and row expansion behavior.
+- **Add Expense flow:**
+  - Expanded month row auto-opens after adding an expense.
+  - Revised light-amber highlight (more subtle and balanced).
+- **Global UI polish:**
+  - Numerous padding, margin, and color corrections.
+  - Unified top-bar behavior across all screens.
+
+### Fixed
+- Distribution not updating after currency change (critical regression).
+- Category → Distribution navigation now updates values correctly.
+- Multiple strobe/recreate loops resolved (eliminated periodic flicker).
+- Off-Budget rows now render consistently and without misalignment.
+- Several legacy regressions from rollback patches fully eliminated.
+
+### Technical Notes
+- Branch-of-truth: `version2.0-fin`
+- All major views restructured; codebase now cleaner and more maintainable.
+- Minimum UI dependencies retained; no layout inflation recursion.
+
+
+
 _All notable changes to **Where It Went** will be documented in this file._
 
 ---
