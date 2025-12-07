@@ -69,8 +69,8 @@ public class DistributionActivity extends AppCompatActivity {
         TextView discDelta  = findViewById(R.id.legend_disc_delta);
 
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        String currencyCode = prefs.getString("currency_code", "THB");
-        String currencySymbol = CurrencyUtils.symbolFor(currencyCode);
+        String currencySymbol = prefs.getString("currency_symbol", "$");
+
         DecimalFormat money = new DecimalFormat("#,##0.00");
 
         List<Expense> all = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
@@ -99,6 +99,7 @@ public class DistributionActivity extends AppCompatActivity {
         pie.setValues((float) fixedLatest, (float) discLatest, (float) basicLatest);
 
         setSafeLegend(fixedTotal, money.format(fixedLatest) + " " + currencySymbol);
+        fixedTotal.setText("TEST123");   // DEBUG LINE
         setSafeLegend(basicTotal, money.format(basicLatest) + " " + currencySymbol);
         setSafeLegend(discTotal,  money.format(discLatest) + " " + currencySymbol);
 
@@ -115,6 +116,8 @@ public class DistributionActivity extends AppCompatActivity {
             setSafeLegend(basicDelta, formatDeltaPct(basicLatest, basicPrev));
             setSafeLegend(discDelta,  formatDeltaPct(discLatest,  discPrev));
         }
+
+
 
         /* -------------------------------------------------
            OFF-BUDGET CATEGORY SUMMARY (ALL-TIME)
@@ -204,6 +207,83 @@ public class DistributionActivity extends AppCompatActivity {
             }
         }
     }
+    private void refreshCurrencyValues() {
+
+        // Reload currency from prefs
+        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
+        String currencySymbol = prefs.getString("currency_symbol", "$");
+
+        DecimalFormat money = new DecimalFormat("#,##0.00");
+
+        // Reload all expenses
+        List<Expense> all = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
+
+        // Recompute monthly tag totals
+        Map<String, Map<String, Double>> byTagMonth = buildTagMonthTotals(all);
+        List<String> months = collectSortedMonthsExcludingOffBudget(byTagMonth);
+
+        SimplePieView pie = findViewById(R.id.pie);
+
+        TextView fixedTotal = findViewById(R.id.legend_fixed_total);
+        TextView fixedDelta = findViewById(R.id.legend_fixed_delta);
+        TextView basicTotal = findViewById(R.id.legend_basic_total);
+        TextView basicDelta = findViewById(R.id.legend_basic_delta);
+        TextView discTotal  = findViewById(R.id.legend_disc_total);
+        TextView discDelta  = findViewById(R.id.legend_disc_delta);
+
+        // No data case
+        if (months.isEmpty()) {
+            pie.setValues(0f, 0f, 0f);
+            fixedTotal.setText(money.format(0) + " " + currencySymbol);
+            basicTotal.setText(money.format(0) + " " + currencySymbol);
+            discTotal.setText (money.format(0) + " " + currencySymbol);
+            fixedDelta.setText("—");
+            basicDelta.setText("—");
+            discDelta.setText("—");
+            return;
+        }
+
+        // Latest and previous months
+        String latestMonth = months.get(months.size() - 1);
+        String prevMonth = (months.size() >= 2) ? months.get(months.size() - 2) : null;
+
+        double fixedLatest = sumBucketForMonth(byTagMonth, latestMonth, Bucket.FIXED);
+        double basicLatest = sumBucketForMonth(byTagMonth, latestMonth, Bucket.BASIC);
+        double discLatest  = sumBucketForMonth(byTagMonth, latestMonth, Bucket.DISCRETIONARY);
+
+        // Update pie
+        pie.setValues((float) fixedLatest, (float) discLatest, (float) basicLatest);
+
+        // Update totals
+        fixedTotal.setText(money.format(fixedLatest) + " " + currencySymbol);
+        basicTotal.setText(money.format(basicLatest) + " " + currencySymbol);
+        discTotal .setText(money.format(discLatest)  + " " + currencySymbol);
+
+        // Update deltas
+        if (prevMonth == null) {
+            fixedDelta.setText("—");
+            basicDelta.setText("—");
+            discDelta .setText("—");
+        } else {
+            double fixedPrev = sumBucketForMonth(byTagMonth, prevMonth, Bucket.FIXED);
+            double basicPrev = sumBucketForMonth(byTagMonth, prevMonth, Bucket.BASIC);
+            double discPrev  = sumBucketForMonth(byTagMonth, prevMonth, Bucket.DISCRETIONARY);
+
+            fixedDelta.setText(formatDeltaPct(fixedLatest, fixedPrev));
+            basicDelta.setText(formatDeltaPct(basicLatest, basicPrev));
+            discDelta .setText(formatDeltaPct(discLatest,  discPrev));
+        }
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshCurrencyValues();
+    }
+
+
+
 
     /* ========================== HELPERS ============================= */
 
@@ -273,7 +353,11 @@ public class DistributionActivity extends AppCompatActivity {
 
     private void setSafeLegend(TextView v, String text) {
         if (v != null) v.setText(text);
+
+
     }
+
+
 
     private String formatDeltaPct(double cur, double prev) {
         if (prev <= 0.0) return "—";
