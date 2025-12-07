@@ -28,6 +28,8 @@ import java.util.Locale;
 import java.util.Date;
 
 
+
+
 public class SettingsActivity extends AppCompatActivity {
 
     private Spinner spinnerCurrency;
@@ -49,13 +51,65 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-
-        // About text
+// About text
         TextView about = findViewById(R.id.text_about);
         if (about != null) {
-            about.setText(Html.fromHtml(getString(R.string.about_text), Html.FROM_HTML_MODE_LEGACY));
+
+            // --- VersionName ---
+            String versionName;
+            try {
+                versionName = getPackageManager()
+                        .getPackageInfo(getPackageName(), 0).versionName;
+            } catch (Exception e) {
+                versionName = "?";
+            }
+
+            String cleanVersion = versionName.split("-")[0];
+
+            // --- Correct variant detection using packageName + debuggable flag ---
+            String pkgName = getPackageName().toLowerCase(Locale.ROOT);
+
+            String flavor;
+            if (pkgName.endsWith(".dev")) {
+                flavor = "dev";
+            } else if (pkgName.endsWith(".stable")) {
+                flavor = "stable";
+            } else {
+                flavor = "unknown";
+            }
+
+            boolean isDebuggable =
+                    (getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+
+            String buildType = isDebuggable ? "debug" : "release";
+
+            String variant;
+            if (flavor.equals("dev") && buildType.equals("debug")) {
+                variant = "dev";          // devDebug
+            } else if (flavor.equals("stable") && buildType.equals("debug")) {
+                variant = "debug";        // stableDebug
+            } else if (flavor.equals("stable") && buildType.equals("release")) {
+                variant = "release";      // stableRelease
+            } else {
+                variant = buildType;      // fallback
+            }
+
+            // --- Date ---
+            String today = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
+                    .format(new Date());
+
+            // --- Header ---
+            String header =
+                    "<b>Where It Went v." + cleanVersion + "</b> (" + variant + ") " +
+                            "<small>— " + today + "</small><br/><br/>";
+
+            // --- Full HTML ---
+            String fullHtml = header + getString(R.string.about_text);
+
+            about.setText(Html.fromHtml(fullHtml, Html.FROM_HTML_MODE_LEGACY));
             about.setMovementMethod(LinkMovementMethod.getInstance());
         }
+
 
         // -------------------------------
         // CURRENCY SPINNER (Symbol mode)

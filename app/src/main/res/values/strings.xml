@@ -27,7 +27,6 @@
 
     <string name="about_text">
     <![CDATA[
-    <b>Where It Went v1.0</b><br/><br/>
     © 2025 by SpokenFor (TST) PIXEL-PEN<br/><br/>
     Designed for daily use as a simple, offline budgeting tool.<br/><br/>
     Features: quick expense entry, multiple views, export to CSV and HTML, and database reset.<br/><br/>
