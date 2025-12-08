@@ -10,30 +10,38 @@ Name: Where It Went
 Summary: Simple offline daily expense tracker
 Description: |
   Where It Went is a clean, fast, offline-first daily expense tracker
-  designed for real life. No cloud, no ads, no analytics.
+  designed for real life. No cloud, no ads, no analytics. All data stays
+  entirely on your device.
 
   Features:
-    • Quick expense entry
+    • Quick expense entry via dialog + FAB
     • Views: All, Date, Month, Category
     • Distribution graph (Fixed, Necessities, Discretionary, Off-Budget)
     • CSV and HTML export
-    • Side drawer navigation
-    • Fully offline, no sign-up, no tracking
+    • Category Manager with tags
+    • Fully offline, no tracking
+
+  New in 2.0:
+    • Major UI/UX overhaul
+    • New dialog-based Add Expense flow
+    • Scrollable Distribution screen
+    • Polished typography, banners, and spacing
+    • Dynamic About screen with version/variant/date
 
 RepoType: git
 Repo: https://github.com/PIXEL-PEN/Where-It-Went
 
 Builds:
-  - versionName: "1.0.1"
-    versionCode: 2
-    commit: v1.0.1
+  - versionName: "2.0"
+    versionCode: 20000
+    commit: version2.0-fin
     subdir: app
     gradle:
       - stableRelease
-    output: build/outputs/apk/stable/release/*.apk
+    output: app/stable/release/*.apk
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
 
-CurrentVersion: "1.0.1"
-CurrentVersionCode: 2
+CurrentVersion: "2.0"
+CurrentVersionCode: 20000
