@@ -1,29 +1,3 @@
-Great — here is your **final, production-ready README.md for v2.0**, formatted cleanly, with all screenshot references inserted exactly as they should appear.
-
-**Yes — I can insert the screenshot image references**, *but you must manually place the actual PNG files in*:
-
-```
-docs/screenshots/
-```
-
-Your README will reference:
-
-```
-docs/screenshots/01_add.png
-docs/screenshots/02_month.png
-docs/screenshots/03_month_2.png
-docs/screenshots/04_categories.png
-docs/screenshots/05_distribution.png
-docs/screenshots/06_drawer.png
-```
-
-As long as the files exist in that directory, GitHub will display them perfectly.
-
----
-
-# ✅ **FINAL README.md (v2.0)**
-
-**Copy/paste directly into your README.md**
 
 ---
 
@@ -161,12 +135,3 @@ MIT License. See [LICENSE](LICENSE).
 
 ---
 
-# 🎉 Done
-
-If you'd like, I can also generate:
-
-* **v2.0 GitHub Release text**
-* **Updated CHANGELOG entry**
-* **F-Droid merge request instructions**
-
-Just say the word.
