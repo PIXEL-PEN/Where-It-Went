@@ -85,18 +85,24 @@
     </RelativeLayout>
 
 
-    <!-- MAIN CONTENT BELOW BLOCK -->
+    <!-- MAIN CONTENT BELOW BLOCK (SCROLLABLE) -->
+    <ScrollView
+        android:id="@+id/scroll_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/pie_label_block"
+        android:fillViewport="true">
+
     <LinearLayout
         android:id="@+id/content"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/pie_label_block"
+        android:layout_height="wrap_content"
         android:gravity="center"
         android:padding="16dp"
         android:layout_marginTop="-150dp">
 
-        <com.pixelpen.whereitwent.SimplePieView
+    <com.pixelpen.whereitwent.SimplePieView
             android:id="@+id/pie"
             android:layout_width="260dp"
             android:layout_height="260dp" />
@@ -243,6 +249,9 @@
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:layout_marginTop="38dp" />
+
     </LinearLayout>
+
+    </ScrollView>
 
 </RelativeLayout>
