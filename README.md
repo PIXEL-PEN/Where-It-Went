@@ -1,137 +1,172 @@
+Great — here is your **final, production-ready README.md for v2.0**, formatted cleanly, with all screenshot references inserted exactly as they should appear.
+
+**Yes — I can insert the screenshot image references**, *but you must manually place the actual PNG files in*:
+
+```
+docs/screenshots/
+```
+
+Your README will reference:
+
+```
+docs/screenshots/01_add.png
+docs/screenshots/02_month.png
+docs/screenshots/03_month_2.png
+docs/screenshots/04_categories.png
+docs/screenshots/05_distribution.png
+docs/screenshots/06_drawer.png
+```
+
+As long as the files exist in that directory, GitHub will display them perfectly.
+
+---
+
+# ✅ **FINAL README.md (v2.0)**
+
+**Copy/paste directly into your README.md**
+
+---
+
 # 📱 Where It Went
-*A simple, offline-first budgeting app designed for daily use.*
 
-
-# Where It Went
-
-**Track your spending — not your soul.**  
-*A no-fluff, privacy-respecting expense tracker built for real life.*
+*A simple, offline-first budgeting app designed for real life.*
 
 ---
 
-<h2 style="font-size:1.6em; font-weight:700;">🧭 What Is This?</h2>
+# **Where It Went**
 
-**Where It Went** is a simple, focused daily expense tracker designed for people who just want to know:
-> _“Where did all my money go?”_
-
-No budgeting tools.  
-No account syncing.  
-No ads.  
-No cloud.  
-No sign-ups.  
-No surveillance.
-
-Just a clean interface that lets you log your expenses quickly, then shows you **where it went** — by day, month, or category.
+**Track your spending — not your soul.**
+*A no-fluff, privacy-respecting expense tracker built for everyday use.*
 
 ---
 
-<h2 style="font-size:1.6em; font-weight:700;">🌱 Why It Exists</h2>
+## 🧭 What Is This?
 
-Most expense trackers are either:
+**Where It Went** is a simple, intentional daily expense tracker built for people who just want to know:
 
-- Overly complicated (QuickBooks in disguise),
-- Infested with trackers and ads,
-- Or make you link your bank just to log a sandwich.
+> *“Where did all my money go?”*
 
-**Where It Went** was born out of personal frustration with all of the above.  
-It's made for people who value **clarity, simplicity, and privacy**.
+No accounts.
+No syncing.
+No ads.
+No tracking.
 
-It works *because* it doesn’t try to do everything — just one thing well.
-
----
-
-<h2 style="font-size:1.6em; font-weight:700;">✨ Key Features</h2>
-
-- 📆 **Track daily expenses** in seconds
-- 📊 **Clear overviews**: by day, month, or category
-- Distribution Graph — Fixed, Necessities, Discretionary, Off-Budget
-- 🧠 **Project / trip friendly**: great for focused tracking
-- 🚫 **No income tracking**: we leave that to your bank
-- 🔒 **No cloud, no tracking, no ads, no nonsense**
-- 💡 **Fully offline** – your data stays on your device
+Just fast, clean expense logging with clear overviews.
 
 ---
 
-<h2 style="font-size:1.6em; font-weight:700;">🛠️ Who It’s For</h2>
+## 🌱 Why It Exists
 
-- People who just want to track spending without a spreadsheet
-- Makers, DIYers, and travelers who track **projects and trips**
-- Privacy-conscious users who don’t want to trade data for features
-- Anyone tired of bloated apps that solve the wrong problems
+Most expense trackers are:
+
+* Bloated with dashboards and subscriptions
+* Full of tracking SDKs
+* Designed to harvest personal data
+* Or require bank access just to log a sandwich
+
+**Where It Went** is the opposite — intentionally simple, private, and focused.
+
+It does one thing well:
+**help you understand where your money actually went.**
 
 ---
 
-<h2 style="font-size:1.6em; font-weight:700;">📦 Installation</h2>
+## ✨ Key Features (v2.0)
 
-Coming soon to [F-Droid](https://f-droid.org)  
-(Or sideload the APK from [Releases](https://github.com/your-repo/releases) on GitHub)
+* 🚀 **New Add-Expense Dialog** via floating action button
+* 🗂️ **Clean navigation** across Month, Date, Category, Day Detail
+* 📊 **Distribution Graph**: Fixed · Necessities · Discretionary · Off-Budget
+* 👜 **Off-Budget Summary** (great for trips, projects, special events)
+* 📤 **Export** to HTML and CSV
+* 🔒 **Fully offline** (no network permission at all)
+* 🙅 **No ads, no analytics, no nonsense**
 
 ---
 
-<h2 style="font-size:1.6em; font-weight:700;">📌 Philosophy</h2>
+## 🛠️ Who It’s For
 
-> _“A system is only as good as the data you feed it.”_
+* People who want a simple spending log
+* Makers tracking project expenses
+* Travelers tracking trip costs
+* Privacy-conscious users
+* Anyone tired of “budgeting tools” that feel like tax software
 
-**Where It Went** is built on this truth.  
-It’s dead simple to use — but still relies on you to enter what you spend, accurately and consistently.
+---
 
-The reward?  
-A clear snapshot of where your money went — no guesswork, no logins, no fluff.
+## 📦 Installation
+
+* Download the **signed v2.0 APK** from:
+  👉 [https://github.com/PIXEL-PEN/Where-It-Went/releases](https://github.com/PIXEL-PEN/Where-It-Went/releases)
+
+* **F-Droid version** will be available after the metadata merge request is approved.
+
+---
+
+## 📌 Philosophy
+
+> *“A system is only as good as the data you feed it.”*
+
+**Where It Went** stays out of your way — so you can log expenses consistently and actually benefit from clear, accurate insights.
 
 Perfect for:
-- Daily habit tracking (a few seconds per entry)
-- Long-term project expenses (builds, hobbies, renovations)
-- Trip budgeting and analysis (hotels, gas, food, the *“oops”* fund)
+
+* Daily spending habits
+* Multi-day trips
+* Home improvement or maker projects
+* Tracking categories without spreadsheets
 
 ---
 
-<h2 style="font-size:1.6em; font-weight:700;">🧱 Open Source</h2>
+## 🧱 Open Source
 
-- 100% open source (license: MIT or your preferred license)
-- No hidden dependencies, no phone-home behavior
-- Built with minimalism and transparency in mind
-
----
-
-<h2 style="font-size:1.6em; font-weight:700;">🙌 A Note from the Developer</h2>
-
-This app was created out of personal need, not profit.  
-It’s not trying to be everything — just something **useful, honest, and respectful**.
-
-If it helps you, that’s all the reward I need.
+* MIT-licensed
+* Zero telemetry
+* No remote connections
+* Transparent, minimal codebase
 
 ---
 
-<h2 style="font-size:1.6em; font-weight:700;">📬 Feedback & Contributions</h2>
+## 📬 Feedback & Contributions
 
-Suggestions, bug reports, or feature ideas?  
-Open an issue or get in touch.
-
-Let's keep it simple — and keep it useful.
+Ideas, issues, or suggestions?
+Open an issue or start a discussion on GitHub.
 
 ---
 
-## 📱 Screenshots
+## 📱 Screenshots (v2.0)
 
-### Main Screens
+### Main Actions
 
-| Add Expense | View All |
-|-------------|-----------|
-| <img src="docs/screenshots/01_add-expense.png" width="260"/> | <img src="docs/screenshots/02_by-all.png" width="260"/> |
+| Add Expense (Dialog)                                 | Month View                                             |
+| ---------------------------------------------------- | ------------------------------------------------------ |
+| <img src="docs/screenshots/01_add.png" width="260"/> | <img src="docs/screenshots/02_month.png" width="260"/> |
 
-### Detail Views
+### Month & Category Views
 
-| By Date | By Month |
-|---------|----------|
-| <img src="docs/screenshots/03_by-date.png" width="260"/> | <img src="docs/screenshots/04_by-month.png" width="260"/> |
+| Expanded Month                                           | Categories                                                  |
+| -------------------------------------------------------- | ----------------------------------------------------------- |
+| <img src="docs/screenshots/03_month_2.png" width="260"/> | <img src="docs/screenshots/04_categories.png" width="260"/> |
 
-### Category & Navigation
+### Distribution & Navigation
 
-| By Category | Side Drawer |
-|-------------|-------------|
-| <img src="docs/screenshots/05_by-category.png" width="260"/> | <img src="docs/screenshots/06_side-drawer.png" width="260"/> |
+| Distribution Graph                                            | Navigation Drawer                                       |
+| ------------------------------------------------------------- | ------------------------------------------------------- |
+| <img src="docs/screenshots/05_distribution.png" width="260"/> | <img src="docs/screenshots/06_drawer.png" width="260"/> |
 
 ---
 
 ## 📄 License
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
+MIT License. See [LICENSE](LICENSE).
+
+---
+
+# 🎉 Done
+
+If you'd like, I can also generate:
+
+* **v2.0 GitHub Release text**
+* **Updated CHANGELOG entry**
+* **F-Droid merge request instructions**
+
+Just say the word.
