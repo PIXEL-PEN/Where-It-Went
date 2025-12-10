@@ -37,8 +37,10 @@ Builds:
     commit: version2.0-fin
     subdir: app
     gradle:
-      - stableRelease
-    output: app/stable/release/*.apk
+      flavors:
+        - stable
+      build: release
+    output: app/stable/release/WhereItWent-stable-Release-v2.0.apk
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags

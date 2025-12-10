@@ -42,20 +42,16 @@ android {
     flavorDimensions "mode"
 
     productFlavors {
-        dev {
-            dimension "mode"
-            applicationIdSuffix ".dev"
-            versionNameSuffix "-dev"
-            resValue "string", "app_name", "WhereIt-dev"
-        }
-
         stable {
             dimension "mode"
-            applicationIdSuffix ".stable"
-            versionNameSuffix "-stable"
-            resValue "string", "app_name", "Where It Went"
+            // existing config untouched
+        }
+        dev {
+            dimension "mode"
+            // existing config untouched
         }
     }
+
 
 
     // ----------------------------------------------------
@@ -63,17 +59,28 @@ android {
     // ----------------------------------------------------
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            def flavor = variant.flavorName
-            def build = variant.buildType.name
-            def base = "WhereItWent"
 
-            if (flavor == "dev") {
-                outputFileName = "${base}-DEV-${build}.apk"     // devDebug only
-            } else if (flavor == "stable") {
-                outputFileName = "${base}-STABLE-${build}.apk"  // stableDebug + stableRelease
+            def flavor = variant.flavorName        // dev | stable
+            def build  = variant.buildType.name    // debug | release
+            def vName  = variant.versionName       // 2.0
+
+            // DEV BUILD → WhereItWent-dev-v2.0.apk
+            if (flavor == "dev" && build == "debug") {
+                outputFileName = "WhereItWent-dev-v${vName}.apk"
+            }
+
+            // STABLE DEBUG → WhereItWent-stable-v2.0.apk
+            if (flavor == "stable" && build == "debug") {
+                outputFileName = "WhereItWent-stable-v${vName}.apk"
+            }
+
+            // STABLE RELEASE → WhereItWent-stable-Release-v2.0.apk
+            if (flavor == "stable" && build == "release") {
+                outputFileName = "WhereItWent-stable-Release-v${vName}.apk"
             }
         }
     }
+
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11

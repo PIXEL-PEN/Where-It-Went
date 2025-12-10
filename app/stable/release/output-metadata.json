@@ -12,8 +12,8 @@
       "filters": [],
       "attributes": [],
       "versionCode": 20000,
-      "versionName": "2.0-stable",
-      "outputFile": "WhereItWent-STABLE-release.apk"
+      "versionName": "2.0",
+      "outputFile": "WhereItWent-stable-Release-v2.0.apk"
     }
   ],
   "elementType": "File"
