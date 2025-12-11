@@ -38,18 +38,20 @@ android {
 // ----------------------------------------------------
 // FLAVORS
 // ----------------------------------------------------
-    flavorDimensions "mode"   // ⭐ REQUIRED for Gradle 8+
+    flavorDimensions "mode"
 
     productFlavors {
         stable {
             dimension "mode"
-            // NO applicationIdSuffix here
+            applicationId "com.pixelpen.whereitwent"   // REQUIRED for F-Droid
         }
         dev {
             dimension "mode"
-            applicationIdSuffix ".dev"
+            applicationId "com.pixelpen.whereitwent"
+            applicationIdSuffix ".dev"                // personal internal flavor
         }
     }
+
 
 
 
