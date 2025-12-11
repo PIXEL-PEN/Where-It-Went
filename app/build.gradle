@@ -39,18 +39,17 @@ android {
     // ----------------------------------------------------
     // FLAVORS
     // ----------------------------------------------------
-    flavorDimensions "mode"
-
     productFlavors {
         stable {
             dimension "mode"
-            // existing config untouched
+            // NO applicationIdSuffix here
         }
         dev {
             dimension "mode"
-            // existing config untouched
+            applicationIdSuffix ".dev"   // ADD THIS LINE
         }
     }
+
 
 
 
