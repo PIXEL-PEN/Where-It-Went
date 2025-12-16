@@ -103,3 +103,26 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
+android.applicationVariants.all { variant ->
+    variant.outputs.all { output ->
+
+        def date = new Date().format("yyyy-MM-dd")
+
+        def flavor =
+                variant.flavorName ? variant.flavorName : "noflavor"
+
+        def buildType = variant.buildType.name
+
+        def channel
+        if (flavor == "dev") {
+            channel = "dev"
+        } else if (buildType == "debug") {
+            channel = "debug"
+        } else {
+            channel = "release"
+        }
+
+        output.outputFileName =
+                "WhereItWent-${channel}-v${variant.versionName}-${date}.apk"
+    }
+}

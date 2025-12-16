@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.pixelpen.whereitwent.stable",
+  "applicationId": "com.pixelpen.whereitwent",
   "variantName": "stableRelease",
   "elements": [
     {
@@ -13,7 +13,7 @@
       "attributes": [],
       "versionCode": 20000,
       "versionName": "2.0",
-      "outputFile": "WhereItWent-stable-Release-v2.0.apk"
+      "outputFile": "WhereItWent-release-v2.0-2025-12-16.apk"
     }
   ],
   "elementType": "File"

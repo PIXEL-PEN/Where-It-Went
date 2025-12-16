@@ -93,15 +93,15 @@ public class SettingsActivity extends AppCompatActivity {
             } else {
                 variant = buildType;      // fallback
             }
+            String packageId = getPackageName();
 
-            // --- Date ---
-            String today = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
-                    .format(new Date());
+
 
             // --- Header ---
             String header =
-                    "<b>Where It Went v." + cleanVersion + "</b> (" + variant + ") " +
-                            "<small>— " + today + "</small><br/><br/>";
+                    "<b>Where It Went v." + cleanVersion + "</b> (" + variant + ")<br/>" +
+                            "<small>Package: " + getPackageName() + "</small><br/><br/>";
+
 
             // --- Full HTML ---
             String fullHtml = header + getString(R.string.about_text);
