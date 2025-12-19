@@ -14,26 +14,19 @@ android {
         versionCode 20001
         versionName "2.0"
     }
-// ----------------------------------------------------
-// BUILD TYPES
-// ----------------------------------------------------
-    buildTypes {
+/buildTypes {
 
-        debug {
-            // Produces devDebug + stableDebug
-            debuggable true
-            // NO applicationIdSuffix here → suffix comes ONLY from flavor
-        }
-
-        release {
-            // Produces stableRelease ONLY (because dev flavor is disabled for release)
-            minifyEnabled false
-            shrinkResources false
-
-            // Don't suffix applicationId here → stableRelease must simply be .stable
-            // (clean, simple, and avoids accidental devRelease)
-        }
+    debug {
+        debuggable true
     }
+
+    release {
+        minifyEnabled false
+        shrinkResources false
+        applicationIdSuffix ".stable"
+    }
+}
+
 
 // ----------------------------------------------------
 // FLAVORS
