@@ -48,21 +48,17 @@ android {
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
 
-            def date = new Date().format("yyyy-MM-dd")
             def flavor = variant.flavorName ?: "noflavor"
             def buildType = variant.buildType.name
 
-            def channel
-            if (flavor == "dev") {
-                channel = "dev"
-            } else if (buildType == "debug") {
-                channel = "debug"
+            if (flavor == "stable" && buildType == "release") {
+                output.outputFileName =
+                        "WhereItWent-stable-release-v${variant.versionName}.apk"
             } else {
-                channel = "release"
+                def date = new Date().format("yyyy-MM-dd")
+                output.outputFileName =
+                        "WhereItWent-${flavor}-${buildType}-v${variant.versionName}-${date}.apk"
             }
-
-            output.outputFileName =
-                    "WhereItWent-${channel}-v${variant.versionName}-${date}.apk"
         }
     }
 }
