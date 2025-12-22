@@ -50,6 +50,16 @@ public class MainScreen extends AppCompatActivity {
         View linkDistribution = findViewById(R.id.linkDistribution);
         View linkTutorial = findViewById(R.id.linkTutorial);
 
+        View linkPreview = findViewById(R.id.linkPreviewDialog);
+        if (linkPreview != null) {
+            linkPreview.setOnClickListener(v -> {
+                showPreviewDialog();
+                drawerLayout.closeDrawer(Gravity.END);
+            });
+        }
+
+
+
         if (linkSettings != null) {
             linkSettings.setOnClickListener(v -> {
                 startActivity(new Intent(MainScreen.this, SettingsActivity.class));
@@ -162,4 +172,17 @@ public class MainScreen extends AppCompatActivity {
         }
 
     }
+
+    private void showPreviewDialog() {
+        androidx.appcompat.app.AlertDialog.Builder b =
+                new androidx.appcompat.app.AlertDialog.Builder(this);
+
+        View v = getLayoutInflater().inflate(R.layout.add_expense_dialog, null);
+        b.setView(v);
+
+        androidx.appcompat.app.AlertDialog dialog = b.create();
+        dialog.show();
+    }
+
+
 }

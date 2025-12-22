@@ -18,6 +18,12 @@ import android.text.InputType;
 
 import android.content.DialogInterface;
 
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.view.Window;
+
+
 
 public class AddExpenseDialog extends DialogFragment {
 
@@ -50,9 +56,19 @@ public class AddExpenseDialog extends DialogFragment {
     // --------------------------------------------------------------------
     // CREATE DIALOG
     // --------------------------------------------------------------------
+
+
+
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
 
         View v = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_add_expense, null);
@@ -81,15 +97,13 @@ public class AddExpenseDialog extends DialogFragment {
         setupSaveButton();
 
         if (getArguments() != null && getArguments().getBoolean("open_manage_categories", false)) {
-            // Wait until dialog is visible, then show Manage Categories
             v.postDelayed(() -> showManageCategoriesDialog(), 100);
         }
 
+        dialog.setContentView(v);
+        dialog.setCancelable(true);
 
-        return new AlertDialog.Builder(requireContext())
-                .setView(v)
-                .setCancelable(true)
-                .create();
+        return dialog;
     }
 
     // --------------------------------------------------------------------
