@@ -8,11 +8,11 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="4dp">   <!-- WAS 10dp → slightly wider cards -->
+        android:padding="4dp">
 
-        <!-- ============================================================
-             TOP CARD — DAILY LIVING
-        ============================================================ -->
+        <!-- ============================
+             CARD 1 — DAILY LIVING
+        ============================ -->
         <LinearLayout
             android:id="@+id/card_daily"
             android:orientation="vertical"
@@ -22,7 +22,6 @@
             android:elevation="6dp"
             android:padding="20dp">
 
-            <!-- Header -->
             <TextView
                 android:id="@+id/header_daily"
                 android:text="DAILY LIVING"
@@ -33,15 +32,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <!-- Category Spinner -->
             <Spinner
                 android:id="@+id/spinner_category"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:paddingStart="4dp"
-                android:paddingEnd="8dp"/>
+                android:paddingEnd="8dp" />
 
-            <!-- Tag -->
             <TextView
                 android:id="@+id/text_tag"
                 android:layout_width="match_parent"
@@ -53,7 +50,6 @@
                 android:gravity="end"
                 android:layout_marginBottom="16dp" />
 
-            <!-- Item -->
             <EditText
                 android:id="@+id/input_item"
                 android:layout_width="match_parent"
@@ -61,7 +57,6 @@
                 android:hint="Item"
                 android:textSize="16sp" />
 
-            <!-- Amount -->
             <EditText
                 android:id="@+id/input_amount"
                 android:layout_width="match_parent"
@@ -71,7 +66,6 @@
                 android:textSize="16sp"
                 android:layout_marginTop="14dp" />
 
-            <!-- Date -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -86,7 +80,7 @@
                     android:text="22 Dec 2025"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    android:textColor="#000000"/>
+                    android:textColor="#000000" />
 
                 <ImageView
                     android:id="@+id/icon_calendar"
@@ -94,10 +88,9 @@
                     android:layout_height="19dp"
                     android:layout_marginStart="8dp"
                     android:src="@drawable/ic_calendar"
-                    android:tint="#000000"/>
+                    android:tint="#000000" />
             </LinearLayout>
 
-            <!-- OK button (smaller size) -->
             <LinearLayout
                 android:orientation="horizontal"
                 android:gravity="end"
@@ -118,46 +111,161 @@
                     android:gravity="center" />
             </LinearLayout>
 
-
         </LinearLayout>
 
-
-        <!-- Small 15dp gap -->
         <View
             android:layout_width="match_parent"
             android:layout_height="15dp" />
 
-        <!-- ============================================================
-             BOTTOM CARD — OTHER ACCOUNTS
-        ============================================================ -->
+        <!-- ============================
+             CARD 2 — ACCOUNTS
+        ============================ -->
+    <LinearLayout
+        android:id="@+id/card_other"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:elevation="4dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="14dp">
+
         <LinearLayout
-            android:id="@+id/card_other"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/white"
-            android:elevation="6dp"
-            android:padding="20dp">
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
 
             <TextView
                 android:id="@+id/header_other_accounts"
-                android:text="OTHER ACCOUNTS"
+                android:text="ACCOUNTS"
                 android:textStyle="bold"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:textColor="#444444"
-                android:paddingBottom="8dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
 
             <TextView
-                android:id="@+id/account_placeholder"
-                android:text="(Future v3.0 module section)"
-                android:textColor="#777777"
+                android:id="@+id/text_add_account"
+                android:text="+ Add Account"
+                android:textColor="#0066CC"
                 android:textSize="14sp"
-                android:layout_width="match_parent"
+                android:padding="4dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/text_no_accounts"
+            android:text="No accounts created yet."
+            android:textColor="#777777"
+            android:textSize="13sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:id="@+id/container_account_entry"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:gravity="center_vertical">
+
+                <Spinner
+                    android:id="@+id/spinner_account_project"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1" />
+
+                <Spinner
+                    android:id="@+id/spinner_account_category"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp" />
+
+                <ImageButton
+                    android:id="@+id/btn_add_account_category"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="4dp"
+                    android:src="@drawable/ic_add"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Add category" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp">
+
+                <EditText
+                    android:id="@+id/input_account_item"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1"
+                    android:hint="Item"
+                    android:textSize="14sp" />
+
+                <EditText
+                    android:id="@+id/input_account_amount"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:hint="Amount"
+                    android:inputType="numberDecimal"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Note"
+                    android:textSize="14sp"
+                    android:textColor="#777777"
+                    android:layout_marginBottom="2dp" />
+
+                <EditText
+                    android:id="@+id/input_account_note"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/text_account_submit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="14dp"
+                android:text="SUBMIT"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#666666" />
+
 
         </LinearLayout>
+
+    </LinearLayout>
 
     </LinearLayout>
 

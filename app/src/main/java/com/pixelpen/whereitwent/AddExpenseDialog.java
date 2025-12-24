@@ -18,14 +18,19 @@ import android.text.InputType;
 
 import android.content.DialogInterface;
 
-import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.view.Window;
 
-
-
 public class AddExpenseDialog extends DialogFragment {
+
+    private static class Account {
+        String name;
+        String type;
+        Account(String n, String t) { name = n; type = t; }
+    }
+
+    private final List<Account> accounts = new ArrayList<>();
 
     private Spinner spinnerCategory;
     private EditText inputItem, inputAmount;
@@ -42,9 +47,11 @@ public class AddExpenseDialog extends DialogFragment {
     private Integer editingId = null;
     private Expense editingExpense = null;
 
-    // --------------------------------------------------------------------
-    // CREATE INSTANCE FOR EDITING
-    // --------------------------------------------------------------------
+    private LinearLayout containerAccounts;
+    private TextView textNoAccounts;
+
+
+
     public static AddExpenseDialog newInstance(int expenseId) {
         AddExpenseDialog d = new AddExpenseDialog();
         Bundle b = new Bundle();
@@ -52,12 +59,6 @@ public class AddExpenseDialog extends DialogFragment {
         d.setArguments(b);
         return d;
     }
-
-    // --------------------------------------------------------------------
-    // CREATE DIALOG
-    // --------------------------------------------------------------------
-
-
 
     @NonNull
     @Override
@@ -72,6 +73,9 @@ public class AddExpenseDialog extends DialogFragment {
 
         View v = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_add_expense, null);
+
+        TextView addAccount = v.findViewById(R.id.text_add_account);
+        addAccount.setOnClickListener(vv -> showAddAccountDialog());
 
         spinnerCategory = v.findViewById(R.id.spinner_category);
         inputItem = v.findViewById(R.id.input_item);
@@ -106,9 +110,56 @@ public class AddExpenseDialog extends DialogFragment {
         return dialog;
     }
 
-    // --------------------------------------------------------------------
-    // LOAD EXPENSE FOR EDITING
-    // --------------------------------------------------------------------
+    private void showAddAccountDialog() {
+
+        View view = LayoutInflater.from(getContext())
+                .inflate(R.layout.dialog_add_account, null);
+
+        EditText editName = view.findViewById(R.id.edit_account_name);
+        RadioGroup radioType = view.findViewById(R.id.radio_account_type);
+        Button btnCancel = view.findViewById(R.id.btn_cancel);
+        Button btnOk = view.findViewById(R.id.btn_ok);
+
+        AlertDialog dialog = new AlertDialog.Builder(getContext())
+                .setView(view)
+                .create();
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+        btnOk.setOnClickListener(v -> {
+            String name = editName.getText().toString().trim();
+            if (name.isEmpty()) {
+                editName.setError("Required");
+                return;
+            }
+
+            int checked = radioType.getCheckedRadioButtonId();
+            String type;
+
+            if (checked == R.id.radio_project) type = "project";
+            else if (checked == R.id.radio_travel) type = "travel";
+            else type = "custom";
+
+            addAccount(name, type);
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+    private void addAccount(String name, String type) {
+
+        accounts.add(new Account(name, type));
+
+        Dialog d = requireDialog();
+
+        TextView noAcc = d.findViewById(R.id.text_no_accounts);
+        if (noAcc != null) noAcc.setVisibility(View.GONE);
+
+        View entry = d.findViewById(R.id.container_account_entry);
+        if (entry != null) entry.setVisibility(View.VISIBLE);
+    }
+
     private void loadForEdit(int id) {
         ExpenseDao dao = ExpenseDatabase.getDatabase(requireContext()).expenseDao();
         editingExpense = dao.getById(id);
@@ -130,9 +181,6 @@ public class AddExpenseDialog extends DialogFragment {
         setupDatePicker();
     }
 
-    // --------------------------------------------------------------------
-    // SPINNER
-    // --------------------------------------------------------------------
     private void setupSpinner() {
 
         loadCategoriesIntoSpinner("Groceries");
@@ -144,10 +192,8 @@ public class AddExpenseDialog extends DialogFragment {
 
                 String selected = categories.get(position);
 
-                // ⭐ MANAGE CATEGORIES
                 if (selected.equals("➕ Manage Categories")) {
 
-                    // restore previous selection so spinner doesn't stay on "Manage"
                     int prevIndex = categories.indexOf(lastSelectedCategory);
                     if (prevIndex < 0) prevIndex = 0;
 
@@ -159,7 +205,6 @@ public class AddExpenseDialog extends DialogFragment {
                     return;
                 }
 
-                // ⭐ IGNORE "⋯" DIVIDER
                 if (selected.equals("⋯")) {
 
                     int prevIndex = categories.indexOf(lastSelectedCategory);
@@ -172,7 +217,6 @@ public class AddExpenseDialog extends DialogFragment {
                     return;
                 }
 
-                // ⭐ NORMAL CATEGORY
                 lastSelectedCategory = selected;
                 updateTagLineFor(selected);
             }
@@ -241,9 +285,6 @@ public class AddExpenseDialog extends DialogFragment {
                 : tag);
     }
 
-    // --------------------------------------------------------------------
-    // DATE PICKER
-    // --------------------------------------------------------------------
     private void setupDatePicker() {
 
         Calendar today = Calendar.getInstance();
@@ -260,7 +301,6 @@ public class AddExpenseDialog extends DialogFragment {
             DatePickerDialog dlg = new DatePickerDialog(requireContext(),
                     (view, yr, mo, day) -> {
 
-                        // --- BLOCK FUTURE DATES ---
                         Calendar todayCal = Calendar.getInstance();
                         todayCal.set(Calendar.HOUR_OF_DAY, 0);
                         todayCal.set(Calendar.MINUTE, 0);
@@ -276,7 +316,6 @@ public class AddExpenseDialog extends DialogFragment {
                                     Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        // --------------------------
 
                         String formatted = String.format(Locale.ENGLISH,
                                 "%02d %s %04d",
@@ -298,9 +337,6 @@ public class AddExpenseDialog extends DialogFragment {
         return m[i];
     }
 
-    // --------------------------------------------------------------------
-    // SAVE BUTTON  (handles INSERT + UPDATE)
-    // --------------------------------------------------------------------
     private void setupSaveButton() {
 
         btnSave.setOnClickListener(v -> {
@@ -333,12 +369,10 @@ public class AddExpenseDialog extends DialogFragment {
                 editingExpense.date = iso;
                 dao.update(editingExpense);
 
-                // Refresh DayDetail screen
                 if (getActivity() instanceof DayDetailActivity) {
                     ((DayDetailActivity) getActivity()).refreshAfterEdit();
                 }
 
-                // Also refresh Month view if MainScreen is alive
                 if (MainScreen.instance != null) {
                     MainScreen.instance.refreshAfterAdd();
                 }
@@ -352,10 +386,9 @@ public class AddExpenseDialog extends DialogFragment {
                 e.date = iso;
                 dao.insert(e);
 
-                // ✔ Auto-expand the month on MainScreen
                 if (getActivity() instanceof MainScreen) {
                     try {
-                        String monthKey = iso.substring(0, 7);  // yyyy-MM
+                        String monthKey = iso.substring(0, 7);
                         int idx = MonthBuilder.findMonthIndex(monthKey);
                         MainScreen.expandMonthIndex = idx;
                     } catch (Exception ex) {
@@ -368,12 +401,8 @@ public class AddExpenseDialog extends DialogFragment {
 
             dismiss();
         });
-    }   // <-- THIS BRACE MUST BE HERE, ENDING setupSaveButton()
+    }
 
-
-    // --------------------------------------------------------------------
-    // DATE HELPERS
-    // --------------------------------------------------------------------
     private String toIso(String uiDate) {
         try {
             SimpleDateFormat ui = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
@@ -396,10 +425,6 @@ public class AddExpenseDialog extends DialogFragment {
         }
     }
 
-
-    // --------------------------------------------------------------------
-    // MANAGE CATEGORIES (FULL WORKING IMPLEMENTATION)
-    // --------------------------------------------------------------------
     private void showManageCategoriesDialog() {
 
         View dv = requireActivity().getLayoutInflater()
@@ -475,13 +500,10 @@ public class AddExpenseDialog extends DialogFragment {
                     List<String> cur = CategoryManager.getOrderedCategories(requireContext());
                     if (cur.contains(name)) return;
 
-                    // Save category + tag
                     CategoryManager.saveCategoryWithTag(requireContext(), name, tag);
 
-                    // Ensure spinner reopens at the new category
                     lastSelectedCategory = name;
 
-                    // Reload and select it
                     suppressSpinnerCallback = true;
                     loadCategoriesIntoSpinner(name);
                     suppressSpinnerCallback = false;
@@ -492,7 +514,6 @@ public class AddExpenseDialog extends DialogFragment {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-
 
     private void showEditCategoryDialog() {
 
@@ -513,18 +534,14 @@ public class AddExpenseDialog extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         builder.setTitle("Edit Tag");
 
-        // List items callback remains identical (NO CHANGE IN LOGIC)
         builder.setItems(items.toArray(new String[0]), (d, w) ->
                 showTagChangeDialog(items.get(w)));
 
-        // ⭐ Add Cancel button BEFORE creating dialog
         builder.setNegativeButton("Cancel", null);
 
-        // ⭐ Now create+show the dialog
         AlertDialog dlg = builder.create();
         dlg.show();
     }
-
 
     private void showTagChangeDialog(String cat) {
 
@@ -545,7 +562,6 @@ public class AddExpenseDialog extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         builder.setTitle("Change Tag");
 
-// Add buttons FIRST
         builder.setPositiveButton("Save", (dialog, w) -> {
 
             int sel = rg.getCheckedRadioButtonId();
@@ -563,19 +579,13 @@ public class AddExpenseDialog extends DialogFragment {
 
         builder.setNegativeButton("Cancel", null);
 
-// THEN attach the custom view — important!
         builder.setView(dv);
 
-// Now create + show
         AlertDialog dlg = builder.create();
         dlg.show();
 
-
-
-// Optional: normalize visual appearance
         dlg.getButton(DialogInterface.BUTTON_NEGATIVE).setAllCaps(false);
         dlg.getButton(DialogInterface.BUTTON_POSITIVE).setAllCaps(false);
-
     }
 
     private void showDeleteCategoryDialog() {
@@ -615,7 +625,7 @@ public class AddExpenseDialog extends DialogFragment {
                             .setNegativeButton("Cancel", null)
                             .show();
                 })
-                .setNegativeButton("Cancel", null)   // ⭐ THIS IS THE MISSING LINE
+                .setNegativeButton("Cancel", null)
                 .show();
     }
 }
