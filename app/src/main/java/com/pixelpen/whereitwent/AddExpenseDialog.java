@@ -259,8 +259,9 @@ public class AddExpenseDialog extends DialogFragment {
 
         EditText editName = view.findViewById(R.id.edit_account_name);
         RadioGroup radioType = view.findViewById(R.id.radio_account_type);
-        Button btnCancel = view.findViewById(R.id.btn_cancel);
-        Button btnOk = view.findViewById(R.id.btn_ok);
+        TextView btnCancel = view.findViewById(R.id.btn_cancel);
+        TextView btnOk = view.findViewById(R.id.btn_ok);
+
 
         AlertDialog dialog = new AlertDialog.Builder(getContext())
                 .setView(view)

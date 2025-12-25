@@ -20,7 +20,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Account name"
-        android:textSize="16sp" />
+        android:inputType="textCapSentences"
+        android:textSize="15sp" />
+
 
     <RadioGroup
         android:id="@+id/radio_account_type"
@@ -49,24 +51,33 @@
     </RadioGroup>
 
     <LinearLayout
-        android:orientation="horizontal"
-        android:gravity="end"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="20dp">
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="16dp">
 
-        <Button
+        <TextView
             android:id="@+id/btn_cancel"
+            android:text="CANCEL"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#666666"
+            android:padding="8dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="CANCEL" />
+            android:layout_height="wrap_content" />
 
-        <Button
+        <TextView
             android:id="@+id/btn_ok"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:text="OK"
-            android:layout_marginStart="16dp" />
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#444444"
+            android:padding="8dp"
+            android:layout_marginStart="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
     </LinearLayout>
+
 
 </LinearLayout>
