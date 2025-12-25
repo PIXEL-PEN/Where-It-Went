@@ -199,10 +199,12 @@
                     android:id="@+id/btn_add_account_category"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:layout_marginStart="4dp"
+                    android:layout_marginStart="6dp"
                     android:src="@drawable/ic_add"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:background="@drawable/bg_add_small"
+                    android:padding="6dp"
                     android:contentDescription="Add category" />
+
             </LinearLayout>
 
             <LinearLayout
@@ -236,19 +238,17 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Note"
-                    android:textSize="14sp"
-                    android:textColor="#777777"
-                    android:layout_marginBottom="2dp" />
+
 
                 <EditText
                     android:id="@+id/input_account_note"
                     android:layout_width="match_parent"
                     android:layout_height="36dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="6dp"
+                    android:hint="Note"
                     android:textSize="14sp" />
+
             </LinearLayout>
 
             <TextView
