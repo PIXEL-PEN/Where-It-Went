@@ -21,13 +21,19 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.view.Window;
+import android.view.ViewGroup;
+
 
 public class AddExpenseDialog extends DialogFragment {
 
     private static class Account {
         String name;
         String type;
-        Account(String n, String t) { name = n; type = t; }
+
+        Account(String n, String t) {
+            name = n;
+            type = t;
+        }
     }
 
     private final List<Account> accounts = new ArrayList<>();
@@ -50,6 +56,17 @@ public class AddExpenseDialog extends DialogFragment {
     private LinearLayout containerAccounts;
     private TextView textNoAccounts;
 
+
+    private Spinner spinnerAccount;
+    private Spinner spinnerAccountCategory;
+
+    private ArrayAdapter<String> accountAdapter;
+    private ArrayAdapter<String> accountCategoryAdapter;
+
+    private final List<String> accountItems = new ArrayList<>();
+    private final List<String> accountCategories = new ArrayList<>();
+
+    private String lastValidAccount = null;
 
 
     public static AddExpenseDialog newInstance(int expenseId) {
@@ -77,9 +94,18 @@ public class AddExpenseDialog extends DialogFragment {
         TextView addAccount = v.findViewById(R.id.text_add_account);
         addAccount.setOnClickListener(vv -> showAddAccountDialog());
 
+        containerAccounts = v.findViewById(R.id.container_account_entry);
+        textNoAccounts = v.findViewById(R.id.text_no_accounts);
+
+        // -----------------------------
+        // DAILY LIVING (unchanged)
+        // -----------------------------
         spinnerCategory = v.findViewById(R.id.spinner_category);
+
         inputItem = v.findViewById(R.id.input_item);
-        inputItem.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+        inputItem.setInputType(
+                InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+        );
 
         inputAmount = v.findViewById(R.id.input_amount);
 
@@ -87,6 +113,41 @@ public class AddExpenseDialog extends DialogFragment {
         textTag = v.findViewById(R.id.text_tag);
         btnSave = v.findViewById(R.id.btn_ok);
 
+        // -----------------------------
+        // ACCOUNTS — INIT ADAPTERS ONCE
+        // -----------------------------
+        spinnerAccount = v.findViewById(R.id.spinner_account_project);
+        spinnerAccountCategory = v.findViewById(R.id.spinner_account_category);
+
+        accountAdapter = new ArrayAdapter<>(
+                requireContext(),
+                R.layout.spinner_item_account_selected,
+                accountItems
+        );
+        accountAdapter.setDropDownViewResource(
+                R.layout.spinner_item_account_dropdown
+        );
+        spinnerAccount.setAdapter(accountAdapter);
+
+        accountCategoryAdapter = new ArrayAdapter<>(
+                requireContext(),
+                R.layout.spinner_item_account_selected,
+                accountCategories
+        );
+        accountCategoryAdapter.setDropDownViewResource(
+                R.layout.spinner_item_account_dropdown
+        );
+        spinnerAccountCategory.setAdapter(accountCategoryAdapter);
+
+        // -----------------------------
+        // POPULATE SPINNERS
+        // -----------------------------
+        setupAccountSpinner();
+        setupAccountCategorySpinner();
+
+        // -----------------------------
+        // EDIT / NEW LOGIC (unchanged)
+        // -----------------------------
         if (getArguments() != null) {
             editingId = getArguments().getInt("expense_id", -1);
         }
@@ -100,15 +161,96 @@ public class AddExpenseDialog extends DialogFragment {
 
         setupSaveButton();
 
-        if (getArguments() != null && getArguments().getBoolean("open_manage_categories", false)) {
+        if (getArguments() != null
+                && getArguments().getBoolean("open_manage_categories", false)) {
             v.postDelayed(() -> showManageCategoriesDialog(), 100);
         }
 
         dialog.setContentView(v);
         dialog.setCancelable(true);
-
         return dialog;
     }
+
+    private void setupAccountSpinner() {
+
+        accountItems.clear();
+
+        List<Account> projects = new ArrayList<>();
+        List<Account> travel = new ArrayList<>();
+        List<Account> custom = new ArrayList<>();
+
+        for (Account a : accounts) {
+            if ("project".equals(a.type)) {
+                projects.add(a);
+            } else if ("travel".equals(a.type)) {
+                travel.add(a);
+            } else {
+                custom.add(a);
+            }
+        }
+
+        Comparator<Account> byName =
+                Comparator.comparing(a -> a.name.toLowerCase(Locale.ENGLISH));
+
+        Collections.sort(projects, byName);
+        Collections.sort(travel, byName);
+        Collections.sort(custom, byName);
+
+        addAccountGroup(projects);
+        addSeparatorIfNeeded(projects, travel);
+        addAccountGroup(travel);
+        addSeparatorIfNeeded(travel, custom);
+        addAccountGroup(custom);
+
+        accountAdapter.notifyDataSetChanged();
+
+        spinnerAccount.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+
+                String selected = accountItems.get(pos);
+
+                if (isSeparator(selected)) {
+                    restoreLastAccountSelection();
+                    return;
+                }
+
+                lastValidAccount = selected;
+                populateAccountCategoriesFor(selected);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
+        // ✅ THIS WAS IN THE WRONG PLACE BEFORE
+        if (!accountItems.isEmpty()) {
+            spinnerAccount.setSelection(0);
+            lastValidAccount = accountItems.get(0);
+            populateAccountCategoriesFor(lastValidAccount);
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        Dialog d = getDialog();
+        if (d != null && d.getWindow() != null) {
+
+            int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.90);
+
+            d.getWindow().setLayout(
+                    width,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+        }
+    }
+
+
+
+
 
     private void showAddAccountDialog() {
 
@@ -154,11 +296,18 @@ public class AddExpenseDialog extends DialogFragment {
         Dialog d = requireDialog();
 
         TextView noAcc = d.findViewById(R.id.text_no_accounts);
-        if (noAcc != null) noAcc.setVisibility(View.GONE);
+        if (noAcc != null) {
+            noAcc.setVisibility(View.GONE);
+        }
 
         View entry = d.findViewById(R.id.container_account_entry);
-        if (entry != null) entry.setVisibility(View.VISIBLE);
+        if (entry != null) {
+            entry.setVisibility(View.VISIBLE);
+        }
+
+        setupAccountSpinner();   // rebuild spinner with new account
     }
+
 
     private void loadForEdit(int id) {
         ExpenseDao dao = ExpenseDatabase.getDatabase(requireContext()).expenseDao();
@@ -330,6 +479,87 @@ public class AddExpenseDialog extends DialogFragment {
             dlg.show();
         });
     }
+
+    private void addAccountGroup(List<Account> list) {
+        for (Account a : list) {
+            accountItems.add(a.name);
+        }
+    }
+
+    private void addSeparatorIfNeeded(List<Account> a, List<Account> b) {
+        if (!a.isEmpty() && !b.isEmpty()) {
+            accountItems.add("—");
+        }
+    }
+
+    private boolean isSeparator(String s) {
+        return "—".equals(s);
+    }
+
+    private void restoreLastAccountSelection() {
+        if (lastValidAccount == null) return;
+        int idx = accountItems.indexOf(lastValidAccount);
+        if (idx >= 0) spinnerAccount.setSelection(idx);
+    }
+
+    private void setupAccountCategorySpinner() {
+        accountCategoryAdapter = new ArrayAdapter<>(
+                requireContext(),
+                R.layout.spinner_item_account_selected,
+                accountCategories
+        );
+        accountCategoryAdapter.setDropDownViewResource(
+                R.layout.spinner_item_account_dropdown
+        );
+        spinnerAccountCategory.setAdapter(accountCategoryAdapter);
+
+    }
+
+    private void populateAccountCategoriesFor(String accountName) {
+
+        accountCategories.clear();
+
+        Account acc = findAccountByName(accountName);
+        if (acc == null) return;
+
+        switch (acc.type) {
+
+            case "travel":
+                accountCategories.addAll(Arrays.asList(
+                        "Lodging",
+                        "Meals",
+                        "Transportation",
+                        "Activities",
+                        "Other"
+                ));
+                break;
+
+            case "project":
+                accountCategories.addAll(Arrays.asList(
+                        "Materials",
+                        "Labor",
+                        "Tools",
+                        "Services",
+                        "Other"
+                ));
+                break;
+
+            default:
+                accountCategories.add("Other");
+                break;
+        }
+
+        accountCategoryAdapter.notifyDataSetChanged();
+        spinnerAccountCategory.setSelection(0);
+    }
+
+    private Account findAccountByName(String name) {
+        for (Account a : accounts) {
+            if (a.name.equals(name)) return a;
+        }
+        return null;
+    }
+
 
     private String getMonthAbbrev(int i) {
         String[] m = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -592,8 +822,9 @@ public class AddExpenseDialog extends DialogFragment {
 
         List<String> deletable = new ArrayList<>();
         for (String c : CategoryManager.getOrderedCategories(requireContext())) {
-            if (!CategoryManager.isDefaultCategory(c))
+            if (!CategoryManager.isDefaultCategory(c)) {
                 deletable.add(c);
+            }
         }
 
         if (deletable.isEmpty()) {
