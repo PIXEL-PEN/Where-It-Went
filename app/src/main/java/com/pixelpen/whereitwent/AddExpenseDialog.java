@@ -67,6 +67,8 @@ public class AddExpenseDialog extends DialogFragment {
     private final List<String> accountCategories = new ArrayList<>();
 
     private String lastValidAccount = null;
+    private Calendar accountDate = Calendar.getInstance();
+
 
 
     public static AddExpenseDialog newInstance(int expenseId) {
@@ -85,11 +87,22 @@ public class AddExpenseDialog extends DialogFragment {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            dialog.getWindow().setBackgroundDrawable(
+                    new ColorDrawable(Color.TRANSPARENT));
         }
 
         View v = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_add_expense, null);
+
+        // -----------------------------
+        // ACCOUNTS — DATE (SUBMIT ROW)
+        // -----------------------------
+        TextView textAccountDate = v.findViewById(R.id.text_account_date);
+        if (textAccountDate != null) {
+            updateAccountDateLabel(textAccountDate);
+            textAccountDate.setOnClickListener(vv ->
+                    showAccountDatePicker(textAccountDate));
+        }
 
         TextView addAccount = v.findViewById(R.id.text_add_account);
         addAccount.setOnClickListener(vv -> showAddAccountDialog());
@@ -170,6 +183,30 @@ public class AddExpenseDialog extends DialogFragment {
         dialog.setCancelable(true);
         return dialog;
     }
+
+    private void updateAccountDateLabel(TextView tv) {
+        SimpleDateFormat sdf =
+                new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
+        tv.setText(sdf.format(accountDate.getTime()));
+    }
+
+    private void showAccountDatePicker(TextView tv) {
+
+        DatePickerDialog dlg = new DatePickerDialog(
+                requireContext(),
+                (view, y, m, d) -> {
+                    accountDate.set(y, m, d);
+                    updateAccountDateLabel(tv);
+                },
+                accountDate.get(Calendar.YEAR),
+                accountDate.get(Calendar.MONTH),
+                accountDate.get(Calendar.DAY_OF_MONTH)
+        );
+
+        dlg.show();
+    }
+
+
 
     private void setupAccountSpinner() {
 

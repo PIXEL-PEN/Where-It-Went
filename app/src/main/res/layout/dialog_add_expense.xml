@@ -203,6 +203,8 @@
                     android:src="@drawable/ic_add"
                     android:background="@drawable/bg_add_small"
                     android:padding="6dp"
+                    android:scaleX="0.8"
+                    android:scaleY="0.8"
                     android:contentDescription="Add category" />
 
             </LinearLayout>
@@ -219,7 +221,9 @@
                     android:layout_height="36dp"
                     android:layout_weight="1"
                     android:hint="Item"
+                    android:inputType="textCapSentences"
                     android:textSize="14sp" />
+
 
                 <EditText
                     android:id="@+id/input_account_amount"
@@ -251,16 +255,57 @@
 
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/text_account_submit"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end"
                 android:layout_marginTop="14dp"
-                android:text="SUBMIT"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="#666666" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/text_account_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="01 Jan 2025"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="#666666"
+                        android:padding="4dp"/>
+
+                    <ImageView
+                        android:id="@+id/icon_calendar"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginStart="6dp"
+                        android:src="@drawable/ic_calendar"
+                        android:tint="#666666"/>
+
+                </LinearLayout>
+
+
+
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/text_account_submit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SUBMIT"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="#666666" />
+            </LinearLayout>
+
 
 
         </LinearLayout>
