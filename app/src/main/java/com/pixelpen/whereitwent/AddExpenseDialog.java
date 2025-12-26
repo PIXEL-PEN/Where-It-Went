@@ -288,7 +288,32 @@ public class AddExpenseDialog extends DialogFragment {
         });
 
         dialog.show();
+
+        LinearLayout foreignLayout = view.findViewById(R.id.layout_foreign_currency);
+        Switch foreignSwitch = view.findViewById(R.id.switch_foreign_currency);
+
+        radioType.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.radio_travel) {
+                foreignLayout.setVisibility(View.VISIBLE);
+            } else {
+                foreignLayout.setVisibility(View.GONE);
+                foreignSwitch.setChecked(false);
+            }
+        });
+        foreignSwitch.setOnCheckedChangeListener((btn, isChecked) -> {
+            if (isChecked) {
+                showForeignCurrencyDialog();
+            }
+        });
+
+
     }
+
+    private void showForeignCurrencyDialog() {
+        // placeholder — currency, rate, base currency
+    }
+
+
 
     private void addAccount(String name, String type) {
 
