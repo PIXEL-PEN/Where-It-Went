@@ -248,17 +248,20 @@
                     android:id="@+id/input_account_note"
                     android:layout_width="match_parent"
                     android:layout_height="36dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="6dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginBottom="4dp"
                     android:hint="Note"
+                    android:inputType="textCapSentences"
                     android:textSize="14sp" />
+
 
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="10dp"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
