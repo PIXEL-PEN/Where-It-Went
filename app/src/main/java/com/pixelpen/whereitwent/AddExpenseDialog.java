@@ -69,6 +69,10 @@ public class AddExpenseDialog extends DialogFragment {
     private String lastValidAccount = null;
     private Calendar accountDate = Calendar.getInstance();
 
+    private final Map<String, List<String>> accountCustomCategories = new HashMap<>();
+
+
+
 
 
     public static AddExpenseDialog newInstance(int expenseId) {
@@ -152,6 +156,15 @@ public class AddExpenseDialog extends DialogFragment {
         );
         spinnerAccountCategory.setAdapter(accountCategoryAdapter);
 
+        ImageButton btnAddAccountCategory =
+                v.findViewById(R.id.btn_add_account_category);
+        btnAddAccountCategory.setOnClickListener(vv ->
+                showAddAccountCategoryDialog());
+
+
+
+
+
         // -----------------------------
         // POPULATE SPINNERS
         // -----------------------------
@@ -183,6 +196,40 @@ public class AddExpenseDialog extends DialogFragment {
         dialog.setCancelable(true);
         return dialog;
     }
+
+    private void showAddAccountCategoryDialog() {
+
+        String accountName = lastValidAccount;
+        if (accountName == null) return;
+
+        final EditText input = new EditText(requireContext());
+        input.setHint("Category name");
+        input.setInputType(
+                InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+        );
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Add Category")
+                .setView(input)
+                .setPositiveButton("Add", (d, w) -> {
+
+                    String name = input.getText().toString().trim();
+                    if (name.isEmpty()) return;
+
+                    List<String> custom =
+                            accountCustomCategories.computeIfAbsent(
+                                    accountName, k -> new ArrayList<>());
+
+                    if (custom.contains(name)) return;
+
+                    custom.add(name);
+
+                    populateAccountCategoriesFor(accountName);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
 
     private void updateAccountDateLabel(TextView tv) {
         SimpleDateFormat sdf =
@@ -253,7 +300,7 @@ public class AddExpenseDialog extends DialogFragment {
                 }
 
                 lastValidAccount = selected;
-                populateAccountCategoriesFor(selected);
+                populateAccountCategoriesFor(lastValidAccount);
             }
 
             @Override
@@ -261,7 +308,7 @@ public class AddExpenseDialog extends DialogFragment {
             }
         });
 
-        // ✅ THIS WAS IN THE WRONG PLACE BEFORE
+        // Default selection
         if (!accountItems.isEmpty()) {
             spinnerAccount.setSelection(0);
             lastValidAccount = accountItems.get(0);
@@ -578,6 +625,12 @@ public class AddExpenseDialog extends DialogFragment {
 
     }
 
+
+
+
+
+
+
     private void populateAccountCategoriesFor(String accountName) {
 
         accountCategories.clear();
@@ -585,6 +638,7 @@ public class AddExpenseDialog extends DialogFragment {
         Account acc = findAccountByName(accountName);
         if (acc == null) return;
 
+        // 1. DEFAULTS (by account TYPE)
         switch (acc.type) {
 
             case "travel":
@@ -612,9 +666,17 @@ public class AddExpenseDialog extends DialogFragment {
                 break;
         }
 
+        // 2. CUSTOM (by ACCOUNT NAME)
+        List<String> custom = accountCustomCategories.get(accountName);
+        if (custom != null && !custom.isEmpty()) {
+            accountCategories.addAll(custom);
+        }
+
+        // 3. REFRESH SPINNER
         accountCategoryAdapter.notifyDataSetChanged();
         spinnerAccountCategory.setSelection(0);
     }
+
 
     private Account findAccountByName(String name) {
         for (Account a : accounts) {
