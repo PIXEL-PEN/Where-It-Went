@@ -220,7 +220,31 @@ public class AddExpenseDialog extends DialogFragment {
                             accountCustomCategories.computeIfAbsent(
                                     accountName, k -> new ArrayList<>());
 
-                    if (custom.contains(name)) return;
+                    String normalized = name.toLowerCase(Locale.ENGLISH);
+
+// Block duplicates vs DEFAULTS
+                    Account acc = findAccountByName(accountName);
+                    if (acc != null) {
+                        for (String def : getDefaultCategoriesFor(acc)) {
+                            if (def.toLowerCase(Locale.ENGLISH).equals(normalized)) {
+                                Toast.makeText(requireContext(),
+                                        "Category already exists",
+                                        Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                        }
+                    }
+
+// Block duplicates vs CUSTOM
+                    for (String c : custom) {
+                        if (c.toLowerCase(Locale.ENGLISH).equals(normalized)) {
+                            Toast.makeText(requireContext(),
+                                    "Category already exists",
+                                    Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                    }
+
 
                     custom.add(name);
 
@@ -676,6 +700,33 @@ public class AddExpenseDialog extends DialogFragment {
         accountCategoryAdapter.notifyDataSetChanged();
         spinnerAccountCategory.setSelection(0);
     }
+    private List<String> getDefaultCategoriesFor(Account acc) {
+
+        switch (acc.type) {
+
+            case "travel":
+                return Arrays.asList(
+                        "Lodging",
+                        "Meals",
+                        "Transportation",
+                        "Activities",
+                        "Other"
+                );
+
+            case "project":
+                return Arrays.asList(
+                        "Materials",
+                        "Labor",
+                        "Tools",
+                        "Services",
+                        "Other"
+                );
+
+            default:
+                return Collections.singletonList("Other");
+        }
+    }
+
 
 
     private Account findAccountByName(String name) {
