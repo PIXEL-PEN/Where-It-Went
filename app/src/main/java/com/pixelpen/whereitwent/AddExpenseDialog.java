@@ -23,6 +23,13 @@ import android.graphics.drawable.ColorDrawable;
 import android.view.Window;
 import android.view.ViewGroup;
 
+import android.content.SharedPreferences;
+import android.content.Context;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+
 
 public class AddExpenseDialog extends DialogFragment {
 
@@ -73,6 +80,9 @@ public class AddExpenseDialog extends DialogFragment {
 
 
 
+    private static final String PREF_ACCOUNTS = "accounts_store";
+    private static final String KEY_ACCOUNTS = "accounts";
+
 
 
     public static AddExpenseDialog newInstance(int expenseId) {
@@ -97,6 +107,14 @@ public class AddExpenseDialog extends DialogFragment {
 
         View v = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_add_expense, null);
+
+        loadAccounts();
+
+        containerAccounts = v.findViewById(R.id.container_account_entry);
+        textNoAccounts = v.findViewById(R.id.text_no_accounts);
+
+        updateAccountsVisibility();
+
 
         // -----------------------------
         // ACCOUNTS — DATE (SUBMIT ROW)
@@ -223,6 +241,76 @@ public class AddExpenseDialog extends DialogFragment {
         return dialog;
     }
 
+    private void updateAccountsVisibility() {
+
+        if (accounts.isEmpty()) {
+            textNoAccounts.setVisibility(View.VISIBLE);
+            containerAccounts.setVisibility(View.GONE);
+        } else {
+            textNoAccounts.setVisibility(View.GONE);
+            containerAccounts.setVisibility(View.VISIBLE);
+        }
+    }
+
+
+
+
+
+    private void saveAccounts() {
+
+        try {
+            JSONArray arr = new JSONArray();
+
+            for (Account a : accounts) {
+                JSONObject obj = new JSONObject();
+                obj.put("name", a.name);
+                obj.put("type", a.type);
+                arr.put(obj);
+            }
+
+            SharedPreferences prefs =
+                    requireContext().getSharedPreferences(
+                            PREF_ACCOUNTS,
+                            Context.MODE_PRIVATE);
+
+            prefs.edit()
+                    .putString(KEY_ACCOUNTS, arr.toString())
+                    .apply();
+
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void loadAccounts() {
+
+        accounts.clear();
+
+        SharedPreferences prefs =
+                requireContext().getSharedPreferences(
+                        PREF_ACCOUNTS,
+                        Context.MODE_PRIVATE);
+
+        String raw = prefs.getString(KEY_ACCOUNTS, null);
+        if (raw == null) return;
+
+        try {
+            JSONArray arr = new JSONArray(raw);
+
+            for (int i = 0; i < arr.length(); i++) {
+                JSONObject obj = arr.getJSONObject(i);
+                String name = obj.getString("name");
+                String type = obj.getString("type");
+                accounts.add(new Account(name, type));
+            }
+
+        } catch (Exception ignored) {
+        }
+    }
+
+
+
+
+
     private void showAddAccountCategoryDialog() {
 
         String accountName = lastValidAccount;
@@ -279,6 +367,11 @@ public class AddExpenseDialog extends DialogFragment {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
+
+
+
+
+
 
 
     private void updateAccountDateLabel(TextView tv) {
@@ -526,21 +619,14 @@ public class AddExpenseDialog extends DialogFragment {
     private void addAccount(String name, String type) {
 
         accounts.add(new Account(name, type));
+        saveAccounts();
 
-        Dialog d = requireDialog();
+        updateAccountsVisibility();   // sync card state immediately
 
-        TextView noAcc = d.findViewById(R.id.text_no_accounts);
-        if (noAcc != null) {
-            noAcc.setVisibility(View.GONE);
-        }
-
-        View entry = d.findViewById(R.id.container_account_entry);
-        if (entry != null) {
-            entry.setVisibility(View.VISIBLE);
-        }
-
-        setupAccountSpinner();   // rebuild spinner with new account
+        setupAccountSpinner();
     }
+
+
 
 
     private void loadForEdit(int id) {
