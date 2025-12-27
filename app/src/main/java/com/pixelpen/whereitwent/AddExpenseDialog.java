@@ -156,6 +156,32 @@ public class AddExpenseDialog extends DialogFragment {
         );
         spinnerAccountCategory.setAdapter(accountCategoryAdapter);
 
+        spinnerAccountCategory.setOnLongClickListener(view -> {
+
+
+            String accountName = lastValidAccount;
+            if (accountName == null) return true;
+
+            int pos = spinnerAccountCategory.getSelectedItemPosition();
+            if (pos < 0 || pos >= accountCategories.size()) return true;
+
+            String selected = accountCategories.get(pos);
+
+            // Block defaults
+            Account acc = findAccountByName(accountName);
+            if (acc != null && getDefaultCategoriesFor(acc).contains(selected)) {
+                return true;
+            }
+
+            showAccountCategoryOptionsDialog(accountName, selected);
+            return true;
+        });
+
+
+
+
+
+
         ImageButton btnAddAccountCategory =
                 v.findViewById(R.id.btn_add_account_category);
         btnAddAccountCategory.setOnClickListener(vv ->
@@ -276,6 +302,80 @@ public class AddExpenseDialog extends DialogFragment {
 
         dlg.show();
     }
+
+    private void showAccountCategoryOptionsDialog(
+            String accountName,
+            String category) {
+
+        String[] options = { "Rename", "Delete", "Cancel" };
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle(category)
+                .setItems(options, (d, which) -> {
+                    switch (which) {
+                        case 0:
+                            showRenameAccountCategoryDialog(accountName, category);
+                            break;
+                        case 1:
+                            showDeleteAccountCategoryDialog(accountName, category);
+                            break;
+                    }
+                })
+                .show();
+    }
+
+    private void showRenameAccountCategoryDialog(
+            String accountName,
+            String oldName) {
+
+        EditText input = new EditText(requireContext());
+        input.setText(oldName);
+        input.setSelection(oldName.length());
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Rename Category")
+                .setView(input)
+                .setPositiveButton("Save", (d, w) -> {
+
+                    String newName = input.getText().toString().trim();
+                    if (newName.isEmpty()) return;
+
+                    List<String> custom = accountCustomCategories.get(accountName);
+                    if (custom == null) return;
+
+                    if (custom.contains(newName)) return;
+
+                    int idx = custom.indexOf(oldName);
+                    if (idx >= 0) {
+                        custom.set(idx, newName);
+                    }
+
+                    populateAccountCategoriesFor(accountName);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void showDeleteAccountCategoryDialog(
+            String accountName,
+            String category) {
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Delete Category")
+                .setMessage("Delete \"" + category + "\"?")
+                .setPositiveButton("Delete", (d, w) -> {
+
+                    List<String> custom = accountCustomCategories.get(accountName);
+                    if (custom == null) return;
+
+                    custom.remove(category);
+                    populateAccountCategoriesFor(accountName);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+
 
 
 
