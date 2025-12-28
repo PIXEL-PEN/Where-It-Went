@@ -43,6 +43,39 @@ public class AddExpenseDialog extends DialogFragment {
         }
     }
 
+// ======================================================
+// METHOD MAP — AddExpenseDialog
+// ======================================================
+//
+// ACCOUNT CORE
+//   - addAccount(String name, String type)
+//   - saveAccounts()
+//   - loadAccounts()
+//   - accountNameExists(String name)
+//
+// ACCOUNT UI
+//   - showAddAccountDialog()
+//   - setupAccountSpinner()
+//   - populateAccountCategoriesFor(String accountName)
+//
+// ACCOUNT CATEGORY
+//   - showAddAccountCategoryDialog()
+//   - showRenameAccountCategoryDialog()
+//   - showDeleteAccountCategoryDialog()
+//
+// HELPERS
+//   - findAccountByName(String name)
+//   - getDefaultCategoriesFor(Account acc)
+//   - restoreLastAccountSelection()
+//
+// ======================================================
+
+
+
+
+
+
+
     private final List<Account> accounts = new ArrayList<>();
 
     private Spinner spinnerCategory;
@@ -83,6 +116,10 @@ public class AddExpenseDialog extends DialogFragment {
     private static final String PREF_ACCOUNTS = "accounts_store";
     private static final String KEY_ACCOUNTS = "accounts";
 
+    private static final String PREF_ACCOUNT_CATEGORIES = "account_categories_store";
+    private static final String KEY_ACCOUNT_CATEGORIES = "account_categories";
+
+
 
 
     public static AddExpenseDialog newInstance(int expenseId) {
@@ -109,6 +146,9 @@ public class AddExpenseDialog extends DialogFragment {
                 .inflate(R.layout.dialog_add_expense, null);
 
         loadAccounts();
+
+        loadAccountCategories();
+
 
         containerAccounts = v.findViewById(R.id.container_account_entry);
         textNoAccounts = v.findViewById(R.id.text_no_accounts);
@@ -281,6 +321,67 @@ public class AddExpenseDialog extends DialogFragment {
         }
     }
 
+    private void saveAccountCategories() {
+
+        try {
+            JSONObject root = new JSONObject();
+
+            for (Map.Entry<String, List<String>> e : accountCustomCategories.entrySet()) {
+                JSONArray arr = new JSONArray();
+                for (String c : e.getValue()) {
+                    arr.put(c);
+                }
+                root.put(e.getKey(), arr);
+            }
+
+            SharedPreferences prefs =
+                    requireContext().getSharedPreferences(
+                            PREF_ACCOUNT_CATEGORIES,
+                            Context.MODE_PRIVATE);
+
+            prefs.edit()
+                    .putString(KEY_ACCOUNT_CATEGORIES, root.toString())
+                    .apply();
+
+        } catch (Exception ignored) {}
+    }
+
+
+    private void loadAccountCategories() {
+
+        accountCustomCategories.clear();
+
+        SharedPreferences prefs =
+                requireContext().getSharedPreferences(
+                        PREF_ACCOUNT_CATEGORIES,
+                        Context.MODE_PRIVATE);
+
+        String raw = prefs.getString(KEY_ACCOUNT_CATEGORIES, null);
+        if (raw == null) return;
+
+        try {
+            JSONObject root = new JSONObject(raw);
+            Iterator<String> keys = root.keys();
+
+            while (keys.hasNext()) {
+                String account = keys.next();
+                JSONArray arr = root.getJSONArray(account);
+
+                List<String> list = new ArrayList<>();
+                for (int i = 0; i < arr.length(); i++) {
+                    list.add(arr.getString(i));
+                }
+
+                accountCustomCategories.put(account, list);
+            }
+
+        } catch (Exception ignored) {}
+    }
+
+
+
+
+
     private void loadAccounts() {
 
         accounts.clear();
@@ -362,6 +463,9 @@ public class AddExpenseDialog extends DialogFragment {
 
                     custom.add(name);
 
+                    saveAccountCategories();
+
+
                     populateAccountCategoriesFor(accountName);
                 })
                 .setNegativeButton("Cancel", null)
@@ -441,6 +545,11 @@ public class AddExpenseDialog extends DialogFragment {
                     int idx = custom.indexOf(oldName);
                     if (idx >= 0) {
                         custom.set(idx, newName);
+
+                        saveAccountCategories();
+
+
+
                     }
 
                     populateAccountCategoriesFor(accountName);
@@ -462,6 +571,11 @@ public class AddExpenseDialog extends DialogFragment {
                     if (custom == null) return;
 
                     custom.remove(category);
+                    saveAccountCategories();
+
+
+
+
                     populateAccountCategoriesFor(accountName);
                 })
                 .setNegativeButton("Cancel", null)
@@ -576,6 +690,13 @@ public class AddExpenseDialog extends DialogFragment {
                 editName.setError("Required");
                 return;
             }
+
+            if (accountNameExists(name)) {
+                editName.setError("Account already exists");
+                return;
+            }
+
+
 
             int checked = radioType.getCheckedRadioButtonId();
             String type;
@@ -921,6 +1042,20 @@ public class AddExpenseDialog extends DialogFragment {
         }
         return null;
     }
+
+    private boolean accountNameExists(String name) {
+        if (name == null) return false;
+
+        String normalized = name.trim().toLowerCase(Locale.ENGLISH);
+
+        for (Account a : accounts) {
+            if (a.name.trim().toLowerCase(Locale.ENGLISH).equals(normalized)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
 
     private String getMonthAbbrev(int i) {
