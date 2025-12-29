@@ -29,6 +29,9 @@ public class MainScreen extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ExpenseDatabase.migrateAccountsFromPrefsIfNeeded(this);
+
         setContentView(R.layout.activity_main_screen);
 
 
