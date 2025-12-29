@@ -392,27 +392,16 @@ public class AddExpenseDialog extends DialogFragment {
 
         accounts.clear();
 
-        SharedPreferences prefs =
-                requireContext().getSharedPreferences(
-                        PREF_ACCOUNTS,
-                        Context.MODE_PRIVATE);
+        List<AccountEntity> rows =
+                ExpenseDatabase.getDatabase(requireContext())
+                        .accountDao()
+                        .getActiveAccounts();   // archived = false only
 
-        String raw = prefs.getString(KEY_ACCOUNTS, null);
-        if (raw == null) return;
-
-        try {
-            JSONArray arr = new JSONArray(raw);
-
-            for (int i = 0; i < arr.length(); i++) {
-                JSONObject obj = arr.getJSONObject(i);
-                String name = obj.getString("name");
-                String type = obj.getString("type");
-                accounts.add(new Account(name, type));
-            }
-
-        } catch (Exception ignored) {
+        for (AccountEntity e : rows) {
+            accounts.add(new Account(e.name, e.type));
         }
     }
+
 
 
 
@@ -747,31 +736,62 @@ public class AddExpenseDialog extends DialogFragment {
     }
 
 
-    private void showAccountActionsDialog(Account acc) {
+    private void showAccountActionsDialog(AccountEntity acc) {
 
-        String[] options = {
-                "Rename",
-                "Archive",
-                "Delete",
-                "Cancel"
-        };
+        AccountDao dao =
+                ExpenseDatabase.getDatabase(requireContext()).accountDao();
+
+        String[] options = acc.archived
+                ? new String[]{"Unarchive", "Delete", "Cancel"}
+                : new String[]{"Rename", "Archive", "Delete", "Cancel"};
 
         new AlertDialog.Builder(requireContext())
                 .setTitle(acc.name)
                 .setItems(options, (d, which) -> {
-                    switch (which) {
-                        case 0:
-                            showRenameAccountDialog(acc);
-                            break;
-                        case 1:
-                            Toast.makeText(requireContext(),
-                                    "Archive not implemented yet",
-                                    Toast.LENGTH_SHORT).show();
-                            break;
-                        case 2:
-                            showDeleteAccountDialog(acc);
-                            break;
 
+                    if (acc.archived) {
+                        switch (which) {
+                            case 0: // Unarchive
+                                dao.setArchived(acc.id, false);
+
+                                loadAccounts();
+                                updateAccountsVisibility();
+                                setupAccountSpinner();
+
+                                Toast.makeText(requireContext(),
+                                        "Account unarchived",
+                                        Toast.LENGTH_SHORT).show();
+                                break;
+
+                            case 1: // Delete
+                                showDeleteAccountDialog(
+                                        new Account(acc.name, acc.type));
+                                break;
+                        }
+                    } else {
+                        switch (which) {
+                            case 0: // Rename
+                                showRenameAccountDialog(
+                                        new Account(acc.name, acc.type));
+                                break;
+
+                            case 1: // Archive
+                                dao.setArchived(acc.id, true);
+
+                                loadAccounts();
+                                updateAccountsVisibility();
+                                setupAccountSpinner();
+
+                                Toast.makeText(requireContext(),
+                                        "Account archived",
+                                        Toast.LENGTH_SHORT).show();
+                                break;
+
+                            case 2: // Delete
+                                showDeleteAccountDialog(
+                                        new Account(acc.name, acc.type));
+                                break;
+                        }
                     }
                 })
                 .show();
@@ -799,11 +819,18 @@ public class AddExpenseDialog extends DialogFragment {
                         return;
                     }
 
-                    acc.name = newName;
-                    saveAccounts();
+                    AccountDao dao =
+                            ExpenseDatabase.getDatabase(requireContext()).accountDao();
 
-                    setupAccountSpinner();
+                    AccountEntity entity = dao.getAccountByName(acc.name);
+                    if (entity == null) return;
+
+                    entity.name = newName;
+                    dao.update(entity);
+
+                    loadAccounts();
                     updateAccountsVisibility();
+                    setupAccountSpinner();
 
                 })
                 .setNegativeButton("Cancel", null)
@@ -813,25 +840,30 @@ public class AddExpenseDialog extends DialogFragment {
 
     private void showManageAccountsDialog() {
 
-        if (accounts.isEmpty()) {
+        AccountDao dao =
+                ExpenseDatabase.getDatabase(requireContext()).accountDao();
+
+        List<AccountEntity> all = dao.getAllAccounts();
+
+        if (all.isEmpty()) {
             Toast.makeText(requireContext(),
-                    "No accounts to manage",
+                    "No accounts",
                     Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String[] names = new String[accounts.size()];
-        for (int i = 0; i < accounts.size(); i++) {
-            names[i] = accounts.get(i).name;
+        String[] labels = new String[all.size()];
+        for (int i = 0; i < all.size(); i++) {
+            AccountEntity e = all.get(i);
+            labels[i] = e.archived
+                    ? e.name + " (archived)"
+                    : e.name;
         }
 
         new AlertDialog.Builder(requireContext())
                 .setTitle("Manage Accounts")
-                .setItems(names, (d, which) -> {
-
-                    Account selected = accounts.get(which);
-                    showAccountActionsDialog(selected);
-
+                .setItems(labels, (d, which) -> {
+                    showAccountActionsDialog(all.get(which));
                 })
                 .setNegativeButton("Close", null)
                 .show();
@@ -880,11 +912,16 @@ public class AddExpenseDialog extends DialogFragment {
 
     private void addAccount(String name, String type) {
 
-        accounts.add(new Account(name, type));
-        saveAccounts();
+        // 1. Insert into Room (source of truth)
+        ExpenseDatabase.getDatabase(requireContext())
+                .accountDao()
+                .insert(new AccountEntity(name, type, false));
 
-        updateAccountsVisibility();   // sync card state immediately
+        // 2. Reload accounts from Room
+        loadAccounts();
 
+        // 3. Update UI
+        updateAccountsVisibility();
         setupAccountSpinner();
     }
 

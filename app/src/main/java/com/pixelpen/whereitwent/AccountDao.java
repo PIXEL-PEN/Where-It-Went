@@ -32,4 +32,9 @@ public interface AccountDao {
 
     @Query("SELECT COUNT(*) FROM accounts")
     int countAccounts();
+
+    @Query("SELECT * FROM accounts WHERE name = :name LIMIT 1")
+    AccountEntity getAccountByName(String name);
+
+
 }
