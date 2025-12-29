@@ -145,6 +145,12 @@ public class AddExpenseDialog extends DialogFragment {
         View v = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_add_expense, null);
 
+        TextView linkManage = v.findViewById(R.id.link_manage_accounts);
+        if (linkManage != null) {
+            linkManage.setOnClickListener(vv -> showManageAccountsDialog());
+        }
+
+
         loadAccounts();
 
         loadAccountCategories();
@@ -672,6 +678,15 @@ public class AddExpenseDialog extends DialogFragment {
         View view = LayoutInflater.from(getContext())
                 .inflate(R.layout.dialog_add_account, null);
 
+
+        TextView linkManage = view.findViewById(R.id.link_manage_accounts);
+        if (linkManage != null) {
+            linkManage.setOnClickListener(vv -> {
+                showManageAccountsDialog();
+            });
+        }
+
+
         EditText editName = view.findViewById(R.id.edit_account_name);
         RadioGroup radioType = view.findViewById(R.id.radio_account_type);
         TextView btnCancel = view.findViewById(R.id.btn_cancel);
@@ -730,6 +745,132 @@ public class AddExpenseDialog extends DialogFragment {
 
 
     }
+
+
+    private void showAccountActionsDialog(Account acc) {
+
+        String[] options = {
+                "Rename",
+                "Archive",
+                "Delete",
+                "Cancel"
+        };
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle(acc.name)
+                .setItems(options, (d, which) -> {
+                    switch (which) {
+                        case 0:
+                            showRenameAccountDialog(acc);
+                            break;
+                        case 1:
+                            Toast.makeText(requireContext(),
+                                    "Archive not implemented yet",
+                                    Toast.LENGTH_SHORT).show();
+                            break;
+                        case 2:
+                            showDeleteAccountDialog(acc);
+                            break;
+
+                    }
+                })
+                .show();
+    }
+
+
+    private void showRenameAccountDialog(Account acc) {
+
+        EditText input = new EditText(requireContext());
+        input.setText(acc.name);
+        input.setSelection(acc.name.length());
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Rename Account")
+                .setView(input)
+                .setPositiveButton("Save", (d, w) -> {
+
+                    String newName = input.getText().toString().trim();
+                    if (newName.isEmpty()) return;
+
+                    if (accountNameExists(newName)) {
+                        Toast.makeText(requireContext(),
+                                "Account already exists",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    acc.name = newName;
+                    saveAccounts();
+
+                    setupAccountSpinner();
+                    updateAccountsVisibility();
+
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+
+    private void showManageAccountsDialog() {
+
+        if (accounts.isEmpty()) {
+            Toast.makeText(requireContext(),
+                    "No accounts to manage",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String[] names = new String[accounts.size()];
+        for (int i = 0; i < accounts.size(); i++) {
+            names[i] = accounts.get(i).name;
+        }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Manage Accounts")
+                .setItems(names, (d, which) -> {
+
+                    Account selected = accounts.get(which);
+                    showAccountActionsDialog(selected);
+
+                })
+                .setNegativeButton("Close", null)
+                .show();
+    }
+
+    private void showDeleteAccountDialog(Account acc) {
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Delete Account")
+                .setMessage("Delete \"" + acc.name + "\"?\n\nThis cannot be undone.")
+                .setPositiveButton("Delete", (d, w) -> {
+
+                    // 1. Remove account
+                    accounts.remove(acc);
+
+                    // 2. Remove custom categories for this account
+                    accountCustomCategories.remove(acc.name);
+
+                    // 3. Persist
+                    saveAccounts();
+                    saveAccountCategories();
+
+                    // 4. Refresh UI
+                    lastValidAccount = null;
+                    updateAccountsVisibility();
+                    setupAccountSpinner();
+                    accountCategories.clear();
+                    accountCategoryAdapter.notifyDataSetChanged();
+
+                    Toast.makeText(requireContext(),
+                            "Account deleted",
+                            Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+
+
 
     private void showForeignCurrencyDialog() {
         // placeholder — currency, rate, base currency
