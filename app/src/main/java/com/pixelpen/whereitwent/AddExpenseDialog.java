@@ -508,9 +508,7 @@ public class AddExpenseDialog extends DialogFragment {
                         case 0:
                             showRenameAccountCategoryDialog(accountName, category);
                             break;
-                        case 1:
-                            showDeleteAccountCategoryDialog(accountName, category);
-                            break;
+
                     }
                 })
                 .show();
@@ -741,9 +739,13 @@ public class AddExpenseDialog extends DialogFragment {
         AccountDao dao =
                 ExpenseDatabase.getDatabase(requireContext()).accountDao();
 
-        String[] options = acc.archived
-                ? new String[]{"Unarchive", "Delete", "Cancel"}
-                : new String[]{"Rename", "Archive", "Delete", "Cancel"};
+        String[] options;
+
+        if (acc.archived) {
+            options = new String[]{"Unarchive", "Delete", "Cancel"};
+        } else {
+            options = new String[]{"Rename", "Archive", "Delete", "Cancel"};
+        }
 
         new AlertDialog.Builder(requireContext())
                 .setTitle(acc.name)
@@ -753,19 +755,16 @@ public class AddExpenseDialog extends DialogFragment {
                         switch (which) {
                             case 0: // Unarchive
                                 dao.setArchived(acc.id, false);
-
                                 loadAccounts();
                                 updateAccountsVisibility();
                                 setupAccountSpinner();
-
                                 Toast.makeText(requireContext(),
                                         "Account unarchived",
                                         Toast.LENGTH_SHORT).show();
                                 break;
 
                             case 1: // Delete
-                                showDeleteAccountDialog(
-                                        new Account(acc.name, acc.type));
+                                showDeleteAccountDialog(acc);
                                 break;
                         }
                     } else {
@@ -777,25 +776,23 @@ public class AddExpenseDialog extends DialogFragment {
 
                             case 1: // Archive
                                 dao.setArchived(acc.id, true);
-
                                 loadAccounts();
                                 updateAccountsVisibility();
                                 setupAccountSpinner();
-
                                 Toast.makeText(requireContext(),
                                         "Account archived",
                                         Toast.LENGTH_SHORT).show();
                                 break;
 
                             case 2: // Delete
-                                showDeleteAccountDialog(
-                                        new Account(acc.name, acc.type));
+                                showDeleteAccountDialog(acc);
                                 break;
                         }
                     }
                 })
                 .show();
     }
+
 
 
     private void showRenameAccountDialog(Account acc) {
@@ -869,24 +866,27 @@ public class AddExpenseDialog extends DialogFragment {
                 .show();
     }
 
-    private void showDeleteAccountDialog(Account acc) {
+    private void showDeleteAccountDialog(AccountEntity acc) {
 
         new AlertDialog.Builder(requireContext())
                 .setTitle("Delete Account")
                 .setMessage("Delete \"" + acc.name + "\"?\n\nThis cannot be undone.")
                 .setPositiveButton("Delete", (d, w) -> {
 
-                    // 1. Remove account
-                    accounts.remove(acc);
+                    AccountDao dao =
+                            ExpenseDatabase.getDatabase(requireContext()).accountDao();
 
-                    // 2. Remove custom categories for this account
+                    // Hard delete from Room
+                    dao.delete(acc);
+
+                    // Remove custom categories for this account
                     accountCustomCategories.remove(acc.name);
-
-                    // 3. Persist
-                    saveAccounts();
                     saveAccountCategories();
 
-                    // 4. Refresh UI
+                    // Reload active accounts from Room
+                    loadAccounts();
+
+                    // Refresh UI
                     lastValidAccount = null;
                     updateAccountsVisibility();
                     setupAccountSpinner();
@@ -900,6 +900,7 @@ public class AddExpenseDialog extends DialogFragment {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
+
 
 
 
