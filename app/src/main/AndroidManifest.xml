@@ -4,7 +4,7 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="@string/app_label_where_it_went"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ExpenseTracker">
@@ -17,6 +17,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".AccountsOverviewActivity"
+            android:exported="false"
+            android:label="Accounts" />
+
+
+
+
+
 
         <activity android:name=".MainScreenActivity" android:exported="false"/>
         <activity android:name=".AddExpenseActivity" android:exported="false"/>

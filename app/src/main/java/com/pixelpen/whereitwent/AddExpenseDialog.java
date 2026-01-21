@@ -29,6 +29,8 @@ import android.content.Context;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import android.content.Intent;
+
 
 
 public class AddExpenseDialog extends DialogFragment {
@@ -160,6 +162,25 @@ public class AddExpenseDialog extends DialogFragment {
         textNoAccounts = v.findViewById(R.id.text_no_accounts);
 
         updateAccountsVisibility();
+
+        Button btnAccountSubmit = v.findViewById(R.id.btn_account_submit);
+
+        if (btnAccountSubmit != null) {
+            btnAccountSubmit.setOnClickListener(vv -> {
+
+                // 1. Launch first (safe)
+                startActivity(new Intent(
+                        vv.getContext(),
+                        AccountsOverviewActivity.class
+                ));
+
+                // 2. Then dismiss dialog
+                dismiss();
+            });
+        }
+
+
+
 
 
         // -----------------------------
@@ -1535,4 +1556,10 @@ public class AddExpenseDialog extends DialogFragment {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
+
+    private void insertAccountExpense() {
+        // TODO: real Room insert later
+    }
+
+
 }

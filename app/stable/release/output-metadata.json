@@ -11,9 +11,9 @@
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 20000,
-      "versionName": "2.0",
-      "outputFile": "WhereItWent-release-v2.0-2025-12-16.apk"
+      "versionCode": 30000,
+      "versionName": "3.0",
+      "outputFile": "WhereItWent-stable-release-v3.0.apk"
     }
   ],
   "elementType": "File"
