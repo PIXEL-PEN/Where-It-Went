@@ -1,3 +1,4 @@
+
 package com.pixelpen.whereitwent;
 
 import android.view.LayoutInflater;
@@ -8,40 +9,47 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class AccountsOverviewAdapter
-        extends RecyclerView.Adapter<AccountsOverviewAdapter.Holder> {
+import java.util.ArrayList;
+import java.util.List;
 
-    @NonNull
-    @Override
-    public Holder onCreateViewHolder(
-            @NonNull ViewGroup parent,
-            int viewType
-    ) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.row_account_section, parent, false);
-        return new Holder(v);
+
+
+
+
+public class AccountsOverviewAdapter
+        extends RecyclerView.Adapter<AccountsOverviewAdapter.SectionVH> {
+
+    private final List<String> sections = new ArrayList<>();
+
+    public AccountsOverviewAdapter() {
+        sections.add("PROJECTS");
+        sections.add("TRAVEL");
+        sections.add("CUSTOM");
     }
 
     @Override
-    public void onBindViewHolder(
-            @NonNull Holder holder,
-            int position
-    ) {
-        holder.title.setText("Kitchen Renovation");
+    public SectionVH onCreateViewHolder(ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.row_account_section, parent, false);
+        return new SectionVH(v);
+    }
+
+    @Override
+    public void onBindViewHolder(SectionVH holder, int position) {
+        holder.text.setText(sections.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return 1; // single test row
+        return sections.size();
     }
 
-    static class Holder extends RecyclerView.ViewHolder {
+    static class SectionVH extends RecyclerView.ViewHolder {
+        TextView text;
 
-        TextView title;
-
-        Holder(@NonNull View itemView) {
+        SectionVH(View itemView) {
             super(itemView);
-            title = itemView.findViewById(R.id.text_title);
+            text = itemView.findViewById(R.id.text_title);
         }
     }
 }
