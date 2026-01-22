@@ -1,4 +1,3 @@
-
 package com.pixelpen.whereitwent;
 
 import android.view.LayoutInflater;
@@ -9,47 +8,40 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
-import java.util.List;
-
-
-
-
-
 public class AccountsOverviewAdapter
-        extends RecyclerView.Adapter<AccountsOverviewAdapter.SectionVH> {
+        extends RecyclerView.Adapter<AccountsOverviewAdapter.Holder> {
 
-    private final List<String> sections = new ArrayList<>();
-
-    public AccountsOverviewAdapter() {
-        sections.add("PROJECTS");
-        sections.add("TRAVEL");
-        sections.add("CUSTOM");
-    }
-
+    @NonNull
     @Override
-    public SectionVH onCreateViewHolder(ViewGroup parent, int viewType) {
+    public Holder onCreateViewHolder(
+            @NonNull ViewGroup parent,
+            int viewType
+    ) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.row_account_section, parent, false);
-        return new SectionVH(v);
+        return new Holder(v);
     }
 
     @Override
-    public void onBindViewHolder(SectionVH holder, int position) {
-        holder.text.setText(sections.get(position));
+    public void onBindViewHolder(
+            @NonNull Holder holder,
+            int position
+    ) {
+        holder.title.setText("Kitchen Renovation");
     }
 
     @Override
     public int getItemCount() {
-        return sections.size();
+        return 1; // single test row
     }
 
-    static class SectionVH extends RecyclerView.ViewHolder {
-        TextView text;
+    static class Holder extends RecyclerView.ViewHolder {
 
-        SectionVH(View itemView) {
+        TextView title;
+
+        Holder(@NonNull View itemView) {
             super(itemView);
-            text = itemView.findViewById(R.id.text_title);
+            title = itemView.findViewById(R.id.text_title);
         }
     }
 }

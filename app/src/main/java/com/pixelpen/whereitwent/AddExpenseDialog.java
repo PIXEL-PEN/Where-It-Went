@@ -30,6 +30,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.content.Intent;
+import android.widget.Button;
+import android.widget.TextView;
 
 
 
@@ -147,6 +149,29 @@ public class AddExpenseDialog extends DialogFragment {
         View v = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_add_expense, null);
 
+        // -----------------------------
+// -----------------------------
+// ACCOUNTS — SUBMIT (REAL BUTTON)
+// -----------------------------
+        TextView submitAccount = v.findViewById(R.id.text_account_submit);
+
+        if (submitAccount != null) {
+            submitAccount.setOnClickListener(vv -> {
+
+                insertAccountExpense();
+
+                dismiss();
+
+                startActivity(new Intent(
+                        requireContext(),
+                        AccountsOverviewActivity.class
+                ));
+            });
+        }
+
+
+
+
         TextView linkManage = v.findViewById(R.id.link_manage_accounts);
         if (linkManage != null) {
             linkManage.setOnClickListener(vv -> showManageAccountsDialog());
@@ -163,21 +188,7 @@ public class AddExpenseDialog extends DialogFragment {
 
         updateAccountsVisibility();
 
-        Button btnAccountSubmit = v.findViewById(R.id.btn_account_submit);
 
-        if (btnAccountSubmit != null) {
-            btnAccountSubmit.setOnClickListener(vv -> {
-
-                // 1. Launch first (safe)
-                startActivity(new Intent(
-                        vv.getContext(),
-                        AccountsOverviewActivity.class
-                ));
-
-                // 2. Then dismiss dialog
-                dismiss();
-            });
-        }
 
 
 
