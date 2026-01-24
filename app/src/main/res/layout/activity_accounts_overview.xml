@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="#ECEFF1">
 
     <!-- Top bar -->
@@ -10,7 +10,7 @@
         android:id="@+id/top_bar_container"
         android:layout_width="match_parent"
         android:layout_height="96dp"
-        android:background="#024265"
+        android:background="@color/colorPrimary"
         android:paddingStart="16dp"
         android:paddingEnd="8dp"
         android:paddingTop="4dp"
@@ -48,23 +48,19 @@
         </LinearLayout>
     </RelativeLayout>
 
-    <!-- Content (Daily Living style) -->
+    <!-- Scrollable content -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true"
-        android:paddingBottom="80dp"
-        android:clipToPadding="false">
+        android:fillViewport="true">
 
         <LinearLayout
             android:id="@+id/accounts_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:background="#ECEFF1" />
-
+            android:paddingTop="8dp"
+            android:paddingBottom="12dp" />
 
 
     </ScrollView>
