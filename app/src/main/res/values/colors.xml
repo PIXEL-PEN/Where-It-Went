@@ -19,6 +19,9 @@
     <color name="tag_basic">#FFC107</color>          <!-- amber -->
     <color name="tag_discretionary">#FF7043</color>  <!-- coral/orange -->
 
+    <!-- Category / section header backgrounds (Daily Living style) -->
+    <color name="header_bg_blue">#C8DADF</color>
+    <color name="header_bg_amber">#EFD9A6</color>
 
 
 
