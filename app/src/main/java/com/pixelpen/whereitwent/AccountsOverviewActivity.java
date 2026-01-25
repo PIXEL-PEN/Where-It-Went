@@ -8,7 +8,9 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AccountsOverviewActivity extends AppCompatActivity {
 
@@ -25,85 +27,100 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         AccountDao accountDao = db.accountDao();
         AccountItemDao itemDao = db.accountItemDao();
 
-
-
-
         LinearLayout container = findViewById(R.id.accounts_container);
         LayoutInflater inflater = LayoutInflater.from(this);
 
         List<AccountEntity> accounts = accountDao.getActiveAccounts();
 
-        // =========================
-        // PROJECTS
-        // =========================
-        boolean hasProjects = false;
-        for (AccountEntity account : accounts) {
-            if ("PROJECT".equalsIgnoreCase(account.type)) {
-                hasProjects = true;
-                break;
+        // ---------------------------------
+        // ACCOUNT TYPES (render order)
+        // ---------------------------------
+        String[] ACCOUNT_TYPES = {
+                "PROJECT",
+                "TRAVEL",
+                "CUSTOM"
+        };
+
+        // ---------------------------------
+        // SECTION LABELS (no guessing)
+        // ---------------------------------
+        Map<String, String> SECTION_LABELS = new HashMap<>();
+        SECTION_LABELS.put("PROJECT", "PROJECTS");
+        SECTION_LABELS.put("TRAVEL",  "TRAVEL");
+        SECTION_LABELS.put("CUSTOM",  "CUSTOM");
+
+        // =================================
+        // RENDER ACCOUNTS BY TYPE
+        // =================================
+        for (String type : ACCOUNT_TYPES) {
+
+            boolean hasType = false;
+
+            // Detect if this section exists
+            for (AccountEntity account : accounts) {
+                if (type.equalsIgnoreCase(account.type)) {
+                    hasType = true;
+                    break;
+                }
             }
-        }
 
-        if (hasProjects) {
-            addSection(inflater, container, "PROJECTS");
-        }
+            if (!hasType) continue;
 
-        for (AccountEntity account : accounts) {
-
-            if (!"PROJECT".equalsIgnoreCase(account.type)) {
-                continue;
-            }
-
-            View projectHeader = addProjectHeader(
+            // Section header
+            addSection(
                     inflater,
                     container,
-                    account.name,
-                    CurrencyUtils.format(
-                            safe(itemDao.getTotalForAccount(account.id)),
-                            "฿"
-                    )
+                    type,
+                    SECTION_LABELS.get(type)
             );
 
-            LinearLayout projectItems = new LinearLayout(this);
-            projectItems.setOrientation(LinearLayout.VERTICAL);
-            projectItems.setVisibility(View.VISIBLE);
-            container.addView(projectItems);
+            // Render accounts of this type
+            for (AccountEntity account : accounts) {
 
-            projectHeader.setOnClickListener(v -> {
-                projectItems.setVisibility(
-                        projectItems.getVisibility() == View.VISIBLE
-                                ? View.GONE
-                                : View.VISIBLE
-                );
-            });
+                if (!type.equalsIgnoreCase(account.type)) continue;
 
-            List<AccountItemEntity> entities =
-                    itemDao.getItemsForAccount(account.id);
-
-            for (AccountItemEntity e : entities) {
-                addProjectItem(
+                View accountHeader = addProjectHeader(
                         inflater,
-                        projectItems,
-                        new AccountItem(
-                                e.date,
-                                capitalize(e.item),
-                                e.category,
-                                CurrencyUtils.format(e.amount, "฿"),
-                                e.note
+                        container,
+                        account.name,
+                        CurrencyUtils.format(
+                                safe(itemDao.getTotalForAccount(account.id)),
+                                "฿"
                         )
                 );
+
+                LinearLayout accountItems = new LinearLayout(this);
+                accountItems.setOrientation(LinearLayout.VERTICAL);
+                accountItems.setVisibility(View.VISIBLE);
+                container.addView(accountItems);
+
+                // Collapse / expand account
+                accountHeader.setOnClickListener(v -> {
+                    accountItems.setVisibility(
+                            accountItems.getVisibility() == View.VISIBLE
+                                    ? View.GONE
+                                    : View.VISIBLE
+                    );
+                });
+
+                List<AccountItemEntity> items =
+                        itemDao.getItemsForAccount(account.id);
+
+                for (AccountItemEntity e : items) {
+                    addProjectItem(
+                            inflater,
+                            accountItems,
+                            new AccountItem(
+                                    e.date,
+                                    capitalize(e.item),
+                                    e.category,
+                                    CurrencyUtils.format(e.amount, "฿"),
+                                    e.note
+                            )
+                    );
+                }
             }
         }
-
-        // =========================
-        // TRAVEL
-        // =========================
-        addSection(inflater, container, "TRAVEL");
-
-        // =========================
-        // CUSTOM
-        // =========================
-        addSection(inflater, container, "CUSTOM");
     }
 
     // ----------------------------------------------------
@@ -111,10 +128,11 @@ public class AccountsOverviewActivity extends AppCompatActivity {
     // ----------------------------------------------------
     private void addSection(LayoutInflater inflater,
                             LinearLayout container,
+                            String type,
                             String title) {
 
         int layoutRes =
-                "TRAVEL".equals(title)
+                "TRAVEL".equalsIgnoreCase(type)
                         ? R.layout.row_account_section_amber
                         : R.layout.row_account_section_blue;
 
@@ -125,7 +143,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
     }
 
     // ----------------------------------------------------
-    // PROJECT HEADER
+    // ACCOUNT HEADER (project / travel / custom)
     // ----------------------------------------------------
     private View addProjectHeader(LayoutInflater inflater,
                                   LinearLayout container,
@@ -145,7 +163,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
     }
 
     // ----------------------------------------------------
-    // PROJECT ITEM
+    // ACCOUNT ITEM (header + note)
     // ----------------------------------------------------
     private void addProjectItem(LayoutInflater inflater,
                                 LinearLayout projectItems,
