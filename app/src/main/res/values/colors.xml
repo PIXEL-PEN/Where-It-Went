@@ -23,6 +23,7 @@
     <color name="header_bg_blue">#C8DADF</color>
     <color name="header_bg_amber">#EFD9A6</color>
 
+    <color name="header_bg_project">#FFF6E5</color>
 
 
 </resources>
