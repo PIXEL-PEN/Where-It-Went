@@ -5,7 +5,6 @@
     android:orientation="vertical"
     android:background="#ECEFF1">
 
-    <!-- Top bar -->
     <RelativeLayout
         android:id="@+id/top_bar_container"
         android:layout_width="match_parent"
@@ -48,7 +47,6 @@
         </LinearLayout>
     </RelativeLayout>
 
-    <!-- Scrollable content -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -59,10 +57,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingTop="8dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="12dp"
             android:paddingBottom="12dp" />
-
-
     </ScrollView>
 
 </LinearLayout>
