@@ -8,6 +8,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.List;
+
 public class AccountsOverviewActivity extends AppCompatActivity {
 
     @Override
@@ -15,60 +17,83 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_accounts_overview);
 
+        ExpenseDatabase.migrateAccountsFromPrefsIfNeeded(this);
+
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
+
+        ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
+        AccountDao accountDao = db.accountDao();
+        AccountItemDao itemDao = db.accountItemDao();
+
+
+
 
         LinearLayout container = findViewById(R.id.accounts_container);
         LayoutInflater inflater = LayoutInflater.from(this);
 
+        List<AccountEntity> accounts = accountDao.getActiveAccounts();
+
         // =========================
         // PROJECTS
         // =========================
-        addSection(inflater, container, "PROJECTS");
+        boolean hasProjects = false;
+        for (AccountEntity account : accounts) {
+            if ("PROJECT".equalsIgnoreCase(account.type)) {
+                hasProjects = true;
+                break;
+            }
+        }
 
-        // Project header (collapsible controller)
-        View projectHeader = addProjectHeader(
-                inflater,
-                container,
-                "Kitchen Renovation",
-                "฿12,450"
-        );
+        if (hasProjects) {
+            addSection(inflater, container, "PROJECTS");
+        }
 
-        // Container for project items
-        LinearLayout projectItems = new LinearLayout(this);
-        projectItems.setOrientation(LinearLayout.VERTICAL);
-        projectItems.setVisibility(View.VISIBLE);
-        container.addView(projectItems);
+        for (AccountEntity account : accounts) {
 
-        // Collapse / expand entire project
-        projectHeader.setOnClickListener(v -> {
-            projectItems.setVisibility(
-                    projectItems.getVisibility() == View.VISIBLE
-                            ? View.GONE
-                            : View.VISIBLE
+            if (!"PROJECT".equalsIgnoreCase(account.type)) {
+                continue;
+            }
+
+            View projectHeader = addProjectHeader(
+                    inflater,
+                    container,
+                    account.name,
+                    CurrencyUtils.format(
+                            safe(itemDao.getTotalForAccount(account.id)),
+                            "฿"
+                    )
             );
-        });
 
-        // Project items
-        addProjectItem(
-                inflater,
-                projectItems,
-                "Jan 22",
-                "hammer",
-                "MEALS OUT",
-                "฿18.50",
-                "Late dinner after site visit"
-        );
+            LinearLayout projectItems = new LinearLayout(this);
+            projectItems.setOrientation(LinearLayout.VERTICAL);
+            projectItems.setVisibility(View.VISIBLE);
+            container.addView(projectItems);
 
-        addProjectItem(
-                inflater,
-                projectItems,
-                "Jan 22",
-                "Hammer",
-                "MEALS OUT",
-                "฿18.50",
-                "Late dinner after site visit"
-        );
+            projectHeader.setOnClickListener(v -> {
+                projectItems.setVisibility(
+                        projectItems.getVisibility() == View.VISIBLE
+                                ? View.GONE
+                                : View.VISIBLE
+                );
+            });
 
+            List<AccountItemEntity> entities =
+                    itemDao.getItemsForAccount(account.id);
+
+            for (AccountItemEntity e : entities) {
+                addProjectItem(
+                        inflater,
+                        projectItems,
+                        new AccountItem(
+                                e.date,
+                                capitalize(e.item),
+                                e.category,
+                                CurrencyUtils.format(e.amount, "฿"),
+                                e.note
+                        )
+                );
+            }
+        }
 
         // =========================
         // TRAVEL
@@ -82,14 +107,14 @@ public class AccountsOverviewActivity extends AppCompatActivity {
     }
 
     // ----------------------------------------------------
-    // SECTION HEADER (PROJECTS / TRAVEL / CUSTOM)
+    // SECTION HEADER
     // ----------------------------------------------------
     private void addSection(LayoutInflater inflater,
                             LinearLayout container,
                             String title) {
 
         int layoutRes =
-                title.equals("TRAVEL")
+                "TRAVEL".equals(title)
                         ? R.layout.row_account_section_amber
                         : R.layout.row_account_section_blue;
 
@@ -100,7 +125,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
     }
 
     // ----------------------------------------------------
-    // PROJECT HEADER (bold, total on right)
+    // PROJECT HEADER
     // ----------------------------------------------------
     private View addProjectHeader(LayoutInflater inflater,
                                   LinearLayout container,
@@ -120,29 +145,15 @@ public class AccountsOverviewActivity extends AppCompatActivity {
     }
 
     // ----------------------------------------------------
-// PROJECT ITEM (no collapse here)
-// ----------------------------------------------------
+    // PROJECT ITEM
+    // ----------------------------------------------------
     private void addProjectItem(LayoutInflater inflater,
                                 LinearLayout projectItems,
-                                String date,
-                                String item,
-                                String category,
-                                String amount,
-                                String note) {
+                                AccountItem item) {
 
-        // ---------------------------------
-        // Item block (header + note)
-        // ---------------------------------
         LinearLayout itemBlock = new LinearLayout(this);
         itemBlock.setOrientation(LinearLayout.VERTICAL);
-        itemBlock.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        ));
 
-        // -----------------
-        // Item header
-        // -----------------
         View header = inflater.inflate(
                 R.layout.row_account_item_header,
                 itemBlock,
@@ -155,19 +166,16 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         TextView categoryView = header.findViewById(R.id.text_category);
         TextView amountView   = header.findViewById(R.id.text_amount);
 
-        String[] parts = date.split(" ");
+        String[] parts = item.date.split(" ");
         if (parts.length == 2) {
             monthView.setText(parts[0]);
             dayView.setText(parts[1]);
         }
 
-        itemView.setText(item);          // Hammer
-        categoryView.setText(category);  // TOOLS
-        amountView.setText(amount);
+        itemView.setText(item.item);
+        categoryView.setText(item.category);
+        amountView.setText(item.amount);
 
-        // -----------------
-        // Note row (own container)
-        // -----------------
         View noteRow = inflater.inflate(
                 R.layout.row_account_item_note,
                 itemBlock,
@@ -175,19 +183,27 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         );
 
         TextView noteView = noteRow.findViewById(R.id.text_note);
-        noteView.setText("Note: " + note);
+        noteView.setText("Note: " + item.note);
         noteView.setTypeface(
                 noteView.getTypeface(),
                 android.graphics.Typeface.ITALIC
         );
 
-        // -----------------
-        // Assemble block
-        // -----------------
         itemBlock.addView(header);
         itemBlock.addView(noteRow);
 
         projectItems.addView(itemBlock);
     }
 
+    // ----------------------------------------------------
+    // HELPERS
+    // ----------------------------------------------------
+    private double safe(Double d) {
+        return d == null ? 0.0 : d;
+    }
+
+    private String capitalize(String s) {
+        if (s == null || s.isEmpty()) return "";
+        return s.substring(0, 1).toUpperCase() + s.substring(1);
+    }
 }

@@ -1,11 +1,21 @@
-package com.pixelpen.whereitwent;
+package com.pixelpen.whereitwent.model;
 
 public class Account {
 
-    public String name;
-    public String type;   // "project", "travel", "custom"
+    // Stable identifier (Room later)
+    public long id;
 
-    public Account(String name, String type) {
+    // Display name
+    public String name; // e.g. "Kitchen Renovation"
+
+    // Type grouping
+    public AccountType type;
+
+    // UI-only state (NOT persisted)
+    public boolean expanded = true;
+
+    public Account(long id, String name, AccountType type) {
+        this.id = id;
         this.name = name;
         this.type = type;
     }
