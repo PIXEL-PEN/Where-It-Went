@@ -20,19 +20,40 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         LinearLayout container = findViewById(R.id.accounts_container);
         LayoutInflater inflater = LayoutInflater.from(this);
 
-        // -------------------------
+        // =========================
         // PROJECTS
-        // -------------------------
+        // =========================
         addSection(inflater, container, "PROJECTS");
 
-        // Project header (bold, total on right)
-        addProjectHeader(inflater, container, "Kitchen Renovation", "฿12,450");
-
-        // Project items (collapsible)
-        addProjectItem(
+        // Project header (collapsible controller)
+        View projectHeader = addProjectHeader(
                 inflater,
                 container,
+                "Kitchen Renovation",
+                "฿12,450"
+        );
+
+        // Container for project items
+        LinearLayout projectItems = new LinearLayout(this);
+        projectItems.setOrientation(LinearLayout.VERTICAL);
+        projectItems.setVisibility(View.VISIBLE);
+        container.addView(projectItems);
+
+        // Collapse / expand entire project
+        projectHeader.setOnClickListener(v -> {
+            projectItems.setVisibility(
+                    projectItems.getVisibility() == View.VISIBLE
+                            ? View.GONE
+                            : View.VISIBLE
+            );
+        });
+
+        // Project items
+        addProjectItem(
+                inflater,
+                projectItems,
                 "Jan 22",
+                "hammer",
                 "MEALS OUT",
                 "฿18.50",
                 "Late dinner after site visit"
@@ -40,21 +61,23 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
         addProjectItem(
                 inflater,
-                container,
-                "Jan 23",
-                "MATERIALS",
-                "฿3,200",
-                "Tile adhesive and spacers"
+                projectItems,
+                "Jan 22",
+                "Hammer",
+                "MEALS OUT",
+                "฿18.50",
+                "Late dinner after site visit"
         );
 
-        // -------------------------
+
+        // =========================
         // TRAVEL
-        // -------------------------
+        // =========================
         addSection(inflater, container, "TRAVEL");
 
-        // -------------------------
+        // =========================
         // CUSTOM
-        // -------------------------
+        // =========================
         addSection(inflater, container, "CUSTOM");
     }
 
@@ -65,16 +88,21 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                             LinearLayout container,
                             String title) {
 
-        View v = inflater.inflate(R.layout.row_account_section_blue, container, false);
+        int layoutRes =
+                title.equals("TRAVEL")
+                        ? R.layout.row_account_section_amber
+                        : R.layout.row_account_section_blue;
+
+        View v = inflater.inflate(layoutRes, container, false);
         TextView t = v.findViewById(R.id.text_title);
         t.setText(title);
         container.addView(v);
     }
 
     // ----------------------------------------------------
-    // PROJECT HEADER (Kitchen Renovation — total only)
+    // PROJECT HEADER (bold, total on right)
     // ----------------------------------------------------
-    private void addProjectHeader(LayoutInflater inflater,
+    private View addProjectHeader(LayoutInflater inflater,
                                   LinearLayout container,
                                   String name,
                                   String total) {
@@ -88,19 +116,21 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         totalView.setText(total);
 
         container.addView(v);
+        return v;
     }
 
     // ----------------------------------------------------
-    // PROJECT ITEM (expand / collapse)
+    // PROJECT ITEM (no collapse here)
     // ----------------------------------------------------
     private void addProjectItem(LayoutInflater inflater,
                                 LinearLayout container,
                                 String date,
+                                String item,
                                 String category,
                                 String amount,
                                 String note) {
 
-        // Item header row
+        // Header row
         View header = inflater.inflate(
                 R.layout.row_account_item_header,
                 container,
@@ -109,20 +139,23 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
         TextView monthView    = header.findViewById(R.id.text_month);
         TextView dayView      = header.findViewById(R.id.text_day);
+        TextView itemView     = header.findViewById(R.id.text_item);
         TextView categoryView = header.findViewById(R.id.text_category);
         TextView amountView   = header.findViewById(R.id.text_amount);
 
-        // Expecting date format like "Jan 22"
+        // Date (expects "Jan 22")
         String[] parts = date.split(" ");
         if (parts.length == 2) {
             monthView.setText(parts[0]);
             dayView.setText(parts[1]);
         }
 
-        categoryView.setText(category);
+        // Content
+        itemView.setText(item);          // e.g. "hammer"
+        categoryView.setText(category);  // e.g. "MEALS OUT"
         amountView.setText(amount);
 
-        // Item note row
+        // Note row (present but not visible yet)
         View noteRow = inflater.inflate(
                 R.layout.row_account_item_note,
                 container,
@@ -131,15 +164,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
         TextView noteView = noteRow.findViewById(R.id.text_note);
         noteView.setText(note);
-
-        // Toggle behavior
-        header.setOnClickListener(v ->
-                noteRow.setVisibility(
-                        noteRow.getVisibility() == View.GONE
-                                ? View.VISIBLE
-                                : View.GONE
-                )
-        );
+        noteRow.setVisibility(View.GONE);
 
         container.addView(header);
         container.addView(noteRow);
