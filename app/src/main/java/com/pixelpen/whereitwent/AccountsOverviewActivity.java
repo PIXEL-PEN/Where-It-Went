@@ -120,20 +120,32 @@ public class AccountsOverviewActivity extends AppCompatActivity {
     }
 
     // ----------------------------------------------------
-    // PROJECT ITEM (no collapse here)
-    // ----------------------------------------------------
+// PROJECT ITEM (no collapse here)
+// ----------------------------------------------------
     private void addProjectItem(LayoutInflater inflater,
-                                LinearLayout container,
+                                LinearLayout projectItems,
                                 String date,
                                 String item,
                                 String category,
                                 String amount,
                                 String note) {
 
-        // Header row
+        // ---------------------------------
+        // Item block (header + note)
+        // ---------------------------------
+        LinearLayout itemBlock = new LinearLayout(this);
+        itemBlock.setOrientation(LinearLayout.VERTICAL);
+        itemBlock.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
+
+        // -----------------
+        // Item header
+        // -----------------
         View header = inflater.inflate(
                 R.layout.row_account_item_header,
-                container,
+                itemBlock,
                 false
         );
 
@@ -143,30 +155,39 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         TextView categoryView = header.findViewById(R.id.text_category);
         TextView amountView   = header.findViewById(R.id.text_amount);
 
-        // Date (expects "Jan 22")
         String[] parts = date.split(" ");
         if (parts.length == 2) {
             monthView.setText(parts[0]);
             dayView.setText(parts[1]);
         }
 
-        // Content
-        itemView.setText(item);          // e.g. "hammer"
-        categoryView.setText(category);  // e.g. "MEALS OUT"
+        itemView.setText(item);          // Hammer
+        categoryView.setText(category);  // TOOLS
         amountView.setText(amount);
 
-        // Note row (present but not visible yet)
+        // -----------------
+        // Note row (own container)
+        // -----------------
         View noteRow = inflater.inflate(
                 R.layout.row_account_item_note,
-                container,
+                itemBlock,
                 false
         );
 
         TextView noteView = noteRow.findViewById(R.id.text_note);
-        noteView.setText(note);
-        noteRow.setVisibility(View.GONE);
+        noteView.setText("Note: " + note);
+        noteView.setTypeface(
+                noteView.getTypeface(),
+                android.graphics.Typeface.ITALIC
+        );
 
-        container.addView(header);
-        container.addView(noteRow);
+        // -----------------
+        // Assemble block
+        // -----------------
+        itemBlock.addView(header);
+        itemBlock.addView(noteRow);
+
+        projectItems.addView(itemBlock);
     }
+
 }
