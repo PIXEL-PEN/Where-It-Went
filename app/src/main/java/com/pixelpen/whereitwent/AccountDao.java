@@ -37,5 +37,8 @@ public interface AccountDao {
     AccountEntity getAccountByName(String name);
 
 
+    @Query("SELECT * FROM accounts ORDER BY id ASC")
+    List<AccountEntity> getAllAccountsById();
+
 
 }

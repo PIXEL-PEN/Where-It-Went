@@ -32,31 +32,21 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
         List<AccountEntity> accounts = accountDao.getActiveAccounts();
 
-        // ---------------------------------
-        // ACCOUNT TYPES (render order)
-        // ---------------------------------
         String[] ACCOUNT_TYPES = {
                 "PROJECT",
                 "TRAVEL",
                 "CUSTOM"
         };
 
-        // ---------------------------------
-        // SECTION LABELS (no guessing)
-        // ---------------------------------
         Map<String, String> SECTION_LABELS = new HashMap<>();
         SECTION_LABELS.put("PROJECT", "PROJECTS");
         SECTION_LABELS.put("TRAVEL",  "TRAVEL");
         SECTION_LABELS.put("CUSTOM",  "CUSTOM");
 
-        // =================================
-        // RENDER ACCOUNTS BY TYPE
-        // =================================
         for (String type : ACCOUNT_TYPES) {
 
             boolean hasType = false;
 
-            // Detect if this section exists
             for (AccountEntity account : accounts) {
                 if (type.equalsIgnoreCase(account.type)) {
                     hasType = true;
@@ -66,7 +56,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
             if (!hasType) continue;
 
-            // Section header
             addSection(
                     inflater,
                     container,
@@ -74,14 +63,22 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                     SECTION_LABELS.get(type)
             );
 
-            // Render accounts of this type
             for (AccountEntity account : accounts) {
 
                 if (!type.equalsIgnoreCase(account.type)) continue;
 
+                android.util.Log.d(
+                        "ACCOUNTS",
+                        "Account: " + account.name + " id=" + account.id
+                );
+
+                LinearLayout accountBlock = new LinearLayout(this);
+                accountBlock.setOrientation(LinearLayout.VERTICAL);
+                container.addView(accountBlock);
+
                 View accountHeader = addProjectHeader(
                         inflater,
-                        container,
+                        accountBlock,
                         account.name,
                         CurrencyUtils.format(
                                 safe(itemDao.getTotalForAccount(account.id)),
@@ -89,12 +86,12 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                         )
                 );
 
+
                 LinearLayout accountItems = new LinearLayout(this);
                 accountItems.setOrientation(LinearLayout.VERTICAL);
                 accountItems.setVisibility(View.VISIBLE);
-                container.addView(accountItems);
+                accountBlock.addView(accountItems);
 
-                // Collapse / expand account
                 accountHeader.setOnClickListener(v -> {
                     accountItems.setVisibility(
                             accountItems.getVisibility() == View.VISIBLE
@@ -105,6 +102,14 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
                 List<AccountItemEntity> items =
                         itemDao.getItemsForAccount(account.id);
+
+
+                android.util.Log.d(
+                        "ACCOUNTS",
+                        "Items for account " + account.id + ": " + items.size()
+                );
+
+
 
                 for (AccountItemEntity e : items) {
                     addProjectItem(
@@ -123,9 +128,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         }
     }
 
-    // ----------------------------------------------------
-    // SECTION HEADER
-    // ----------------------------------------------------
     private void addSection(LayoutInflater inflater,
                             LinearLayout container,
                             String type,
@@ -142,9 +144,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         container.addView(v);
     }
 
-    // ----------------------------------------------------
-    // ACCOUNT HEADER (project / travel / custom)
-    // ----------------------------------------------------
     private View addProjectHeader(LayoutInflater inflater,
                                   LinearLayout container,
                                   String name,
@@ -162,9 +161,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         return v;
     }
 
-    // ----------------------------------------------------
-    // ACCOUNT ITEM (header + note)
-    // ----------------------------------------------------
     private void addProjectItem(LayoutInflater inflater,
                                 LinearLayout projectItems,
                                 AccountItem item) {
@@ -213,9 +209,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         projectItems.addView(itemBlock);
     }
 
-    // ----------------------------------------------------
-    // HELPERS
-    // ----------------------------------------------------
     private double safe(Double d) {
         return d == null ? 0.0 : d;
     }

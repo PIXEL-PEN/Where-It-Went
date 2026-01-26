@@ -12,6 +12,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.List;
+
 @Database(
         entities = {
                 Expense.class,
@@ -30,22 +32,26 @@ public abstract class ExpenseDatabase extends RoomDatabase {
     private static ExpenseDatabase INSTANCE;
 
     // ----------------------------------------------------
-    // ONE-TIME PREFS → ROOM ACCOUNT MIGRATION
+    // ONE-TIME PREFS → ROOM ACCOUNT + ITEM REMAP
     // ----------------------------------------------------
     public static void migrateAccountsFromPrefsIfNeeded(Context context) {
 
         ExpenseDatabase db = getDatabase(context);
-        AccountDao dao = db.accountDao();
-
-        if (dao.countAccounts() > 0) {
-            return;
-        }
+        AccountDao accountDao = db.accountDao();
+        AccountItemDao itemDao = db.accountItemDao();
 
         SharedPreferences prefs =
                 context.getSharedPreferences(
                         "accounts_store",
                         Context.MODE_PRIVATE
                 );
+
+        // ------------------------------------------------
+        // CORRECT GUARD (replaces countAccounts() check)
+        // ------------------------------------------------
+        if (prefs.getBoolean("accounts_items_remapped_v1", false)) {
+            return;
+        }
 
         String raw = prefs.getString("accounts", null);
         if (raw == null || raw.isEmpty()) {
@@ -55,13 +61,50 @@ public abstract class ExpenseDatabase extends RoomDatabase {
         try {
             JSONArray arr = new JSONArray(raw);
 
-            for (int i = 0; i < arr.length(); i++) {
-                JSONObject obj = arr.getJSONObject(i);
-                String name = obj.getString("name");
-                String type = obj.getString("type");
+            // ---------------------------------------------
+            // STEP 1: Ensure accounts exist (insert if empty)
+            // ---------------------------------------------
+            if (accountDao.countAccounts() == 0) {
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject obj = arr.getJSONObject(i);
+                    String name = obj.getString("name");
+                    String type = obj.getString("type");
 
-                dao.insert(new AccountEntity(name, type, false));
+                    accountDao.insert(
+                            new AccountEntity(name, type, false)
+                    );
+                }
             }
+
+            // ---------------------------------------------
+            // STEP 2: Fetch accounts ordered by Room ID
+            // ---------------------------------------------
+            List<AccountEntity> roomAccounts =
+                    accountDao.getAllAccountsById();
+
+            // ---------------------------------------------
+            // STEP 3: Remap account items by legacy ID
+            // ---------------------------------------------
+            for (int i = 0; i < roomAccounts.size(); i++) {
+
+                long legacyId = i + 1;                 // old numeric ID
+                long newRoomId = roomAccounts.get(i).id;
+
+                List<AccountItemEntity> items =
+                        itemDao.getItemsForAccount(legacyId);
+
+                for (AccountItemEntity item : items) {
+                    item.accountId = newRoomId;
+                    itemDao.update(item);
+                }
+            }
+
+            // ---------------------------------------------
+            // STEP 4: Mark remap complete (ONE TIME)
+            // ---------------------------------------------
+            prefs.edit()
+                    .putBoolean("accounts_items_remapped_v1", true)
+                    .apply();
 
         } catch (Exception ignored) {
         }
