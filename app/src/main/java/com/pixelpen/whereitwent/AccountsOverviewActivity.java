@@ -23,13 +23,11 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_accounts_overview);
 
-        android.widget.Toast.makeText(
-                this,
-                "AccountsOverviewActivity ONCREATE HIT",
-                android.widget.Toast.LENGTH_LONG
-        ).show();
-
-
+        // ----------------------------------------------------
+        // EXPAND TARGET ACCOUNT (FROM INTENT)
+        // ----------------------------------------------------
+        long expandAccountId =
+                getIntent().getLongExtra("expand_account_id", -1);
 
         ExpenseDatabase.migrateAccountsFromPrefsIfNeeded(this);
 
@@ -39,10 +37,11 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         AccountDao accountDao = db.accountDao();
         AccountItemDao itemDao = db.accountItemDao();
 
+        Long autoExpandAccountId =
+                itemDao.getLastUsedAccountId();
+
+
         android.util.Log.e("ACCOUNTS", "TOTAL account_items rows = " + itemDao.countAllItems());
-
-
-
 
         LinearLayout container = findViewById(R.id.accounts_container);
         LayoutInflater inflater = LayoutInflater.from(this);
@@ -90,15 +89,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                 );
                 accountHeader.setTag(TAG_ACCOUNT);
 
-
-
                 int headerIndex = container.indexOfChild(accountHeader);
-
-
-
-
-
-
 
                 List<AccountItemEntity> items =
                         itemDao.getItemsForAccount(account.id);
@@ -122,7 +113,11 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                             )
                     );
                     itemView.setTag(TAG_ITEM);
+
+                    // 👇 ADD THIS LINE
+                    itemView.setVisibility(View.GONE);
                 }
+
 
                 accountHeader.setOnClickListener(v ->
                         toggleItems(container, headerIndex)
@@ -131,7 +126,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         }
     }
 
-            // ----------------------------------------------------
+    // ----------------------------------------------------
     // SECTION HEADER
     // ----------------------------------------------------
     private View addSection(LayoutInflater inflater,

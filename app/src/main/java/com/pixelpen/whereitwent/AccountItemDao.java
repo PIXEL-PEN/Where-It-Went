@@ -59,5 +59,16 @@ public interface AccountItemDao {
     int countAllItems();
 
 
+    // ----------------------------------------------------
+    // LAST USED ACCOUNT
+    // ----------------------------------------------------
+    @Query(
+            "SELECT accountId FROM account_items " +
+                    "ORDER BY id DESC LIMIT 1"
+    )
+    Long getLastUsedAccountId();
+
+
+
 
 }
