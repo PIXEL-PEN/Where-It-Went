@@ -33,6 +33,8 @@ import android.content.Intent;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.concurrent.Executors;
+
 
 
 public class AddExpenseDialog extends DialogFragment {
@@ -75,11 +77,6 @@ public class AddExpenseDialog extends DialogFragment {
 // ======================================================
 
 
-
-
-
-
-
     private final List<Account> accounts = new ArrayList<>();
 
     private Spinner spinnerCategory;
@@ -116,15 +113,15 @@ public class AddExpenseDialog extends DialogFragment {
     private final Map<String, List<String>> accountCustomCategories = new HashMap<>();
 
 
-
     private static final String PREF_ACCOUNTS = "accounts_store";
     private static final String KEY_ACCOUNTS = "accounts";
 
     private static final String PREF_ACCOUNT_CATEGORIES = "account_categories_store";
     private static final String KEY_ACCOUNT_CATEGORIES = "account_categories";
 
-
-
+    private EditText editAccountItem;
+    private EditText editAccountAmount;
+    private EditText editAccountNote;
 
     public static AddExpenseDialog newInstance(int expenseId) {
         AddExpenseDialog d = new AddExpenseDialog();
@@ -158,6 +155,8 @@ public class AddExpenseDialog extends DialogFragment {
         if (submitAccount != null) {
             submitAccount.setOnClickListener(vv -> {
 
+                android.util.Log.e("ACCOUNTS", "SUBMIT CLICKED");
+
                 insertAccountExpense();
 
                 dismiss();
@@ -168,9 +167,6 @@ public class AddExpenseDialog extends DialogFragment {
                 ));
             });
         }
-
-
-
 
         TextView linkManage = v.findViewById(R.id.link_manage_accounts);
         if (linkManage != null) {
@@ -187,11 +183,6 @@ public class AddExpenseDialog extends DialogFragment {
         textNoAccounts = v.findViewById(R.id.text_no_accounts);
 
         updateAccountsVisibility();
-
-
-
-
-
 
 
         // -----------------------------
@@ -274,17 +265,10 @@ public class AddExpenseDialog extends DialogFragment {
         });
 
 
-
-
-
-
         ImageButton btnAddAccountCategory =
                 v.findViewById(R.id.btn_add_account_category);
         btnAddAccountCategory.setOnClickListener(vv ->
                 showAddAccountCategoryDialog());
-
-
-
 
 
         // -----------------------------
@@ -292,6 +276,13 @@ public class AddExpenseDialog extends DialogFragment {
         // -----------------------------
         setupAccountSpinner();
         setupAccountCategorySpinner();
+
+        // -----------------------------
+        // ACCOUNTS — INPUT BINDING
+        // -----------------------------
+        editAccountItem   = v.findViewById(R.id.input_account_item);
+        editAccountAmount = v.findViewById(R.id.input_account_amount);
+        editAccountNote   = v.findViewById(R.id.input_account_note);
 
         // -----------------------------
         // EDIT / NEW LOGIC (unchanged)
@@ -319,6 +310,7 @@ public class AddExpenseDialog extends DialogFragment {
         return dialog;
     }
 
+
     private void updateAccountsVisibility() {
 
         if (accounts.isEmpty()) {
@@ -329,9 +321,6 @@ public class AddExpenseDialog extends DialogFragment {
             containerAccounts.setVisibility(View.VISIBLE);
         }
     }
-
-
-
 
 
     private void saveAccounts() {
@@ -381,7 +370,8 @@ public class AddExpenseDialog extends DialogFragment {
                     .putString(KEY_ACCOUNT_CATEGORIES, root.toString())
                     .apply();
 
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
 
@@ -413,11 +403,9 @@ public class AddExpenseDialog extends DialogFragment {
                 accountCustomCategories.put(account, list);
             }
 
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
-
-
-
 
 
     private void loadAccounts() {
@@ -433,10 +421,6 @@ public class AddExpenseDialog extends DialogFragment {
             accounts.add(new Account(e.name, e.type));
         }
     }
-
-
-
-
 
 
     private void showAddAccountCategoryDialog() {
@@ -500,11 +484,6 @@ public class AddExpenseDialog extends DialogFragment {
     }
 
 
-
-
-
-
-
     private void updateAccountDateLabel(TextView tv) {
         SimpleDateFormat sdf =
                 new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
@@ -531,7 +510,7 @@ public class AddExpenseDialog extends DialogFragment {
             String accountName,
             String category) {
 
-        String[] options = { "Rename", "Delete", "Cancel" };
+        String[] options = {"Rename", "Delete", "Cancel"};
 
         new AlertDialog.Builder(requireContext())
                 .setTitle(category)
@@ -574,7 +553,6 @@ public class AddExpenseDialog extends DialogFragment {
                         saveAccountCategories();
 
 
-
                     }
 
                     populateAccountCategoriesFor(accountName);
@@ -599,16 +577,11 @@ public class AddExpenseDialog extends DialogFragment {
                     saveAccountCategories();
 
 
-
-
                     populateAccountCategoriesFor(accountName);
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-
-
-
 
 
     private void setupAccountSpinner() {
@@ -689,9 +662,6 @@ public class AddExpenseDialog extends DialogFragment {
     }
 
 
-
-
-
     private void showAddAccountDialog() {
 
         View view = LayoutInflater.from(getContext())
@@ -729,7 +699,6 @@ public class AddExpenseDialog extends DialogFragment {
                 editName.setError("Account already exists");
                 return;
             }
-
 
 
             int checked = radioType.getCheckedRadioButtonId();
@@ -824,7 +793,6 @@ public class AddExpenseDialog extends DialogFragment {
                 })
                 .show();
     }
-
 
 
     private void showRenameAccountDialog(Account acc) {
@@ -934,13 +902,9 @@ public class AddExpenseDialog extends DialogFragment {
     }
 
 
-
-
-
     private void showForeignCurrencyDialog() {
         // placeholder — currency, rate, base currency
     }
-
 
 
     private void addAccount(String name, String type) {
@@ -957,8 +921,6 @@ public class AddExpenseDialog extends DialogFragment {
         updateAccountsVisibility();
         setupAccountSpinner();
     }
-
-
 
 
     private void loadForEdit(int id) {
@@ -1168,11 +1130,6 @@ public class AddExpenseDialog extends DialogFragment {
     }
 
 
-
-
-
-
-
     private void populateAccountCategoriesFor(String accountName) {
 
         accountCategories.clear();
@@ -1218,6 +1175,7 @@ public class AddExpenseDialog extends DialogFragment {
         accountCategoryAdapter.notifyDataSetChanged();
         spinnerAccountCategory.setSelection(0);
     }
+
     private List<String> getDefaultCategoriesFor(Account acc) {
 
         switch (acc.type) {
@@ -1246,7 +1204,6 @@ public class AddExpenseDialog extends DialogFragment {
     }
 
 
-
     private Account findAccountByName(String name) {
         for (Account a : accounts) {
             if (a.name.equals(name)) return a;
@@ -1266,7 +1223,6 @@ public class AddExpenseDialog extends DialogFragment {
         }
         return false;
     }
-
 
 
     private String getMonthAbbrev(int i) {
@@ -1569,8 +1525,105 @@ public class AddExpenseDialog extends DialogFragment {
     }
 
     private void insertAccountExpense() {
-        // TODO: real Room insert later
+
+        android.util.Log.e("ACCOUNTS", "STEP 1: entered insertAccountExpense");
+
+        if (spinnerAccount == null) {
+            android.util.Log.e("ACCOUNTS", "ABORT: spinnerAccount == null");
+            return;
+        }
+
+        Object selected = spinnerAccount.getSelectedItem();
+        android.util.Log.e("ACCOUNTS", "STEP 2: spinner selected = " + selected);
+
+        if (selected == null) {
+            android.util.Log.e("ACCOUNTS", "ABORT: selected == null");
+            return;
+        }
+
+        String accountName = selected.toString();
+        android.util.Log.e("ACCOUNTS", "STEP 3: accountName = [" + accountName + "]");
+
+        ExpenseDatabase db =
+                ExpenseDatabase.getDatabase(requireContext());
+
+        AccountEntity account =
+                db.accountDao().getAccountByName(accountName);
+
+        android.util.Log.e(
+                "ACCOUNTS",
+                "STEP 4: account lookup result = " +
+                        (account == null ? "NULL" : "id=" + account.id)
+        );
+
+        if (account == null) {
+            android.util.Log.e("ACCOUNTS", "ABORT: account == null");
+            return;
+        }
+
+        String item =
+                editAccountItem.getText().toString().trim();
+
+        android.util.Log.e("ACCOUNTS", "STEP 5: item = [" + item + "]");
+
+        if (item.isEmpty()) {
+            android.util.Log.e("ACCOUNTS", "ABORT: item empty");
+            return;
+        }
+
+        String amountStr =
+                editAccountAmount.getText().toString().trim();
+
+        android.util.Log.e("ACCOUNTS", "STEP 6: amountStr = [" + amountStr + "]");
+
+        if (amountStr.isEmpty()) {
+            android.util.Log.e("ACCOUNTS", "ABORT: amount empty");
+            return;
+        }
+
+        double amount;
+        try {
+            amount = Double.parseDouble(amountStr);
+        } catch (Exception e) {
+            android.util.Log.e("ACCOUNTS", "ABORT: amount parse failed");
+            return;
+        }
+
+        String category =
+                spinnerAccountCategory != null
+                        ? spinnerAccountCategory.getSelectedItem().toString()
+                        : "";
+        android.util.Log.e("ACCOUNTS", "STEP 7: category = [" + category + "]");
+
+        // ✅ READ NOTE HERE
+        String note =
+                editAccountNote != null
+                        ? editAccountNote.getText().toString().trim()
+                        : "";
+
+        String date =
+                new java.text.SimpleDateFormat(
+                        "MMM dd",
+                        java.util.Locale.ENGLISH
+                ).format(new java.util.Date());
+
+        android.util.Log.e("ACCOUNTS", "STEP 8: calling insertAccountItem");
+
+        insertAccountItem(
+                account.id,
+                date,
+                item,
+                category,
+                amount,
+                note          // ✅ PASS NOTE
+        );
+
+        android.util.Log.e("ACCOUNTS", "STEP 9: insertAccountItem returned");
     }
+
+    // ----------------------------------------------------
+// ACCOUNTS — ROOM INSERT
+// ----------------------------------------------------
     private void insertAccountItem(
             long accountId,
             String date,
@@ -1590,7 +1643,8 @@ public class AddExpenseDialog extends DialogFragment {
                         note
                 );
 
-        ExpenseDatabase.getDatabase(requireContext())
+        ExpenseDatabase
+                .getDatabase(requireContext())
                 .accountItemDao()
                 .insert(entity);
 
@@ -1599,6 +1653,4 @@ public class AddExpenseDialog extends DialogFragment {
                 "INSERTED account item for accountId=" + accountId
         );
     }
-
-
 }
