@@ -1571,6 +1571,34 @@ public class AddExpenseDialog extends DialogFragment {
     private void insertAccountExpense() {
         // TODO: real Room insert later
     }
+    private void insertAccountItem(
+            long accountId,
+            String date,
+            String item,
+            String category,
+            double amount,
+            String note
+    ) {
+
+        AccountItemEntity entity =
+                new AccountItemEntity(
+                        accountId,
+                        date,
+                        item,
+                        category,
+                        amount,
+                        note
+                );
+
+        ExpenseDatabase.getDatabase(requireContext())
+                .accountItemDao()
+                .insert(entity);
+
+        android.util.Log.e(
+                "ACCOUNTS",
+                "INSERTED account item for accountId=" + accountId
+        );
+    }
 
 
 }

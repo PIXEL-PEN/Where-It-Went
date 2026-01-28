@@ -55,6 +55,8 @@ public interface AccountItemDao {
     @Query("SELECT COUNT(*) FROM account_items")
     int countItems();
 
+    @Query("SELECT COUNT(*) FROM account_items")
+    int countAllItems();
 
 
 

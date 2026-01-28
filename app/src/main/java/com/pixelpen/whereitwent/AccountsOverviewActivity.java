@@ -14,10 +14,22 @@ import java.util.Map;
 
 public class AccountsOverviewActivity extends AppCompatActivity {
 
+    private static final String TAG_SECTION = "SECTION";
+    private static final String TAG_ACCOUNT = "ACCOUNT";
+    private static final String TAG_ITEM    = "ITEM";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_accounts_overview);
+
+        android.widget.Toast.makeText(
+                this,
+                "AccountsOverviewActivity ONCREATE HIT",
+                android.widget.Toast.LENGTH_LONG
+        ).show();
+
+
 
         ExpenseDatabase.migrateAccountsFromPrefsIfNeeded(this);
 
@@ -27,94 +39,80 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         AccountDao accountDao = db.accountDao();
         AccountItemDao itemDao = db.accountItemDao();
 
+        android.util.Log.e("ACCOUNTS", "TOTAL account_items rows = " + itemDao.countAllItems());
+
+
+
+
         LinearLayout container = findViewById(R.id.accounts_container);
         LayoutInflater inflater = LayoutInflater.from(this);
 
         List<AccountEntity> accounts = accountDao.getActiveAccounts();
 
-        String[] ACCOUNT_TYPES = {
-                "PROJECT",
-                "TRAVEL",
-                "CUSTOM"
-        };
+        String[] ACCOUNT_TYPES = {"PROJECT", "TRAVEL", "CUSTOM"};
 
         Map<String, String> SECTION_LABELS = new HashMap<>();
         SECTION_LABELS.put("PROJECT", "PROJECTS");
-        SECTION_LABELS.put("TRAVEL",  "TRAVEL");
-        SECTION_LABELS.put("CUSTOM",  "CUSTOM");
+        SECTION_LABELS.put("TRAVEL", "TRAVEL");
+        SECTION_LABELS.put("CUSTOM", "CUSTOM");
 
         for (String type : ACCOUNT_TYPES) {
 
             boolean hasType = false;
-
-            for (AccountEntity account : accounts) {
-                if (type.equalsIgnoreCase(account.type)) {
+            for (AccountEntity a : accounts) {
+                if (type.equalsIgnoreCase(a.type)) {
                     hasType = true;
                     break;
                 }
             }
-
             if (!hasType) continue;
 
-            addSection(
+            View section = addSection(
                     inflater,
                     container,
                     type,
                     SECTION_LABELS.get(type)
             );
+            section.setTag(TAG_SECTION);
 
             for (AccountEntity account : accounts) {
 
                 if (!type.equalsIgnoreCase(account.type)) continue;
 
-                android.util.Log.d(
-                        "ACCOUNTS",
-                        "Account: " + account.name + " id=" + account.id
-                );
-
-                LinearLayout accountBlock = new LinearLayout(this);
-                accountBlock.setOrientation(LinearLayout.VERTICAL);
-                container.addView(accountBlock);
-
-                View accountHeader = addProjectHeader(
+                View accountHeader = addAccountHeader(
                         inflater,
-                        accountBlock,
+                        container,
                         account.name,
                         CurrencyUtils.format(
                                 safe(itemDao.getTotalForAccount(account.id)),
                                 "฿"
                         )
                 );
+                accountHeader.setTag(TAG_ACCOUNT);
 
 
-                LinearLayout accountItems = new LinearLayout(this);
-                accountItems.setOrientation(LinearLayout.VERTICAL);
-                accountItems.setVisibility(View.VISIBLE);
-                accountBlock.addView(accountItems);
 
-                accountHeader.setOnClickListener(v -> {
-                    accountItems.setVisibility(
-                            accountItems.getVisibility() == View.VISIBLE
-                                    ? View.GONE
-                                    : View.VISIBLE
-                    );
-                });
+                int headerIndex = container.indexOfChild(accountHeader);
+
+
+
+
+
+
 
                 List<AccountItemEntity> items =
                         itemDao.getItemsForAccount(account.id);
 
-
-                android.util.Log.d(
-                        "ACCOUNTS",
-                        "Items for account " + account.id + ": " + items.size()
-                );
-
-
-
                 for (AccountItemEntity e : items) {
-                    addProjectItem(
+
+                    android.util.Log.d(
+                            "ACCOUNTS",
+                            "RENDER LOOP HIT: " + e.item + " (accountId=" + e.accountId + ")"
+                    );
+
+                    View itemView = addAccountItem(
                             inflater,
-                            accountItems,
+                            container,
                             new AccountItem(
                                     e.date,
                                     capitalize(e.item),
@@ -123,12 +121,20 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                                     e.note
                             )
                     );
+                    itemView.setTag(TAG_ITEM);
                 }
+
+                accountHeader.setOnClickListener(v ->
+                        toggleItems(container, headerIndex)
+                );
             }
         }
     }
 
-    private void addSection(LayoutInflater inflater,
+            // ----------------------------------------------------
+    // SECTION HEADER
+    // ----------------------------------------------------
+    private View addSection(LayoutInflater inflater,
                             LinearLayout container,
                             String type,
                             String title) {
@@ -142,9 +148,13 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         TextView t = v.findViewById(R.id.text_title);
         t.setText(title);
         container.addView(v);
+        return v;
     }
 
-    private View addProjectHeader(LayoutInflater inflater,
+    // ----------------------------------------------------
+    // ACCOUNT HEADER
+    // ----------------------------------------------------
+    private View addAccountHeader(LayoutInflater inflater,
                                   LinearLayout container,
                                   String name,
                                   String total) {
@@ -161,16 +171,19 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         return v;
     }
 
-    private void addProjectItem(LayoutInflater inflater,
-                                LinearLayout projectItems,
+    // ----------------------------------------------------
+    // ACCOUNT ITEM (header + note)
+    // ----------------------------------------------------
+    private View addAccountItem(LayoutInflater inflater,
+                                LinearLayout container,
                                 AccountItem item) {
 
-        LinearLayout itemBlock = new LinearLayout(this);
-        itemBlock.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout block = new LinearLayout(this);
+        block.setOrientation(LinearLayout.VERTICAL);
 
         View header = inflater.inflate(
                 R.layout.row_account_item_header,
-                itemBlock,
+                block,
                 false
         );
 
@@ -192,7 +205,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
         View noteRow = inflater.inflate(
                 R.layout.row_account_item_note,
-                itemBlock,
+                block,
                 false
         );
 
@@ -203,12 +216,50 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                 android.graphics.Typeface.ITALIC
         );
 
-        itemBlock.addView(header);
-        itemBlock.addView(noteRow);
+        block.addView(header);
+        block.addView(noteRow);
 
-        projectItems.addView(itemBlock);
+        container.addView(block);
+
+
+        return block;
+
+
+
+
+
+
+
     }
 
+    // ----------------------------------------------------
+    // COLLAPSE / EXPAND (FLAT SCAN)
+    // ----------------------------------------------------
+    private void toggleItems(LinearLayout container, int headerIndex) {
+
+        boolean hide = false;
+
+        if (headerIndex + 1 < container.getChildCount()) {
+            View next = container.getChildAt(headerIndex + 1);
+            hide = next.getVisibility() == View.VISIBLE;
+        }
+
+        for (int i = headerIndex + 1; i < container.getChildCount(); i++) {
+
+            View v = container.getChildAt(i);
+            Object tag = v.getTag();
+
+            if (TAG_ACCOUNT.equals(tag) || TAG_SECTION.equals(tag)) {
+                break;
+            }
+
+            v.setVisibility(hide ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    // ----------------------------------------------------
+    // HELPERS
+    // ----------------------------------------------------
     private double safe(Double d) {
         return d == null ? 0.0 : d;
     }
@@ -217,4 +268,37 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         if (s == null || s.isEmpty()) return "";
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
+
+    private void insertAccountItem(
+            long accountId,
+            String date,
+            String item,
+            String category,
+            double amount,
+            String note
+    ) {
+
+        AccountItemEntity entity =
+                new AccountItemEntity(
+                        accountId,
+                        date,
+                        item,
+                        category,
+                        amount,
+                        note
+                );
+
+        ExpenseDatabase.getDatabase(this)
+                .accountItemDao()
+                .insert(entity);
+
+        android.util.Log.e(
+                "ACCOUNTS",
+                "INSERTED account item for accountId=" + accountId
+        );
+    }
+
+
+
 }
+
