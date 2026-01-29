@@ -23,11 +23,8 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_accounts_overview);
 
-        // ----------------------------------------------------
-        // EXPAND TARGET ACCOUNT (FROM INTENT)
-        // ----------------------------------------------------
         long expandAccountId =
-                getIntent().getLongExtra("expand_account_id", -1);
+                getIntent().getLongExtra("expand_account_id", -1L);
 
         ExpenseDatabase.migrateAccountsFromPrefsIfNeeded(this);
 
@@ -36,12 +33,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
         AccountDao accountDao = db.accountDao();
         AccountItemDao itemDao = db.accountItemDao();
-
-        Long autoExpandAccountId =
-                itemDao.getLastUsedAccountId();
-
-
-        android.util.Log.e("ACCOUNTS", "TOTAL account_items rows = " + itemDao.countAllItems());
 
         LinearLayout container = findViewById(R.id.accounts_container);
         LayoutInflater inflater = LayoutInflater.from(this);
@@ -89,17 +80,13 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                 );
                 accountHeader.setTag(TAG_ACCOUNT);
 
-                int headerIndex = container.indexOfChild(accountHeader);
-
                 List<AccountItemEntity> items =
                         itemDao.getItemsForAccount(account.id);
 
-                for (AccountItemEntity e : items) {
+                android.util.Log.e("ACCOUNTS", "expandAccountId=" + expandAccountId + " account.id=" + account.id);
 
-                    android.util.Log.d(
-                            "ACCOUNTS",
-                            "RENDER LOOP HIT: " + e.item + " (accountId=" + e.accountId + ")"
-                    );
+
+                for (AccountItemEntity e : items) {
 
                     View itemView = addAccountItem(
                             inflater,
@@ -113,15 +100,21 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                             )
                     );
                     itemView.setTag(TAG_ITEM);
+                    itemView.setVisibility(account.id == expandAccountId ? View.VISIBLE : View.GONE);
 
-                    // 👇 ADD THIS LINE
-                    itemView.setVisibility(View.GONE);
                 }
 
+                accountHeader.setOnClickListener(v -> {
+                    int idx = container.indexOfChild(accountHeader);
+                    toggleItems(container, idx);
+                });
 
-                accountHeader.setOnClickListener(v ->
-                        toggleItems(container, headerIndex)
-                );
+                if (account.id == expandAccountId) {
+                    container.post(() -> {
+                        int idx = container.indexOfChild(accountHeader);
+                        toggleItems(container, idx);
+                    });
+                }
             }
         }
     }
@@ -167,7 +160,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
     }
 
     // ----------------------------------------------------
-    // ACCOUNT ITEM (header + note)
+    // ACCOUNT ITEM
     // ----------------------------------------------------
     private View addAccountItem(LayoutInflater inflater,
                                 LinearLayout container,
@@ -215,28 +208,21 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         block.addView(noteRow);
 
         container.addView(block);
-
-
         return block;
-
-
-
-
-
-
-
     }
 
     // ----------------------------------------------------
-    // COLLAPSE / EXPAND (FLAT SCAN)
+    // COLLAPSE / EXPAND
     // ----------------------------------------------------
     private void toggleItems(LinearLayout container, int headerIndex) {
 
-        boolean hide = false;
+        boolean hide;
 
         if (headerIndex + 1 < container.getChildCount()) {
             View next = container.getChildAt(headerIndex + 1);
             hide = next.getVisibility() == View.VISIBLE;
+        } else {
+            hide = false;
         }
 
         for (int i = headerIndex + 1; i < container.getChildCount(); i++) {
@@ -263,37 +249,4 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         if (s == null || s.isEmpty()) return "";
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
-
-    private void insertAccountItem(
-            long accountId,
-            String date,
-            String item,
-            String category,
-            double amount,
-            String note
-    ) {
-
-        AccountItemEntity entity =
-                new AccountItemEntity(
-                        accountId,
-                        date,
-                        item,
-                        category,
-                        amount,
-                        note
-                );
-
-        ExpenseDatabase.getDatabase(this)
-                .accountItemDao()
-                .insert(entity);
-
-        android.util.Log.e(
-                "ACCOUNTS",
-                "INSERTED account item for accountId=" + accountId
-        );
-    }
-
-
-
 }
-
