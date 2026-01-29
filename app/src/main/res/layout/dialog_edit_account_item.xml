@@ -57,5 +57,17 @@
             android:textColor="#666666"
             android:layout_marginTop="14dp"/>
 
+        <TextView
+            android:id="@+id/btn_save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SAVE"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="#0066CC"
+            android:layout_gravity="end"
+            android:layout_marginTop="16dp"/>
+
+
     </LinearLayout>
 </ScrollView>

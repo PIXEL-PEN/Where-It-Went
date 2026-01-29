@@ -36,6 +36,9 @@ public class EditAccountItemDialog extends DialogFragment {
         EditText editCategory = v.findViewById(R.id.edit_category);
         EditText editNote     = v.findViewById(R.id.edit_note);
         TextView editDate     = v.findViewById(R.id.edit_date);
+        TextView btnSave      = v.findViewById(R.id.btn_save);
+
+        final AccountItemEntity[] loaded = new AccountItemEntity[1];
 
         if (itemId > 0) {
             ExpenseDatabase db = ExpenseDatabase.getDatabase(requireContext());
@@ -43,6 +46,8 @@ public class EditAccountItemDialog extends DialogFragment {
 
             AccountItemEntity e = dao.getItemById(itemId);
             if (e != null) {
+                loaded[0] = e;
+
                 editItem.setText(e.item);
                 editAmount.setText(String.valueOf(e.amount));
                 editCategory.setText(e.category);
@@ -50,6 +55,36 @@ public class EditAccountItemDialog extends DialogFragment {
                 editDate.setText(e.date);
             }
         }
+
+        btnSave.setOnClickListener(vv -> {
+
+            if (loaded[0] == null) return;
+
+            loaded[0].item =
+                    editItem.getText().toString().trim();
+            loaded[0].category =
+                    editCategory.getText().toString().trim();
+            loaded[0].note =
+                    editNote.getText().toString().trim();
+
+            try {
+                loaded[0].amount =
+                        Double.parseDouble(
+                                editAmount.getText().toString().trim()
+                        );
+            } catch (Exception ex) {
+                return;
+            }
+
+            ExpenseDatabase db =
+                    ExpenseDatabase.getDatabase(requireContext());
+            db.accountItemDao().update(loaded[0]);
+
+            requireActivity().recreate();
+
+            dismiss();
+
+        });
 
         return dialog;
     }

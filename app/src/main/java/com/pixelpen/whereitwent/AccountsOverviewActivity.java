@@ -16,7 +16,9 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
     private static final String TAG_SECTION = "SECTION";
     private static final String TAG_ACCOUNT = "ACCOUNT";
-    private static final String TAG_ITEM    = "ITEM";
+    private static final String TAG_ITEM = "ITEM";
+
+    public static boolean needsRefresh = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -169,7 +171,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                 false
         );
 
-        TextView nameView  = v.findViewById(R.id.text_account_name);
+        TextView nameView = v.findViewById(R.id.text_account_name);
         TextView totalView = v.findViewById(R.id.text_account_total);
 
         nameView.setText(name);
@@ -194,11 +196,11 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                 false
         );
 
-        TextView monthView    = header.findViewById(R.id.text_month);
-        TextView dayView      = header.findViewById(R.id.text_day);
-        TextView itemView     = header.findViewById(R.id.text_item);
+        TextView monthView = header.findViewById(R.id.text_month);
+        TextView dayView = header.findViewById(R.id.text_day);
+        TextView itemView = header.findViewById(R.id.text_item);
         TextView categoryView = header.findViewById(R.id.text_category);
-        TextView amountView   = header.findViewById(R.id.text_amount);
+        TextView amountView = header.findViewById(R.id.text_amount);
 
         String[] parts = item.date.split(" ");
         if (parts.length == 2) {
@@ -270,5 +272,15 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         if (s == null || s.isEmpty()) return "";
         return s.substring(0, 1).toUpperCase()
                 + s.substring(1);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (needsRefresh) {
+            needsRefresh = false;
+            recreate();
+        }
     }
 }
