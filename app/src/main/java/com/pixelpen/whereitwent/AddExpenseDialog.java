@@ -119,6 +119,11 @@ public class AddExpenseDialog extends DialogFragment {
     private static final String PREF_ACCOUNT_CATEGORIES = "account_categories_store";
     private static final String KEY_ACCOUNT_CATEGORIES = "account_categories";
 
+    private static final String PREFS_UI = "ui_prefs";
+    private static final String KEY_LAST_ACTIVE = "last_active_module";
+
+
+
     private EditText editAccountItem;
     private EditText editAccountAmount;
     private EditText editAccountNote;
@@ -1707,14 +1712,14 @@ public class AddExpenseDialog extends DialogFragment {
         if (activeModule == ActiveModule.DAILY) {
 
             daily.setAlpha(1.0f);
-            accounts.setAlpha(0.35f);
+            accounts.setAlpha(0.75f);
 
             setEnabledRecursive(daily, true);
             setEnabledRecursive(accounts, false);
 
         } else {
 
-            daily.setAlpha(0.35f);
+            daily.setAlpha(0.75f);
             accounts.setAlpha(1.0f);
 
             setEnabledRecursive(daily, false);
@@ -1734,7 +1739,6 @@ public class AddExpenseDialog extends DialogFragment {
             v.setEnabled(enabled);
         }
     }
-
 
 
 
