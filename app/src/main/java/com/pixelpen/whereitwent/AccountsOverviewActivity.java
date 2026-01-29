@@ -83,9 +83,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                 List<AccountItemEntity> items =
                         itemDao.getItemsForAccount(account.id);
 
-                android.util.Log.e("ACCOUNTS", "expandAccountId=" + expandAccountId + " account.id=" + account.id);
-
-
                 for (AccountItemEntity e : items) {
 
                     View itemView = addAccountItem(
@@ -100,8 +97,29 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                             )
                     );
                     itemView.setTag(TAG_ITEM);
-                    itemView.setVisibility(account.id == expandAccountId ? View.VISIBLE : View.GONE);
+                    itemView.setVisibility(
+                            account.id == expandAccountId
+                                    ? View.VISIBLE
+                                    : View.GONE
+                    );
 
+                    itemView.setOnClickListener(v -> {
+
+                        EditAccountItemDialog dialog =
+                                new EditAccountItemDialog();
+
+                        Bundle args = new Bundle();
+                        args.putLong(
+                                EditAccountItemDialog.ARG_ACCOUNT_ITEM_ID,
+                                e.id
+                        );
+                        dialog.setArguments(args);
+
+                        dialog.show(
+                                getSupportFragmentManager(),
+                                "EDIT_ACCOUNT_ITEM"
+                        );
+                    });
                 }
 
                 accountHeader.setOnClickListener(v -> {
@@ -119,13 +137,12 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         }
     }
 
-    // ----------------------------------------------------
-    // SECTION HEADER
-    // ----------------------------------------------------
-    private View addSection(LayoutInflater inflater,
-                            LinearLayout container,
-                            String type,
-                            String title) {
+    private View addSection(
+            LayoutInflater inflater,
+            LinearLayout container,
+            String type,
+            String title
+    ) {
 
         int layoutRes =
                 "TRAVEL".equalsIgnoreCase(type)
@@ -139,15 +156,18 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         return v;
     }
 
-    // ----------------------------------------------------
-    // ACCOUNT HEADER
-    // ----------------------------------------------------
-    private View addAccountHeader(LayoutInflater inflater,
-                                  LinearLayout container,
-                                  String name,
-                                  String total) {
+    private View addAccountHeader(
+            LayoutInflater inflater,
+            LinearLayout container,
+            String name,
+            String total
+    ) {
 
-        View v = inflater.inflate(R.layout.row_account_item, container, false);
+        View v = inflater.inflate(
+                R.layout.row_account_item,
+                container,
+                false
+        );
 
         TextView nameView  = v.findViewById(R.id.text_account_name);
         TextView totalView = v.findViewById(R.id.text_account_total);
@@ -159,12 +179,11 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         return v;
     }
 
-    // ----------------------------------------------------
-    // ACCOUNT ITEM
-    // ----------------------------------------------------
-    private View addAccountItem(LayoutInflater inflater,
-                                LinearLayout container,
-                                AccountItem item) {
+    private View addAccountItem(
+            LayoutInflater inflater,
+            LinearLayout container,
+            AccountItem item
+    ) {
 
         LinearLayout block = new LinearLayout(this);
         block.setOrientation(LinearLayout.VERTICAL);
@@ -211,10 +230,10 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         return block;
     }
 
-    // ----------------------------------------------------
-    // COLLAPSE / EXPAND
-    // ----------------------------------------------------
-    private void toggleItems(LinearLayout container, int headerIndex) {
+    private void toggleItems(
+            LinearLayout container,
+            int headerIndex
+    ) {
 
         boolean hide;
 
@@ -225,28 +244,31 @@ public class AccountsOverviewActivity extends AppCompatActivity {
             hide = false;
         }
 
-        for (int i = headerIndex + 1; i < container.getChildCount(); i++) {
+        for (int i = headerIndex + 1;
+             i < container.getChildCount();
+             i++) {
 
             View v = container.getChildAt(i);
             Object tag = v.getTag();
 
-            if (TAG_ACCOUNT.equals(tag) || TAG_SECTION.equals(tag)) {
+            if (TAG_ACCOUNT.equals(tag)
+                    || TAG_SECTION.equals(tag)) {
                 break;
             }
 
-            v.setVisibility(hide ? View.GONE : View.VISIBLE);
+            v.setVisibility(
+                    hide ? View.GONE : View.VISIBLE
+            );
         }
     }
 
-    // ----------------------------------------------------
-    // HELPERS
-    // ----------------------------------------------------
     private double safe(Double d) {
         return d == null ? 0.0 : d;
     }
 
     private String capitalize(String s) {
         if (s == null || s.isEmpty()) return "";
-        return s.substring(0, 1).toUpperCase() + s.substring(1);
+        return s.substring(0, 1).toUpperCase()
+                + s.substring(1);
     }
 }

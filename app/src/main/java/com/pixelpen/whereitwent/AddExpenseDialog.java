@@ -166,12 +166,22 @@ public class AddExpenseDialog extends DialogFragment {
         View dailyContainer = v.findViewById(R.id.card_daily);
         View accountsContainer = v.findViewById(R.id.card_other);
 
+        SharedPreferences prefs =
+                requireContext().getSharedPreferences(PREFS_UI, Context.MODE_PRIVATE);
+
+        String saved = prefs.getString(KEY_LAST_ACTIVE, "DAILY");
+        activeModule = "ACCOUNTS".equals(saved)
+                ? ActiveModule.ACCOUNTS
+                : ActiveModule.DAILY;
+
+
 
         applyActiveState(dailyContainer, accountsContainer);
 
         dailyContainer.setOnClickListener(vv -> {
             if (activeModule != ActiveModule.DAILY) {
                 activeModule = ActiveModule.DAILY;
+                saveActiveModule();
                 applyActiveState(dailyContainer, accountsContainer);
             }
         });
@@ -179,9 +189,11 @@ public class AddExpenseDialog extends DialogFragment {
         accountsContainer.setOnClickListener(vv -> {
             if (activeModule != ActiveModule.ACCOUNTS) {
                 activeModule = ActiveModule.ACCOUNTS;
+                saveActiveModule();
                 applyActiveState(dailyContainer, accountsContainer);
             }
         });
+
 
 
         dailyContainer.setOnClickListener(vv -> {
@@ -1740,6 +1752,14 @@ public class AddExpenseDialog extends DialogFragment {
         }
     }
 
+    private void saveActiveModule() {
+        SharedPreferences prefs =
+                requireContext().getSharedPreferences(PREFS_UI, Context.MODE_PRIVATE);
+
+        prefs.edit()
+                .putString(KEY_LAST_ACTIVE, activeModule.name())
+                .apply();
+    }
 
 
 }
