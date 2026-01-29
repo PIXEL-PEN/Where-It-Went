@@ -1,106 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp"
-    android:background="@android:color/white">
-
-    <TextView
-        android:id="@+id/text_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Edit Account Item"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="#222222"
-        android:layout_marginBottom="12dp" />
-
-    <Spinner
-        android:id="@+id/spinner_account"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:enabled="false"
-        android:alpha="0.85" />
-
-    <Spinner
-        android:id="@+id/spinner_category"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_marginTop="8dp" />
-
-    <EditText
-        android:id="@+id/input_item"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Item"
-        android:inputType="textCapSentences"
-        android:textSize="15sp"
-        android:layout_marginTop="10dp" />
-
-    <EditText
-        android:id="@+id/input_amount"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Amount"
-        android:inputType="numberDecimal"
-        android:textSize="15sp"
-        android:layout_marginTop="8dp" />
-
-    <EditText
-        android:id="@+id/input_note"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Note"
-        android:inputType="textCapSentences"
-        android:textSize="14sp"
-        android:layout_marginTop="8dp" />
-
-    <TextView
-        android:id="@+id/text_date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="01 Jan 2026"
-        android:textStyle="bold"
-        android:textSize="14sp"
-        android:textColor="#444444"
-        android:layout_marginTop="10dp" />
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="end"
-        android:layout_marginTop="16dp">
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@android:color/white">
 
         <TextView
-            android:id="@+id/btn_delete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="DELETE"
+            android:text="EDIT ACCOUNT ITEM"
             android:textStyle="bold"
-            android:textColor="#B00020"
-            android:padding="8dp"
-            android:layout_marginEnd="16dp" />
+            android:textSize="14sp"
+            android:textColor="#444444"
+            android:layout_marginBottom="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <EditText
+            android:id="@+id/edit_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Item"/>
+
+        <EditText
+            android:id="@+id/edit_amount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Amount"
+            android:inputType="numberDecimal"
+            android:layout_marginTop="10dp"/>
+
+        <EditText
+            android:id="@+id/edit_category"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Category"
+            android:layout_marginTop="10dp"/>
+
+        <EditText
+            android:id="@+id/edit_note"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Note"
+            android:layout_marginTop="10dp"/>
 
         <TextView
-            android:id="@+id/btn_cancel"
+            android:id="@+id/edit_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="CANCEL"
+            android:text="Date"
             android:textStyle="bold"
             android:textColor="#666666"
-            android:padding="8dp"
-            android:layout_marginEnd="16dp" />
+            android:layout_marginTop="14dp"/>
 
-        <TextView
-            android:id="@+id/btn_save"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SAVE"
-            android:textStyle="bold"
-            android:textColor="#0D5D8A"
-            android:padding="8dp" />
     </LinearLayout>
-
-</LinearLayout>
+</ScrollView>

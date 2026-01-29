@@ -68,6 +68,9 @@ public interface AccountItemDao {
     )
     Long getLastUsedAccountId();
 
+    @Query("SELECT * FROM account_items WHERE id = :id LIMIT 1")
+    AccountItemEntity getItemById(long id);
+
 
 
 
