@@ -131,6 +131,17 @@ public class AddExpenseDialog extends DialogFragment {
         return d;
     }
 
+    private enum ActiveModule {
+        DAILY,
+        ACCOUNTS
+    }
+
+    private ActiveModule activeModule = ActiveModule.DAILY;
+
+
+
+
+
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -145,6 +156,43 @@ public class AddExpenseDialog extends DialogFragment {
 
         View v = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_add_expense, null);
+
+
+        View dailyContainer = v.findViewById(R.id.card_daily);
+        View accountsContainer = v.findViewById(R.id.card_other);
+
+
+        applyActiveState(dailyContainer, accountsContainer);
+
+        dailyContainer.setOnClickListener(vv -> {
+            if (activeModule != ActiveModule.DAILY) {
+                activeModule = ActiveModule.DAILY;
+                applyActiveState(dailyContainer, accountsContainer);
+            }
+        });
+
+        accountsContainer.setOnClickListener(vv -> {
+            if (activeModule != ActiveModule.ACCOUNTS) {
+                activeModule = ActiveModule.ACCOUNTS;
+                applyActiveState(dailyContainer, accountsContainer);
+            }
+        });
+
+
+        dailyContainer.setOnClickListener(vv -> {
+            if (activeModule != ActiveModule.DAILY) {
+                activeModule = ActiveModule.DAILY;
+                applyActiveState(dailyContainer, accountsContainer);
+            }
+        });
+
+        accountsContainer.setOnClickListener(vv -> {
+            if (activeModule != ActiveModule.ACCOUNTS) {
+                activeModule = ActiveModule.ACCOUNTS;
+                applyActiveState(dailyContainer, accountsContainer);
+            }
+        });
+
 
         // -----------------------------
 // -----------------------------
@@ -1653,4 +1701,41 @@ public class AddExpenseDialog extends DialogFragment {
                 "INSERTED account item for accountId=" + accountId
         );
     }
+
+    private void applyActiveState(View daily, View accounts) {
+
+        if (activeModule == ActiveModule.DAILY) {
+
+            daily.setAlpha(1.0f);
+            accounts.setAlpha(0.35f);
+
+            setEnabledRecursive(daily, true);
+            setEnabledRecursive(accounts, false);
+
+        } else {
+
+            daily.setAlpha(0.35f);
+            accounts.setAlpha(1.0f);
+
+            setEnabledRecursive(daily, false);
+            setEnabledRecursive(accounts, true);
+        }
+    }
+
+
+    private void setEnabledRecursive(View v, boolean enabled) {
+
+        if (v instanceof ViewGroup) {
+            ViewGroup vg = (ViewGroup) v;
+            for (int i = 0; i < vg.getChildCount(); i++) {
+                setEnabledRecursive(vg.getChildAt(i), enabled);
+            }
+        } else {
+            v.setEnabled(enabled);
+        }
+    }
+
+
+
+
 }
