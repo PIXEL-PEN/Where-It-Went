@@ -134,6 +134,9 @@ public class CategoryWiseActivity extends AppCompatActivity {
                     continue;
                 }
 
+
+
+
                 java.util.Date d = tryParseAny(e.date);
                 if (d != null) {
                     String iso = ISO.format(d);
@@ -168,7 +171,7 @@ public class CategoryWiseActivity extends AppCompatActivity {
 
         categoryContainer.removeAllViews();
 
-        // ✅ SINGLE SOURCE OF TRUTH
+        // SINGLE SOURCE OF TRUTH
         String symbol = AppPrefs.getCurrencySymbol(this);
         DecimalFormat money = new DecimalFormat("#,##0.00");
         int accentText =
@@ -181,20 +184,63 @@ public class CategoryWiseActivity extends AppCompatActivity {
             double catTotal = 0;
             for (Expense e : items) catTotal += e.amount;
 
+            // -------------------------
+// CATEGORY HEADER
+// -------------------------
+            LinearLayout header = new LinearLayout(this);
+            header.setOrientation(LinearLayout.HORIZONTAL);
+            header.setPadding(dp(12), dp(6), dp(12), dp(6));
+            header.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+// Determine FIXED vs CUSTOM
+            boolean isFixed = false;
+            for (String fixed : FIXED_TOP_ORDER) {
+                if (fixed.equalsIgnoreCase(cat)) {
+                    isFixed = true;
+                    break;
+                }
+            }
+
+// Apply correct background
+            header.setBackgroundColor(
+                    isFixed ? HEADER_BG_FIXED : HEADER_BG_CUSTOM
+            );
+
+            TextView left = new TextView(this);
+            left.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1f));
+            left.setText(cat);
+            left.setTextSize(16);
+            left.setTypeface(Typeface.DEFAULT_BOLD);
+            left.setTextColor(accentText);
+
+            TextView right = new TextView(this);
+            right.setText(money.format(catTotal) + " " + symbol);
+            right.setTextSize(14);
+            right.setTypeface(Typeface.DEFAULT_BOLD);
+            right.setTextColor(accentText);
+
+            header.addView(left);
+            header.addView(right);
+
+
+            // -------------------------
+            // CATEGORY SECTION (ROWS)
+            // -------------------------
             LinearLayout section = new LinearLayout(this);
             section.setOrientation(LinearLayout.VERTICAL);
+            section.setVisibility(View.GONE);
 
             for (Expense e : items) {
-                View row =
-                        inflater.inflate(
-                                R.layout.item_expense_date_row,
-                                section,
-                                false
-                        );
+
+                View row = inflater.inflate(
+                        R.layout.item_expense_date_row,
+                        section,
+                        false
+                );
 
                 TextView tDesc = row.findViewById(R.id.text_description);
-                TextView tCat = row.findViewById(R.id.text_category);
-                TextView tAmt = row.findViewById(R.id.text_amount);
+                TextView tCat  = row.findViewById(R.id.text_category);
+                TextView tAmt  = row.findViewById(R.id.text_amount);
 
                 tDesc.setText(e.description);
                 tCat.setText(safeFriendly(e.date));
@@ -213,6 +259,15 @@ public class CategoryWiseActivity extends AppCompatActivity {
                 section.addView(row);
             }
 
+            header.setOnClickListener(v -> {
+                section.setVisibility(
+                        section.getVisibility() == View.VISIBLE
+                                ? View.GONE
+                                : View.VISIBLE
+                );
+            });
+
+            categoryContainer.addView(header);
             categoryContainer.addView(section);
         }
     }
