@@ -50,7 +50,7 @@ public class SettingsActivity extends AppCompatActivity {
             });
         }
 
-        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
+
 // About text
         TextView about = findViewById(R.id.text_about);
         if (about != null) {
@@ -141,7 +141,8 @@ public class SettingsActivity extends AppCompatActivity {
         spinnerCurrency.setAdapter(adapter);
 
         // Load saved symbol (or default)
-        String savedSymbol = prefs.getString("currency_symbol", "$");
+        String savedSymbol = AppPrefs.getCurrencySymbol(this);
+
 
         // Restore spinner selection based on symbol
         int restoredIndex = 0;
@@ -162,7 +163,8 @@ public class SettingsActivity extends AppCompatActivity {
                 // Extract symbol from final "(...)"
                 String symbol = entry.substring(entry.lastIndexOf('(') + 1, entry.lastIndexOf(')'));
 
-                prefs.edit().putString("currency_symbol", symbol).apply();
+                AppPrefs.setCurrencySymbol(SettingsActivity.this, symbol);
+
             }
 
             @Override

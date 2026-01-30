@@ -1,8 +1,8 @@
 package com.pixelpen.whereitwent;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageButton;
 
@@ -11,8 +11,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.view.Gravity;
-
 import java.util.List;
 
 public class MainScreen extends AppCompatActivity {
@@ -20,11 +18,8 @@ public class MainScreen extends AppCompatActivity {
     public static MainScreen instance;
     public static int expandMonthIndex = -1;
 
-
     private RecyclerView recyclerMonths;
     private MonthAdapter adapter;
-    private String currencySymbol;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +28,6 @@ public class MainScreen extends AppCompatActivity {
         ExpenseDatabase.migrateAccountsFromPrefsIfNeeded(this);
 
         setContentView(R.layout.activity_main_screen);
-
 
         instance = this;
 
@@ -52,12 +46,7 @@ public class MainScreen extends AppCompatActivity {
         View linkManageCategories = findViewById(R.id.linkManageCategories);
         View linkDistribution = findViewById(R.id.linkDistribution);
         View linkTutorial = findViewById(R.id.linkTutorial);
-
         View linkAccounts = findViewById(R.id.linkAccounts);
-
-
-
-
 
         if (linkSettings != null) {
             linkSettings.setOnClickListener(v -> {
@@ -80,17 +69,12 @@ public class MainScreen extends AppCompatActivity {
             });
         }
 
-
-        // Edit Categories (currently no Activity exists, so disable)
+        // Edit Categories (opens Manage Categories dialog)
         if (linkManageCategories != null) {
             linkManageCategories.setOnClickListener(v -> {
-
                 drawerLayout.closeDrawer(Gravity.END);
 
-                // Create AddExpenseDialog instance
                 AddExpenseDialog dialog = new AddExpenseDialog();
-
-                // Mark that we want it to immediately open Manage Categories
                 Bundle args = new Bundle();
                 args.putBoolean("open_manage_categories", true);
                 dialog.setArguments(args);
@@ -98,7 +82,6 @@ public class MainScreen extends AppCompatActivity {
                 dialog.show(getSupportFragmentManager(), "MANAGE_CATEGORIES");
             });
         }
-
 
         if (linkDistribution != null) {
             linkDistribution.setOnClickListener(v -> {
@@ -114,13 +97,10 @@ public class MainScreen extends AppCompatActivity {
             });
         }
 
-        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        currencySymbol = prefs.getString("currency_symbol", "$");
-
         recyclerMonths = findViewById(R.id.recycler_months);
         recyclerMonths.setLayoutManager(new LinearLayoutManager(this));
 
-        List<MonthGroup> data = MonthBuilder.buildLast12Months(this, currencySymbol);
+        List<MonthGroup> data = MonthBuilder.buildLast12Months(this);
         adapter = new MonthAdapter(data);
         recyclerMonths.setAdapter(adapter);
 
@@ -142,43 +122,27 @@ public class MainScreen extends AppCompatActivity {
 
     public void refreshAfterAdd() {
 
-        // Reload currency
-        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        currencySymbol = prefs.getString("currency_symbol", "$");
+        List<MonthGroup> fresh = MonthBuilder.buildLast12Months(this);
 
-        // Rebuild data
-        List<MonthGroup> fresh = MonthBuilder.buildLast12Months(this, currencySymbol);
-
-        // Determine which month should auto-expand
         int idx = expandMonthIndex;
         expandMonthIndex = -1;
 
-        // Apply expand state
         for (int i = 0; i < fresh.size(); i++) {
             MonthGroup mg = fresh.get(i);
-
-            if (!mg.isHeader && i == idx) {
-                mg.expanded = true;    // auto-expand this month
-            } else {
-                mg.expanded = false;
-            }
+            mg.expanded = (!mg.isHeader && i == idx);
         }
 
-        // Rebind adapter
         adapter = new MonthAdapter(fresh);
         recyclerMonths.setAdapter(adapter);
 
-        // Optional: scroll into view
         if (idx >= 0) {
             recyclerMonths.post(() -> {
-                LinearLayoutManager lm = (LinearLayoutManager) recyclerMonths.getLayoutManager();
+                LinearLayoutManager lm =
+                        (LinearLayoutManager) recyclerMonths.getLayoutManager();
                 if (lm != null) {
-                    lm.scrollToPositionWithOffset(idx, 0); // align item TOP
+                    lm.scrollToPositionWithOffset(idx, 0);
                 }
             });
         }
-
     }
-
-
 }

@@ -1,7 +1,6 @@
 package com.pixelpen.whereitwent;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.View;
@@ -18,7 +17,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -59,6 +57,21 @@ public class DistributionActivity extends AppCompatActivity {
             });
         }
 
+        refreshCurrencyValues();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshCurrencyValues();
+    }
+
+    private void refreshCurrencyValues() {
+
+        // ✅ SINGLE SOURCE OF TRUTH
+        String currencySymbol = AppPrefs.getCurrencySymbol(this);
+        DecimalFormat money = new DecimalFormat("#,##0.00");
+
         SimplePieView pie = findViewById(R.id.pie);
 
         TextView fixedTotal = findViewById(R.id.legend_fixed_total);
@@ -68,15 +81,15 @@ public class DistributionActivity extends AppCompatActivity {
         TextView discTotal  = findViewById(R.id.legend_disc_total);
         TextView discDelta  = findViewById(R.id.legend_disc_delta);
 
-        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        String currencySymbol = prefs.getString("currency_symbol", "$");
+        List<Expense> all =
+                ExpenseDatabase.getDatabase(this)
+                        .expenseDao().getAll();
 
-        DecimalFormat money = new DecimalFormat("#,##0.00");
+        Map<String, Map<String, Double>> byTagMonth =
+                buildTagMonthTotals(all);
 
-        List<Expense> all = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
-
-        Map<String, Map<String, Double>> byTagMonth = buildTagMonthTotals(all);
-        List<String> months = collectSortedMonthsExcludingOffBudget(byTagMonth);
+        List<String> months =
+                collectSortedMonthsExcludingOffBudget(byTagMonth);
 
         if (months.isEmpty()) {
             pie.setValues(0f, 0f, 0f);
@@ -90,244 +103,176 @@ public class DistributionActivity extends AppCompatActivity {
         }
 
         String latestMonth = months.get(months.size() - 1);
-        String prevMonth = (months.size() >= 2) ? months.get(months.size() - 2) : null;
+        String prevMonth =
+                (months.size() >= 2)
+                        ? months.get(months.size() - 2)
+                        : null;
 
-        double fixedLatest = sumBucketForMonth(byTagMonth, latestMonth, Bucket.FIXED);
-        double basicLatest = sumBucketForMonth(byTagMonth, latestMonth, Bucket.BASIC);
-        double discLatest  = sumBucketForMonth(byTagMonth, latestMonth, Bucket.DISCRETIONARY);
+        double fixedLatest =
+                sumBucketForMonth(byTagMonth, latestMonth, Bucket.FIXED);
+        double basicLatest =
+                sumBucketForMonth(byTagMonth, latestMonth, Bucket.BASIC);
+        double discLatest =
+                sumBucketForMonth(byTagMonth, latestMonth, Bucket.DISCRETIONARY);
 
-        pie.setValues((float) fixedLatest, (float) discLatest, (float) basicLatest);
+        pie.setValues(
+                (float) fixedLatest,
+                (float) discLatest,
+                (float) basicLatest
+        );
 
         setSafeLegend(fixedTotal, money.format(fixedLatest) + " " + currencySymbol);
-        fixedTotal.setText("TEST123");   // DEBUG LINE
         setSafeLegend(basicTotal, money.format(basicLatest) + " " + currencySymbol);
-        setSafeLegend(discTotal,  money.format(discLatest) + " " + currencySymbol);
+        setSafeLegend(discTotal,  money.format(discLatest)  + " " + currencySymbol);
 
         if (prevMonth == null) {
             setSafeLegend(fixedDelta, "—");
             setSafeLegend(basicDelta, "—");
             setSafeLegend(discDelta,  "—");
         } else {
-            double fixedPrev = sumBucketForMonth(byTagMonth, prevMonth, Bucket.FIXED);
-            double basicPrev = sumBucketForMonth(byTagMonth, prevMonth, Bucket.BASIC);
-            double discPrev  = sumBucketForMonth(byTagMonth, prevMonth, Bucket.DISCRETIONARY);
+            double fixedPrev =
+                    sumBucketForMonth(byTagMonth, prevMonth, Bucket.FIXED);
+            double basicPrev =
+                    sumBucketForMonth(byTagMonth, prevMonth, Bucket.BASIC);
+            double discPrev =
+                    sumBucketForMonth(byTagMonth, prevMonth, Bucket.DISCRETIONARY);
 
             setSafeLegend(fixedDelta, formatDeltaPct(fixedLatest, fixedPrev));
             setSafeLegend(basicDelta, formatDeltaPct(basicLatest, basicPrev));
             setSafeLegend(discDelta,  formatDeltaPct(discLatest,  discPrev));
         }
 
-
-
-        /* -------------------------------------------------
-           OFF-BUDGET CATEGORY SUMMARY (ALL-TIME)
-           ------------------------------------------------- */
-
-        LinearLayout offBudgetContainer = findViewById(R.id.off_budget_container);
-        if (offBudgetContainer != null) {
-
-            offBudgetContainer.removeAllViews();
-            offBudgetContainer.setPadding(0, dp(20), 0, 0); // pull whole block down
-
-            // Divider
-            View divider = new View(this);
-            divider.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    dp(1)
-            ));
-            divider.setBackgroundColor(0x33000000);
-            offBudgetContainer.addView(divider);
-
-            // Header
-            TextView header = new TextView(this);
-            header.setText("Off-Budget");
-            header.setTextSize(15);   // reduced by 1sp
-            header.setTypeface(Typeface.DEFAULT_BOLD);
-            header.setTextColor(0xFF222222);
-            header.setPadding(0, dp(8), 0, dp(4));
-            offBudgetContainer.addView(header);
-
-            // Group totals BY CATEGORY (all time)
-            Map<String, Double> totals = new LinkedHashMap<>();
-
-            for (Expense e : all) {
-                if (e.category == null) continue;
-                String cat = e.category.trim();
-                if (cat.isEmpty()) continue;
-
-                String tag = CategoryManager.getTagForCategory(this, cat);
-                if (!"Off-Budget".equalsIgnoreCase(tag))
-                    continue;
-
-                double amt = e.amount;
-
-                if (!totals.containsKey(cat))
-                    totals.put(cat, 0.0);
-
-                totals.put(cat, totals.get(cat) + amt);
-            }
-
-            if (totals.isEmpty()) {
-
-                TextView tv = new TextView(this);
-                tv.setText("No Off-Budget categories");
-                tv.setTextSize(14);
-                tv.setTextColor(0xFF777777);
-                tv.setPadding(0, dp(4), 0, dp(4));
-                offBudgetContainer.addView(tv);
-
-            } else {
-
-                for (Map.Entry<String, Double> entry : totals.entrySet()) {
-
-                    LinearLayout row = new LinearLayout(this);
-                    row.setOrientation(LinearLayout.HORIZONTAL);
-                    row.setPadding(0, dp(3), 0, dp(3));
-
-                    TextView left = new TextView(this);
-                    left.setLayoutParams(new LinearLayout.LayoutParams(
-                            0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-                    left.setText(entry.getKey());
-                    left.setTextSize(14);
-                    left.setTextColor(0xFF333333);
-
-                    TextView right = new TextView(this);
-                    right.setLayoutParams(new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.WRAP_CONTENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT));
-                    right.setText(money.format(entry.getValue()) + " " + currencySymbol);
-                    right.setTextSize(14);
-                    right.setTypeface(Typeface.DEFAULT_BOLD);
-                    right.setTextColor(0xFF222222);
-
-                    row.addView(left);
-                    row.addView(right);
-                    offBudgetContainer.addView(row);
-                }
-            }
-        }
+        renderOffBudget(all, money, currencySymbol);
     }
-    private void refreshCurrencyValues() {
 
-        // Reload currency from prefs
-        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        String currencySymbol = prefs.getString("currency_symbol", "$");
+    /* -------------------------------------------------
+       OFF-BUDGET CATEGORY SUMMARY (ALL-TIME)
+       ------------------------------------------------- */
+    private void renderOffBudget(
+            List<Expense> all,
+            DecimalFormat money,
+            String currencySymbol
+    ) {
 
-        DecimalFormat money = new DecimalFormat("#,##0.00");
+        LinearLayout offBudgetContainer =
+                findViewById(R.id.off_budget_container);
+        if (offBudgetContainer == null) return;
 
-        // Reload all expenses
-        List<Expense> all = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
+        offBudgetContainer.removeAllViews();
+        offBudgetContainer.setPadding(0, dp(20), 0, 0);
 
-        // Recompute monthly tag totals
-        Map<String, Map<String, Double>> byTagMonth = buildTagMonthTotals(all);
-        List<String> months = collectSortedMonthsExcludingOffBudget(byTagMonth);
+        View divider = new View(this);
+        divider.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(1)
+        ));
+        divider.setBackgroundColor(0x33000000);
+        offBudgetContainer.addView(divider);
 
-        SimplePieView pie = findViewById(R.id.pie);
+        TextView header = new TextView(this);
+        header.setText("Off-Budget");
+        header.setTextSize(15);
+        header.setTypeface(Typeface.DEFAULT_BOLD);
+        header.setTextColor(0xFF222222);
+        header.setPadding(0, dp(8), 0, dp(4));
+        offBudgetContainer.addView(header);
 
-        TextView fixedTotal = findViewById(R.id.legend_fixed_total);
-        TextView fixedDelta = findViewById(R.id.legend_fixed_delta);
-        TextView basicTotal = findViewById(R.id.legend_basic_total);
-        TextView basicDelta = findViewById(R.id.legend_basic_delta);
-        TextView discTotal  = findViewById(R.id.legend_disc_total);
-        TextView discDelta  = findViewById(R.id.legend_disc_delta);
+        Map<String, Double> totals = new LinkedHashMap<>();
 
-        // No data case
-        if (months.isEmpty()) {
-            pie.setValues(0f, 0f, 0f);
-            fixedTotal.setText(money.format(0) + " " + currencySymbol);
-            basicTotal.setText(money.format(0) + " " + currencySymbol);
-            discTotal.setText (money.format(0) + " " + currencySymbol);
-            fixedDelta.setText("—");
-            basicDelta.setText("—");
-            discDelta.setText("—");
+        for (Expense e : all) {
+            if (e.category == null) continue;
+            String cat = e.category.trim();
+            if (cat.isEmpty()) continue;
+
+            String tag =
+                    CategoryManager.getTagForCategory(this, cat);
+            if (!TAG_OFF_BUDGET.equalsIgnoreCase(tag)) continue;
+
+            totals.put(cat, totals.getOrDefault(cat, 0.0) + e.amount);
+        }
+
+        if (totals.isEmpty()) {
+            TextView tv = new TextView(this);
+            tv.setText("No Off-Budget categories");
+            tv.setTextSize(14);
+            tv.setTextColor(0xFF777777);
+            tv.setPadding(0, dp(4), 0, dp(4));
+            offBudgetContainer.addView(tv);
             return;
         }
 
-        // Latest and previous months
-        String latestMonth = months.get(months.size() - 1);
-        String prevMonth = (months.size() >= 2) ? months.get(months.size() - 2) : null;
+        for (Map.Entry<String, Double> entry : totals.entrySet()) {
 
-        double fixedLatest = sumBucketForMonth(byTagMonth, latestMonth, Bucket.FIXED);
-        double basicLatest = sumBucketForMonth(byTagMonth, latestMonth, Bucket.BASIC);
-        double discLatest  = sumBucketForMonth(byTagMonth, latestMonth, Bucket.DISCRETIONARY);
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setPadding(0, dp(3), 0, dp(3));
 
-        // Update pie
-        pie.setValues((float) fixedLatest, (float) discLatest, (float) basicLatest);
+            TextView left = new TextView(this);
+            left.setLayoutParams(new LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    1f
+            ));
+            left.setText(entry.getKey());
+            left.setTextSize(14);
+            left.setTextColor(0xFF333333);
 
-        // Update totals
-        fixedTotal.setText(money.format(fixedLatest) + " " + currencySymbol);
-        basicTotal.setText(money.format(basicLatest) + " " + currencySymbol);
-        discTotal .setText(money.format(discLatest)  + " " + currencySymbol);
+            TextView right = new TextView(this);
+            right.setText(
+                    money.format(entry.getValue()) + " " + currencySymbol
+            );
+            right.setTextSize(14);
+            right.setTypeface(Typeface.DEFAULT_BOLD);
+            right.setTextColor(0xFF222222);
 
-        // Update deltas
-        if (prevMonth == null) {
-            fixedDelta.setText("—");
-            basicDelta.setText("—");
-            discDelta .setText("—");
-        } else {
-            double fixedPrev = sumBucketForMonth(byTagMonth, prevMonth, Bucket.FIXED);
-            double basicPrev = sumBucketForMonth(byTagMonth, prevMonth, Bucket.BASIC);
-            double discPrev  = sumBucketForMonth(byTagMonth, prevMonth, Bucket.DISCRETIONARY);
-
-            fixedDelta.setText(formatDeltaPct(fixedLatest, fixedPrev));
-            basicDelta.setText(formatDeltaPct(basicLatest, basicPrev));
-            discDelta .setText(formatDeltaPct(discLatest,  discPrev));
+            row.addView(left);
+            row.addView(right);
+            offBudgetContainer.addView(row);
         }
     }
 
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        refreshCurrencyValues();
-    }
-
-
-
-
     /* ========================== HELPERS ============================= */
 
-    private enum Bucket { FIXED, BASIC, DISCRETIONARY, OFF_BUDGET, IGNORE }
+    private enum Bucket { FIXED, BASIC, DISCRETIONARY, OFF_BUDGET }
 
     private Bucket bucketOf(String tagRaw) {
         String t = safe(tagRaw);
         if (t.equalsIgnoreCase(TAG_OFF_BUDGET)) return Bucket.OFF_BUDGET;
         if (t.equalsIgnoreCase(TAG_FIXED)) return Bucket.FIXED;
-        if (t.equalsIgnoreCase(TAG_BASIC) || t.equalsIgnoreCase(TAG_NECESSITIES)) return Bucket.BASIC;
-        if (t.equalsIgnoreCase(TAG_DISCRETIONARY) || t.equalsIgnoreCase(TAG_OTHER)) return Bucket.DISCRETIONARY;
+        if (t.equalsIgnoreCase(TAG_BASIC) || t.equalsIgnoreCase(TAG_NECESSITIES))
+            return Bucket.BASIC;
         return Bucket.DISCRETIONARY;
     }
 
     private Map<String, Map<String, Double>> buildTagMonthTotals(List<Expense> items) {
         Map<String, Map<String, Double>> map = new HashMap<>();
+
         for (Expense e : items) {
             Date d = parseDateSafe(e.date);
             if (d == null) continue;
 
             String ym = toYearMonthKey(d);
-            String tag = CategoryManager.getTagForCategory(this, safe(e.category));
+            String tag =
+                    CategoryManager.getTagForCategory(this, safe(e.category));
             Bucket b = bucketOf(tag);
 
-            if (b == Bucket.OFF_BUDGET) {
-                Map<String, Double> m = map.computeIfAbsent(TAG_OFF_BUDGET, k -> new HashMap<>());
-                m.put(ym, m.getOrDefault(ym, 0.0) + e.amount);
-                continue;
-            }
+            String key =
+                    (b == Bucket.FIXED) ? TAG_FIXED :
+                            (b == Bucket.BASIC) ? TAG_BASIC :
+                                    (b == Bucket.OFF_BUDGET) ? TAG_OFF_BUDGET :
+                                            TAG_DISCRETIONARY;
 
-            String key;
-            switch (b) {
-                case FIXED: key = TAG_FIXED; break;
-                case BASIC: key = TAG_BASIC; break;
-                default: key = TAG_DISCRETIONARY; break;
-            }
+            Map<String, Double> m =
+                    map.computeIfAbsent(key, k -> new HashMap<>());
 
-            Map<String, Double> m = map.computeIfAbsent(key, k -> new HashMap<>());
             m.put(ym, m.getOrDefault(ym, 0.0) + e.amount);
         }
         return map;
     }
 
-    private List<String> collectSortedMonthsExcludingOffBudget(Map<String, Map<String, Double>> byTagMonth) {
+    private List<String> collectSortedMonthsExcludingOffBudget(
+            Map<String, Map<String, Double>> byTagMonth
+    ) {
         List<String> months = new ArrayList<>();
         for (Map.Entry<String, Map<String, Double>> entry : byTagMonth.entrySet()) {
             if (TAG_OFF_BUDGET.equalsIgnoreCase(entry.getKey())) continue;
@@ -338,14 +283,16 @@ public class DistributionActivity extends AppCompatActivity {
         return months;
     }
 
-    private double sumBucketForMonth(Map<String, Map<String, Double>> map, String ym, Bucket bucket) {
-        String key;
-        switch (bucket) {
-            case FIXED: key = TAG_FIXED; break;
-            case BASIC: key = TAG_BASIC; break;
-            case DISCRETIONARY: key = TAG_DISCRETIONARY; break;
-            default: return 0;
-        }
+    private double sumBucketForMonth(
+            Map<String, Map<String, Double>> map,
+            String ym,
+            Bucket bucket
+    ) {
+        String key =
+                (bucket == Bucket.FIXED) ? TAG_FIXED :
+                        (bucket == Bucket.BASIC) ? TAG_BASIC :
+                                TAG_DISCRETIONARY;
+
         Map<String, Double> months = map.get(key);
         if (months == null) return 0.0;
         return months.getOrDefault(ym, 0.0);
@@ -353,11 +300,7 @@ public class DistributionActivity extends AppCompatActivity {
 
     private void setSafeLegend(TextView v, String text) {
         if (v != null) v.setText(text);
-
-
     }
-
-
 
     private String formatDeltaPct(double cur, double prev) {
         if (prev <= 0.0) return "—";
@@ -380,12 +323,17 @@ public class DistributionActivity extends AppCompatActivity {
     private String toYearMonthKey(Date date) {
         Calendar c = Calendar.getInstance();
         c.setTime(date);
-        return String.format(Locale.ENGLISH, "%04d-%02d",
+        return String.format(
+                Locale.ENGLISH,
+                "%04d-%02d",
                 c.get(Calendar.YEAR),
-                c.get(Calendar.MONTH) + 1);
+                c.get(Calendar.MONTH) + 1
+        );
     }
 
-    private String safe(String s) { return (s == null) ? "" : s.trim(); }
+    private String safe(String s) {
+        return (s == null) ? "" : s.trim();
+    }
 
     private int dp(int dps) {
         float density = getResources().getDisplayMetrics().density;

@@ -27,6 +27,10 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_accounts_overview);
 
+        String currencySymbol = AppPrefs.getCurrencySymbol(this);
+
+
+
         long expandAccountId =
                 forceExpandAccountId != -1L
                         ? forceExpandAccountId
@@ -83,9 +87,10 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                         account.name,
                         CurrencyUtils.format(
                                 safe(itemDao.getTotalForAccount(account.id)),
-                                "฿"
+                                currencySymbol
                         )
                 );
+
                 accountHeader.setTag(TAG_ACCOUNT);
 
                 List<AccountItemEntity> items =
@@ -100,10 +105,11 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                                     e.date,
                                     capitalize(e.item),
                                     e.category,
-                                    CurrencyUtils.format(e.amount, "฿"),
+                                    CurrencyUtils.format(e.amount, currencySymbol),
                                     e.note
                             )
                     );
+
                     itemView.setTag(TAG_ITEM);
                     itemView.setVisibility(
                             account.id == expandAccountId

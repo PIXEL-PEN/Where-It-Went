@@ -1,7 +1,5 @@
 package com.pixelpen.whereitwent;
 
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.SpannableString;
@@ -27,8 +25,10 @@ public class DayDetailActivity extends AppCompatActivity {
 
     private LinearLayout expensesContainer;
 
-    private final SimpleDateFormat incoming = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-    private final SimpleDateFormat displayOut = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
+    private final SimpleDateFormat incoming =
+            new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+    private final SimpleDateFormat displayOut =
+            new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
 
     private final String[] parsePatterns = new String[] {
             "yyyy-MM-dd",
@@ -52,13 +52,11 @@ public class DayDetailActivity extends AppCompatActivity {
         expensesContainer = findViewById(R.id.daydetail_container);
         LayoutInflater inflater = LayoutInflater.from(this);
 
-        // ----------------------------------------------------
-        // FIXED: load proper symbol (not old currency_code)
-        // ----------------------------------------------------
-        SharedPreferences prefs = getSharedPreferences("settings", MODE_PRIVATE);
-        String symbol = prefs.getString("currency_symbol", "$");
+        // ✅ SINGLE SOURCE OF TRUTH
+        String symbol = AppPrefs.getCurrencySymbol(this);
 
-        String selectedDateRaw = getIntent().getStringExtra("selected_date");
+        String selectedDateRaw =
+                getIntent().getStringExtra("selected_date");
         if (selectedDateRaw == null) return;
 
         banner.setText(formatDisplay(selectedDateRaw));
@@ -68,7 +66,9 @@ public class DayDetailActivity extends AppCompatActivity {
 
         Calendar tgt = asYMD(target);
 
-        List<Expense> all = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
+        List<Expense> all =
+                ExpenseDatabase.getDatabase(this).expenseDao().getAll();
+
         List<Expense> expenses = new ArrayList<>();
         for (Expense e : all) {
             Date d = parseAny(e.date);
@@ -86,7 +86,11 @@ public class DayDetailActivity extends AppCompatActivity {
 
         for (Expense e : expenses) {
 
-            View row = inflater.inflate(R.layout.item_expense_date_row, expensesContainer, false);
+            View row = inflater.inflate(
+                    R.layout.item_expense_date_row,
+                    expensesContainer,
+                    false
+            );
 
             TextView textDescription = row.findViewById(R.id.text_description);
             TextView textCategory   = row.findViewById(R.id.text_category);
@@ -95,21 +99,29 @@ public class DayDetailActivity extends AppCompatActivity {
             textDescription.setText(e.description);
             textCategory.setText(e.category);
 
-            String formatted = String.format(Locale.ENGLISH, "%.2f %s", e.amount, symbol);
+            String formatted =
+                    String.format(Locale.ENGLISH, "%.2f %s", e.amount, symbol);
+
             SpannableString display = new SpannableString(formatted);
             int start = formatted.length() - symbol.length();
-            display.setSpan(new RelativeSizeSpan(0.85f),
+            display.setSpan(
+                    new RelativeSizeSpan(0.85f),
                     start,
                     formatted.length(),
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
 
             textAmount.setText(display);
 
             row.setOnClickListener(v -> {
-// Get tag for category
-                String tag = CategoryManager.getTagForCategory(DayDetailActivity.this, e.category);
-                String catLine;
 
+                String tag =
+                        CategoryManager.getTagForCategory(
+                                DayDetailActivity.this,
+                                e.category
+                        );
+
+                String catLine;
                 if (tag != null && !tag.trim().isEmpty()) {
                     catLine = "Category: " + e.category + " (" + tag + ")";
                 } else {
@@ -120,23 +132,46 @@ public class DayDetailActivity extends AppCompatActivity {
                         catLine + "\n"
                                 + "Date: " + safeDisplay(e.date) + "\n"
                                 + "Item: " + e.description + "\n"
-                                + "Amount: " + String.format(Locale.ENGLISH, "%.2f %s", e.amount, symbol);
+                                + "Amount: "
+                                + String.format(
+                                Locale.ENGLISH,
+                                "%.2f %s",
+                                e.amount,
+                                symbol
+                        );
 
-                AlertDialog dialog = new AlertDialog.Builder(DayDetailActivity.this)
-                        .setTitle("Expense Details")
-                        .setMessage(details)
-                        .setNegativeButton("CLOSE", (d, w) -> d.dismiss())
-                        .setNeutralButton("DELETE", (d, w) -> {
-                            ExpenseDatabase.getDatabase(DayDetailActivity.this)
-                                    .expenseDao()
-                                    .delete(e);
-                            refreshAfterEdit();
-                        })
-                        .setPositiveButton("EDIT", (d, w) -> {
-                            AddExpenseDialog dlg = AddExpenseDialog.newInstance(e.id);
-                            dlg.show(getSupportFragmentManager(), "EDIT_EXPENSE");
-                        })
-                        .create();
+                AlertDialog dialog =
+                        new AlertDialog.Builder(DayDetailActivity.this)
+                                .setTitle("Expense Details")
+                                .setMessage(details)
+                                .setNegativeButton(
+                                        "CLOSE",
+                                        (d, w) -> d.dismiss()
+                                )
+                                .setNeutralButton(
+                                        "DELETE",
+                                        (d, w) -> {
+                                            ExpenseDatabase
+                                                    .getDatabase(
+                                                            DayDetailActivity.this
+                                                    )
+                                                    .expenseDao()
+                                                    .delete(e);
+                                            refreshAfterEdit();
+                                        }
+                                )
+                                .setPositiveButton(
+                                        "EDIT",
+                                        (d, w) -> {
+                                            AddExpenseDialog dlg =
+                                                    AddExpenseDialog.newInstance(e.id);
+                                            dlg.show(
+                                                    getSupportFragmentManager(),
+                                                    "EDIT_EXPENSE"
+                                            );
+                                        }
+                                )
+                                .create();
 
                 dialog.show();
             });
@@ -144,8 +179,11 @@ public class DayDetailActivity extends AppCompatActivity {
             expensesContainer.addView(row);
 
             View divider = new View(this);
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, 1);
+            LinearLayout.LayoutParams lp =
+                    new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            1
+                    );
             divider.setLayoutParams(lp);
             divider.setBackgroundColor(0xFF888888);
             expensesContainer.addView(divider);
@@ -158,27 +196,40 @@ public class DayDetailActivity extends AppCompatActivity {
         totalRow.setPadding(dp(12), dp(12), dp(12), dp(12));
 
         TextView label = new TextView(this);
-        label.setLayoutParams(new LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        label.setLayoutParams(
+                new LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1f
+                )
+        );
         label.setText("TOTAL");
         label.setTextSize(18);
         label.setTypeface(Typeface.DEFAULT_BOLD);
         label.setTextColor(0xFFB71C1C);
 
         TextView amountTv = new TextView(this);
-        amountTv.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT));
+        amountTv.setLayoutParams(
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+        );
 
         DecimalFormat df = new DecimalFormat("#,##0.00");
         String totalFormatted = df.format(total) + " " + symbol;
 
-        SpannableString totalDisplay = new SpannableString(totalFormatted);
+        SpannableString totalDisplay =
+                new SpannableString(totalFormatted);
+
         int s2 = totalFormatted.length() - symbol.length();
-        totalDisplay.setSpan(new RelativeSizeSpan(0.85f),
+        totalDisplay.setSpan(
+                new RelativeSizeSpan(0.85f),
                 s2,
                 totalFormatted.length(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        );
+
         amountTv.setText(totalDisplay);
         amountTv.setTextSize(18);
         amountTv.setTypeface(Typeface.DEFAULT_BOLD);
@@ -211,7 +262,8 @@ public class DayDetailActivity extends AppCompatActivity {
         if (raw == null) return null;
         for (String p : parsePatterns) {
             try {
-                SimpleDateFormat f = new SimpleDateFormat(p, Locale.ENGLISH);
+                SimpleDateFormat f =
+                        new SimpleDateFormat(p, Locale.ENGLISH);
                 f.setLenient(false);
                 return f.parse(raw);
             } catch (Exception ignore) {}

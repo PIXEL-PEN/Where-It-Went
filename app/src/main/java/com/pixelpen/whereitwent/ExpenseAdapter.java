@@ -52,9 +52,7 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
         holder.textCategory.setText(e.category);
         holder.textDate.setText(e.date);
 
-        SharedPreferences prefs = ctx.getSharedPreferences("settings", Context.MODE_PRIVATE);
-        String code = prefs.getString("currency_code", "THB");
-        String symbol = CurrencyUtils.symbolFor(code);
+        String symbol = AppPrefs.getCurrencySymbol(ctx);
 
         String formatted = String.format(Locale.ENGLISH, "%.2f %s", e.amount, symbol);
         SpannableString display = new SpannableString(formatted);
