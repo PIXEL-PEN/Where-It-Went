@@ -18,16 +18,29 @@
             android:paddingStart="16dp"
             android:paddingEnd="8dp">
 
+            <ImageView
+                android:id="@+id/icon_home"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="15dp"
+                android:src="@drawable/ic_home"
+                android:tint="@android:color/white"
+                android:contentDescription="Home" />
+
             <TextView
                 android:id="@+id/top_bar_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
+                android:layout_toEndOf="@id/icon_home"
+                android:layout_marginStart="8dp"
                 android:layout_marginBottom="13dp"
                 android:text="Expenditures"
                 android:textColor="@android:color/white"
                 android:textSize="18sp"
                 android:textStyle="bold" />
+
 
             <ImageButton
                 android:id="@+id/btn_filter"

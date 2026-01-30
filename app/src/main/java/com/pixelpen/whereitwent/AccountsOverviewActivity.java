@@ -20,13 +20,19 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
     public static boolean needsRefresh = false;
 
+    public static long forceExpandAccountId = -1L;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_accounts_overview);
 
         long expandAccountId =
-                getIntent().getLongExtra("expand_account_id", -1L);
+                forceExpandAccountId != -1L
+                        ? forceExpandAccountId
+                        : getIntent().getLongExtra("expand_account_id", -1L);
+
+        forceExpandAccountId = -1L;
 
         ExpenseDatabase.migrateAccountsFromPrefsIfNeeded(this);
 

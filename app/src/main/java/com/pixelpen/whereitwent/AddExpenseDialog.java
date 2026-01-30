@@ -1660,30 +1660,40 @@ public class AddExpenseDialog extends DialogFragment {
                         : "";
         android.util.Log.e("ACCOUNTS", "STEP 7: category = [" + category + "]");
 
-        // ✅ READ NOTE HERE
         String note =
                 editAccountNote != null
                         ? editAccountNote.getText().toString().trim()
                         : "";
 
+        // ------------------------------------
+        // DATE (DISPLAY + SORTABLE)
+        // ------------------------------------
         String date =
                 new java.text.SimpleDateFormat(
-                        "MMM dd",
+                        "dd MMM yyyy",
                         java.util.Locale.ENGLISH
-                ).format(new java.util.Date());
+                ).format(accountDate.getTime());
 
-        android.util.Log.e("ACCOUNTS", "STEP 8: calling insertAccountItem");
+        long dateMillis =
+                accountDate.getTimeInMillis();
 
-        insertAccountItem(
-                account.id,
-                date,
-                item,
-                category,
-                amount,
-                note          // ✅ PASS NOTE
-        );
 
-        android.util.Log.e("ACCOUNTS", "STEP 9: insertAccountItem returned");
+        android.util.Log.e("ACCOUNTS", "STEP 8: inserting account item");
+
+        AccountItemEntity entity =
+                new AccountItemEntity(
+                        account.id,
+                        date,
+                        dateMillis,
+                        item,
+                        category,
+                        amount,
+                        note
+                );
+
+        db.accountItemDao().insert(entity);
+
+        android.util.Log.e("ACCOUNTS", "STEP 9: insert complete");
     }
 
     // ----------------------------------------------------
@@ -1692,6 +1702,7 @@ public class AddExpenseDialog extends DialogFragment {
     private void insertAccountItem(
             long accountId,
             String date,
+            long dateMillis,
             String item,
             String category,
             double amount,
@@ -1702,6 +1713,7 @@ public class AddExpenseDialog extends DialogFragment {
                 new AccountItemEntity(
                         accountId,
                         date,
+                        dateMillis,
                         item,
                         category,
                         amount,
@@ -1718,6 +1730,7 @@ public class AddExpenseDialog extends DialogFragment {
                 "INSERTED account item for accountId=" + accountId
         );
     }
+
 
     private void applyActiveState(View daily, View accounts) {
 

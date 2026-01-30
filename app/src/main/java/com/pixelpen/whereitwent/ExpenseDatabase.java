@@ -2,6 +2,7 @@ package com.pixelpen.whereitwent;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 
 import androidx.room.Database;
 import androidx.room.Room;
@@ -12,7 +13,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 @Database(
         entities = {
@@ -20,7 +23,7 @@ import java.util.List;
                 AccountEntity.class,
                 AccountItemEntity.class
         },
-        version = 4,
+        version = 5,
         exportSchema = false
 )
 public abstract class ExpenseDatabase extends RoomDatabase {
@@ -46,9 +49,6 @@ public abstract class ExpenseDatabase extends RoomDatabase {
                         Context.MODE_PRIVATE
                 );
 
-        // ------------------------------------------------
-        // CORRECT GUARD (replaces countAccounts() check)
-        // ------------------------------------------------
         if (prefs.getBoolean("accounts_items_remapped_v1", false)) {
             return;
         }
@@ -61,9 +61,6 @@ public abstract class ExpenseDatabase extends RoomDatabase {
         try {
             JSONArray arr = new JSONArray(raw);
 
-            // ---------------------------------------------
-            // STEP 1: Ensure accounts exist (insert if empty)
-            // ---------------------------------------------
             if (accountDao.countAccounts() == 0) {
                 for (int i = 0; i < arr.length(); i++) {
                     JSONObject obj = arr.getJSONObject(i);
@@ -76,18 +73,12 @@ public abstract class ExpenseDatabase extends RoomDatabase {
                 }
             }
 
-            // ---------------------------------------------
-            // STEP 2: Fetch accounts ordered by Room ID
-            // ---------------------------------------------
             List<AccountEntity> roomAccounts =
                     accountDao.getAllAccountsById();
 
-            // ---------------------------------------------
-            // STEP 3: Remap account items by legacy ID
-            // ---------------------------------------------
             for (int i = 0; i < roomAccounts.size(); i++) {
 
-                long legacyId = i + 1;                 // old numeric ID
+                long legacyId = i + 1;
                 long newRoomId = roomAccounts.get(i).id;
 
                 List<AccountItemEntity> items =
@@ -99,9 +90,6 @@ public abstract class ExpenseDatabase extends RoomDatabase {
                 }
             }
 
-            // ---------------------------------------------
-            // STEP 4: Mark remap complete (ONE TIME)
-            // ---------------------------------------------
             prefs.edit()
                     .putBoolean("accounts_items_remapped_v1", true)
                     .apply();
@@ -120,7 +108,10 @@ public abstract class ExpenseDatabase extends RoomDatabase {
                             ExpenseDatabase.class,
                             "expense_db"
                     )
-                    .addMigrations(MIGRATION_3_4)
+                    .addMigrations(
+                            MIGRATION_3_4,
+                            MIGRATION_4_5
+                    )
                     .allowMainThreadQueries()
                     .build();
         }
@@ -139,6 +130,7 @@ public abstract class ExpenseDatabase extends RoomDatabase {
                             "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                             "accountId INTEGER NOT NULL, " +
                             "date TEXT, " +
+                            "dateMillis INTEGER NOT NULL DEFAULT 0, " +
                             "item TEXT, " +
                             "category TEXT, " +
                             "amount REAL NOT NULL, " +
@@ -154,6 +146,57 @@ public abstract class ExpenseDatabase extends RoomDatabase {
             db.execSQL(
                     "CREATE INDEX IF NOT EXISTS index_account_items_date " +
                             "ON account_items(date)"
+            );
+
+            db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_account_items_dateMillis " +
+                            "ON account_items(dateMillis)"
+            );
+        }
+    };
+
+
+    // ----------------------------------------------------
+    // MIGRATION: v4 → v5 (ADD dateMillis)
+    // ----------------------------------------------------
+    static final Migration MIGRATION_4_5 = new Migration(4, 5) {
+        @Override
+        public void migrate(SupportSQLiteDatabase db) {
+
+            db.execSQL(
+                    "ALTER TABLE account_items " +
+                            "ADD COLUMN dateMillis INTEGER NOT NULL DEFAULT 0"
+            );
+
+            Cursor c = db.query(
+                    "SELECT id, date FROM account_items"
+            );
+
+            SimpleDateFormat sdf =
+                    new SimpleDateFormat(
+                            "dd MMM yyyy",
+                            Locale.ENGLISH
+                    );
+
+            while (c.moveToNext()) {
+                long id = c.getLong(0);
+                String date = c.getString(1);
+
+                try {
+                    long millis = sdf.parse(date).getTime();
+                    db.execSQL(
+                            "UPDATE account_items SET dateMillis = ? WHERE id = ?",
+                            new Object[]{millis, id}
+                    );
+                } catch (Exception ignored) {
+                }
+            }
+
+            c.close();
+
+            db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_account_items_dateMillis " +
+                            "ON account_items(dateMillis)"
             );
         }
     };

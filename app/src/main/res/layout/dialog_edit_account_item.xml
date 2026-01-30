@@ -57,17 +57,48 @@
             android:textColor="#666666"
             android:layout_marginTop="14dp"/>
 
-        <TextView
-            android:id="@+id/btn_save"
-            android:layout_width="wrap_content"
+        <!-- ACTION BUTTONS -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="SAVE"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:textColor="#0066CC"
-            android:layout_gravity="end"
-            android:layout_marginTop="16dp"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingTop="12dp">
 
+            <TextView
+                android:id="@+id/btn_delete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DELETE"
+                android:textColor="#C62828"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:layout_marginStart="90dp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/btn_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CANCEL"
+                android:textColor="#777777"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:layout_marginEnd="24dp" />
+
+            <TextView
+                android:id="@+id/btn_save"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SAVE"
+                android:textColor="@color/colorAccent"
+                android:textStyle="bold"
+                android:textSize="14sp" />
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>

@@ -39,12 +39,7 @@ public interface AccountItemDao {
     // ----------------------------------------------------
     // QUERY
     // ----------------------------------------------------
-    @Query(
-            "SELECT * FROM account_items " +
-                    "WHERE accountId = :accountId " +
-                    "ORDER BY date ASC, id ASC"
-    )
-    List<AccountItemEntity> getItemsForAccount(long accountId);
+
 
     @Query(
             "SELECT SUM(amount) FROM account_items " +
@@ -58,7 +53,6 @@ public interface AccountItemDao {
     @Query("SELECT COUNT(*) FROM account_items")
     int countAllItems();
 
-
     // ----------------------------------------------------
     // LAST USED ACCOUNT
     // ----------------------------------------------------
@@ -68,10 +62,18 @@ public interface AccountItemDao {
     )
     Long getLastUsedAccountId();
 
-    @Query("SELECT * FROM account_items WHERE id = :id LIMIT 1")
+    @Query(
+            "SELECT * " +
+                    "FROM account_items " +
+                    "WHERE accountId = :accountId " +
+                    "ORDER BY dateMillis ASC, id ASC"
+    )
+    List<AccountItemEntity> getItemsForAccount(long accountId);
+
+    @Query(
+            "SELECT * FROM account_items " +
+                    "WHERE id = :id LIMIT 1"
+    )
     AccountItemEntity getItemById(long id);
-
-
-
 
 }
