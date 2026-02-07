@@ -37,21 +37,19 @@ public interface AccountItemDao {
     void deleteAllForAccount(long accountId);
 
     // ----------------------------------------------------
-    // QUERY
+    // TOTALS
     // ----------------------------------------------------
-
-
     @Query(
             "SELECT SUM(amount) FROM account_items " +
                     "WHERE accountId = :accountId"
     )
     Double getTotalForAccount(long accountId);
 
+    // ----------------------------------------------------
+    // COUNTS
+    // ----------------------------------------------------
     @Query("SELECT COUNT(*) FROM account_items")
     int countItems();
-
-    @Query("SELECT COUNT(*) FROM account_items")
-    int countAllItems();
 
     // ----------------------------------------------------
     // LAST USED ACCOUNT
@@ -62,18 +60,24 @@ public interface AccountItemDao {
     )
     Long getLastUsedAccountId();
 
+    // ----------------------------------------------------
+    // ITEMS — AUTHORITATIVE ORDER
+    // ----------------------------------------------------
     @Query(
-            "SELECT * " +
-                    "FROM account_items " +
+            "SELECT * FROM account_items " +
                     "WHERE accountId = :accountId " +
-                    "ORDER BY dateMillis ASC, id ASC"
+                    "ORDER BY dateMillis DESC, id DESC"
     )
     List<AccountItemEntity> getItemsForAccount(long accountId);
 
     @Query(
             "SELECT * FROM account_items " +
-                    "WHERE id = :id LIMIT 1"
+                    "WHERE id = :id " +
+                    "LIMIT 1"
     )
     AccountItemEntity getItemById(long id);
+
+
+
 
 }
