@@ -108,7 +108,8 @@ public class AddExpenseDialog extends DialogFragment {
     private final List<String> accountCategories = new ArrayList<>();
 
     private String lastValidAccount = null;
-    private Calendar accountDate = Calendar.getInstance();
+    private Calendar accountDate;
+
 
     private final Map<String, List<String>> accountCustomCategories = new HashMap<>();
 
@@ -121,7 +122,6 @@ public class AddExpenseDialog extends DialogFragment {
 
     private static final String PREFS_UI = "ui_prefs";
     private static final String KEY_LAST_ACTIVE = "last_active_module";
-
 
 
     private EditText editAccountItem;
@@ -144,9 +144,6 @@ public class AddExpenseDialog extends DialogFragment {
     private ActiveModule activeModule = ActiveModule.DAILY;
 
 
-
-
-
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -163,6 +160,13 @@ public class AddExpenseDialog extends DialogFragment {
                 .inflate(R.layout.dialog_add_expense, null);
 
 
+        accountDate = Calendar.getInstance();
+        accountDate.set(Calendar.HOUR_OF_DAY, 0);
+        accountDate.set(Calendar.MINUTE, 0);
+        accountDate.set(Calendar.SECOND, 0);
+        accountDate.set(Calendar.MILLISECOND, 0);
+
+
         View dailyContainer = v.findViewById(R.id.card_daily);
         View accountsContainer = v.findViewById(R.id.card_other);
 
@@ -173,7 +177,6 @@ public class AddExpenseDialog extends DialogFragment {
         activeModule = "ACCOUNTS".equals(saved)
                 ? ActiveModule.ACCOUNTS
                 : ActiveModule.DAILY;
-
 
 
         applyActiveState(dailyContainer, accountsContainer);
@@ -193,7 +196,6 @@ public class AddExpenseDialog extends DialogFragment {
                 applyActiveState(dailyContainer, accountsContainer);
             }
         });
-
 
 
         dailyContainer.setOnClickListener(vv -> {
@@ -255,7 +257,9 @@ public class AddExpenseDialog extends DialogFragment {
         // -----------------------------
         TextView textAccountDate = v.findViewById(R.id.text_account_date);
         if (textAccountDate != null) {
+            // Force authoritative value – never trust layout/default text
             updateAccountDateLabel(textAccountDate);
+
             textAccountDate.setOnClickListener(vv ->
                     showAccountDatePicker(textAccountDate));
         }
@@ -345,9 +349,9 @@ public class AddExpenseDialog extends DialogFragment {
         // -----------------------------
         // ACCOUNTS — INPUT BINDING
         // -----------------------------
-        editAccountItem   = v.findViewById(R.id.input_account_item);
+        editAccountItem = v.findViewById(R.id.input_account_item);
         editAccountAmount = v.findViewById(R.id.input_account_amount);
-        editAccountNote   = v.findViewById(R.id.input_account_note);
+        editAccountNote = v.findViewById(R.id.input_account_note);
 
         // -----------------------------
         // EDIT / NEW LOGIC (unchanged)
@@ -1666,17 +1670,35 @@ public class AddExpenseDialog extends DialogFragment {
                         : "";
 
         // ------------------------------------
-        // DATE (DISPLAY + SORTABLE)
+        // AUTHORITATIVE DATE SYNC (UI → MODEL)
         // ------------------------------------
-        String date =
-                new java.text.SimpleDateFormat(
+        try {
+            TextView tv = getDialog().findViewById(R.id.text_account_date);
+            if (tv != null) {
+                Date d = new SimpleDateFormat(
                         "dd MMM yyyy",
-                        java.util.Locale.ENGLISH
-                ).format(accountDate.getTime());
+                        Locale.ENGLISH
+                ).parse(tv.getText().toString());
+                accountDate.setTime(d);
+            }
+        } catch (Exception e) {
+            android.util.Log.e("ACCOUNTS", "DATE PARSE FAILED", e);
+            return;
+        }
 
-        long dateMillis =
-                accountDate.getTimeInMillis();
+        Calendar c = (Calendar) accountDate.clone();
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
 
+        long dateMillis = c.getTimeInMillis();
+
+        String date =
+                new SimpleDateFormat(
+                        "dd MMM yyyy",
+                        Locale.ENGLISH
+                ).format(c.getTime());
 
         android.util.Log.e("ACCOUNTS", "STEP 8: inserting account item");
 
@@ -1695,42 +1717,6 @@ public class AddExpenseDialog extends DialogFragment {
 
         android.util.Log.e("ACCOUNTS", "STEP 9: insert complete");
     }
-
-    // ----------------------------------------------------
-// ACCOUNTS — ROOM INSERT
-// ----------------------------------------------------
-    private void insertAccountItem(
-            long accountId,
-            String date,
-            long dateMillis,
-            String item,
-            String category,
-            double amount,
-            String note
-    ) {
-
-        AccountItemEntity entity =
-                new AccountItemEntity(
-                        accountId,
-                        date,
-                        dateMillis,
-                        item,
-                        category,
-                        amount,
-                        note
-                );
-
-        ExpenseDatabase
-                .getDatabase(requireContext())
-                .accountItemDao()
-                .insert(entity);
-
-        android.util.Log.e(
-                "ACCOUNTS",
-                "INSERTED account item for accountId=" + accountId
-        );
-    }
-
 
     private void applyActiveState(View daily, View accounts) {
 
@@ -1752,7 +1738,6 @@ public class AddExpenseDialog extends DialogFragment {
         }
     }
 
-
     private void setEnabledRecursive(View v, boolean enabled) {
 
         if (v instanceof ViewGroup) {
@@ -1766,13 +1751,18 @@ public class AddExpenseDialog extends DialogFragment {
     }
 
     private void saveActiveModule() {
+
         SharedPreferences prefs =
-                requireContext().getSharedPreferences(PREFS_UI, Context.MODE_PRIVATE);
+                requireContext().getSharedPreferences(
+                        PREFS_UI,
+                        Context.MODE_PRIVATE
+                );
 
         prefs.edit()
                 .putString(KEY_LAST_ACTIVE, activeModule.name())
                 .apply();
     }
+
 
 
 }

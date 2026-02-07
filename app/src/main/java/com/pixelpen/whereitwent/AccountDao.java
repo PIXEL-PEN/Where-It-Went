@@ -36,8 +36,7 @@ public interface AccountDao {
     @Query("SELECT * FROM accounts WHERE name = :name LIMIT 1")
     AccountEntity getAccountByName(String name);
 
-
-    @Query("SELECT * FROM accounts ORDER BY id ASC")
+    @Query("SELECT * FROM accounts ORDER BY id DESC")
     List<AccountEntity> getAllAccountsById();
 
 

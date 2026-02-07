@@ -12,6 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+
 public class AccountsOverviewActivity extends AppCompatActivity {
 
     private static final String TAG_SECTION = "SECTION";
@@ -87,10 +92,9 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                         account.name,
                         CurrencyUtils.format(
                                 safe(itemDao.getTotalForAccount(account.id)),
-                                currencySymbol
+                                "฿"
                         )
                 );
-
                 accountHeader.setTag(TAG_ACCOUNT);
 
                 List<AccountItemEntity> items =
@@ -102,14 +106,15 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                             inflater,
                             container,
                             new AccountItem(
-                                    e.date,
+                                    e.dateMillis,
                                     capitalize(e.item),
                                     e.category,
                                     CurrencyUtils.format(e.amount, currencySymbol),
                                     e.note
                             )
-                    );
 
+
+                    );
                     itemView.setTag(TAG_ITEM);
                     itemView.setVisibility(
                             account.id == expandAccountId
@@ -192,7 +197,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         container.addView(v);
         return v;
     }
-
     private View addAccountItem(
             LayoutInflater inflater,
             LinearLayout container,
@@ -209,16 +213,23 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         );
 
         TextView monthView = header.findViewById(R.id.text_month);
-        TextView dayView = header.findViewById(R.id.text_day);
-        TextView itemView = header.findViewById(R.id.text_item);
+        TextView dayView   = header.findViewById(R.id.text_day);
+        TextView itemView  = header.findViewById(R.id.text_item);
         TextView categoryView = header.findViewById(R.id.text_category);
-        TextView amountView = header.findViewById(R.id.text_amount);
+        TextView amountView   = header.findViewById(R.id.text_amount);
 
-        String[] parts = item.date.split(" ");
-        if (parts.length == 2) {
-            monthView.setText(parts[0]);
-            dayView.setText(parts[1]);
-        }
+        // -----------------------------
+        // DATE — from dateMillis ONLY
+        // -----------------------------
+        SimpleDateFormat monthFmt =
+                new SimpleDateFormat("MMM", Locale.ENGLISH);
+        SimpleDateFormat dayFmt =
+                new SimpleDateFormat("dd", Locale.ENGLISH);
+
+        Date d = new Date(item.dateMillis);
+
+        monthView.setText(monthFmt.format(d));
+        dayView.setText(dayFmt.format(d));
 
         itemView.setText(item.item);
         categoryView.setText(item.category);
