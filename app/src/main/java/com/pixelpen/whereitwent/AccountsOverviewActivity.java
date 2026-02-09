@@ -74,7 +74,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         });
 
 
-
         ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
         AccountDao accountDao = db.accountDao();
         AccountItemDao itemDao = db.accountItemDao();
@@ -93,22 +92,29 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
         for (String type : ACCOUNT_TYPES) {
 
-            boolean hasType = false;
-            for (AccountEntity a : accounts) {
-                if (type.equalsIgnoreCase(a.type)) {
-                    hasType = true;
-                    break;
-                }
-            }
-            if (!hasType) continue;
+            // FILTER ACTIVE → skip section headers entirely
+            if (filterAccountId != -1L) {
+                // We will render only the filtered account below
+            } else {
 
-            View section = addSection(
-                    inflater,
-                    container,
-                    type,
-                    SECTION_LABELS.get(type)
-            );
-            section.setTag(TAG_SECTION);
+                boolean hasType = false;
+                for (AccountEntity a : accounts) {
+                    if (type.equalsIgnoreCase(a.type)) {
+                        hasType = true;
+                        break;
+                    }
+                }
+                if (!hasType) continue;
+
+                View section = addSection(
+                        inflater,
+                        container,
+                        type,
+                        SECTION_LABELS.get(type)
+                );
+                section.setTag(TAG_SECTION);
+            }
+
 
             for (AccountEntity account : accounts) {
 
@@ -120,16 +126,28 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                     continue;
                 }
 
+                double displayTotal = 0.0;
+
+                List<AccountItemEntity> totalItems =
+                        itemDao.getItemsForAccount(account.id);
+
+                for (AccountItemEntity e : totalItems) {
+
+                    if (filterCategory != null &&
+                            !filterCategory.equals(e.category)) {
+                        continue;
+                    }
+
+                    displayTotal += e.amount;
+                }
 
                 View accountHeader = addAccountHeader(
                         inflater,
                         container,
                         account.name,
-                        CurrencyUtils.format(
-                                safe(itemDao.getTotalForAccount(account.id)),
-                                "฿"
-                        )
+                        CurrencyUtils.format(displayTotal, "฿")
                 );
+
                 accountHeader.setTag(TAG_ACCOUNT);
 
                 List<AccountItemEntity> items =
@@ -162,11 +180,18 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                     );
 
                     itemView.setTag(TAG_ITEM);
-                    itemView.setVisibility(
-                            account.id == expandAccountId
-                                    ? View.VISIBLE
-                                    : View.GONE
-                    );
+                    if (filterAccountId != -1L) {
+                        // Filtered view: always expanded
+                        itemView.setVisibility(View.VISIBLE);
+                    } else {
+                        // Normal view: respect expand/collapse
+                        itemView.setVisibility(
+                                account.id == expandAccountId
+                                        ? View.VISIBLE
+                                        : View.GONE
+                        );
+                    }
+
 
                     itemView.setOnClickListener(v -> {
                         EditAccountItemDialog dialog =
@@ -185,18 +210,21 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                         );
                     });
                 }
+                if (filterAccountId == -1L) {
 
-                accountHeader.setOnClickListener(v -> {
-                    int idx = container.indexOfChild(accountHeader);
-                    toggleItems(container, idx);
-                });
-
-                if (account.id == expandAccountId) {
-                    container.post(() -> {
+                    accountHeader.setOnClickListener(v -> {
                         int idx = container.indexOfChild(accountHeader);
                         toggleItems(container, idx);
                     });
+
+                    if (account.id == expandAccountId) {
+                        container.post(() -> {
+                            int idx = container.indexOfChild(accountHeader);
+                            toggleItems(container, idx);
+                        });
+                    }
                 }
+
             }
         }
     }
@@ -259,10 +287,10 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         );
 
         TextView monthView = header.findViewById(R.id.text_month);
-        TextView dayView   = header.findViewById(R.id.text_day);
-        TextView itemView  = header.findViewById(R.id.text_item);
+        TextView dayView = header.findViewById(R.id.text_day);
+        TextView itemView = header.findViewById(R.id.text_item);
         TextView categoryView = header.findViewById(R.id.text_category);
-        TextView amountView   = header.findViewById(R.id.text_amount);
+        TextView amountView = header.findViewById(R.id.text_amount);
 
         SimpleDateFormat monthFmt =
                 new SimpleDateFormat("MMM", Locale.ENGLISH);
@@ -347,6 +375,17 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         if (needsRefresh) {
             needsRefresh = false;
             recreate();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        // Clear filter ONLY when leaving the screen for real
+        if (isFinishing()) {
+            filterAccountId = -1L;
+            filterCategory = null;
         }
     }
 }
