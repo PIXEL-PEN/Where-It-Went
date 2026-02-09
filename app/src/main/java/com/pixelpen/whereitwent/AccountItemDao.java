@@ -77,6 +77,18 @@ public interface AccountItemDao {
     )
     AccountItemEntity getItemById(long id);
 
+    // ----------------------------------------------------
+// CATEGORIES (PER ACCOUNT)
+// ----------------------------------------------------
+    @Query(
+            "SELECT DISTINCT category " +
+                    "FROM account_items " +
+                    "WHERE accountId = :accountId " +
+                    "AND category IS NOT NULL " +
+                    "AND category != '' " +
+                    "ORDER BY category COLLATE NOCASE"
+    )
+    List<String> getCategoriesForAccount(long accountId);
 
 
 

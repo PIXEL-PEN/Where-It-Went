@@ -47,6 +47,13 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
 
+        findViewById(R.id.btn_back).setOnLongClickListener(v -> {
+            new AccountCategoryFilterDialog()
+                    .show(getSupportFragmentManager(), "ACCOUNT_FILTER");
+            return true;
+        });
+
+
         ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
         AccountDao accountDao = db.accountDao();
         AccountItemDao itemDao = db.accountItemDao();
