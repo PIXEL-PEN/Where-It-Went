@@ -15,6 +15,9 @@ import androidx.fragment.app.DialogFragment;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.widget.Button;
+
+
 public class AccountCategoryFilterDialog extends DialogFragment {
 
     private Spinner spinnerAccount;
@@ -150,35 +153,58 @@ public class AccountCategoryFilterDialog extends DialogFragment {
                 }
         );
 
-        return new AlertDialog.Builder(requireContext())
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
                 .setTitle("Filter Accounts")
                 .setView(v)
-                .setNegativeButton("Clear", (d, w) -> dismiss())
-                .setPositiveButton("Apply", (d, w) -> {
-
-                    long selectedAccountId = -1L;
-                    String selectedCategory = null;
-
-                    int accountPos = spinnerAccount.getSelectedItemPosition();
-                    if (accountPos > 0) {
-                        AccountEntity account = accounts.get(accountPos - 1);
-                        selectedAccountId = account.id;
-
-                        int catPos = spinnerCategory.getSelectedItemPosition();
-                        if (catPos > 0) {
-                            selectedCategory =
-                                    (String) spinnerCategory.getSelectedItem();
-                        }
-                    }
-
-                    if (listener != null) {
-                        listener.onFilterSelected(
-                                selectedAccountId,
-                                selectedCategory
-                        );
-                    }
-                })
-
+                .setPositiveButton("Apply", null)
+                .setNegativeButton("Clear", null)
                 .create();
+
+        dialog.setOnShowListener(dlg -> {
+
+            Button btnApply =
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            Button btnClear =
+                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+
+            btnApply.setOnClickListener(vv -> {
+
+                long selectedAccountId = -1L;
+                String selectedCategory = null;
+
+                int accountPos = spinnerAccount.getSelectedItemPosition();
+                if (accountPos > 0) {
+                    AccountEntity account = accounts.get(accountPos - 1);
+                    selectedAccountId = account.id;
+
+                    int catPos = spinnerCategory.getSelectedItemPosition();
+                    if (catPos > 0) {
+                        selectedCategory =
+                                (String) spinnerCategory.getSelectedItem();
+                    }
+                }
+
+                if (listener != null) {
+                    listener.onFilterSelected(
+                            selectedAccountId,
+                            selectedCategory
+                    );
+                }
+
+                dialog.dismiss();
+            });
+
+            btnClear.setOnClickListener(vv -> {
+
+                if (listener != null) {
+                    listener.onFilterSelected(-1L, null);
+                }
+
+                dialog.dismiss();
+            });
+        });
+
+        return dialog;
+
     }
 }
