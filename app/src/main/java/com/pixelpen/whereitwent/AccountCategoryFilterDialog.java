@@ -25,6 +25,16 @@ public class AccountCategoryFilterDialog extends DialogFragment {
 
     private final List<AccountEntity> accounts = new ArrayList<>();
 
+    public interface Listener {
+        void onFilterSelected(long accountId, @Nullable String category);
+    }
+
+    private Listener listener;
+
+    public void setListener(Listener listener) {
+        this.listener = listener;
+    }
+
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -144,7 +154,31 @@ public class AccountCategoryFilterDialog extends DialogFragment {
                 .setTitle("Filter Accounts")
                 .setView(v)
                 .setNegativeButton("Clear", (d, w) -> dismiss())
-                .setPositiveButton("Apply", (d, w) -> dismiss())
+                .setPositiveButton("Apply", (d, w) -> {
+
+                    long selectedAccountId = -1L;
+                    String selectedCategory = null;
+
+                    int accountPos = spinnerAccount.getSelectedItemPosition();
+                    if (accountPos > 0) {
+                        AccountEntity account = accounts.get(accountPos - 1);
+                        selectedAccountId = account.id;
+
+                        int catPos = spinnerCategory.getSelectedItemPosition();
+                        if (catPos > 0) {
+                            selectedCategory =
+                                    (String) spinnerCategory.getSelectedItem();
+                        }
+                    }
+
+                    if (listener != null) {
+                        listener.onFilterSelected(
+                                selectedAccountId,
+                                selectedCategory
+                        );
+                    }
+                })
+
                 .create();
     }
 }

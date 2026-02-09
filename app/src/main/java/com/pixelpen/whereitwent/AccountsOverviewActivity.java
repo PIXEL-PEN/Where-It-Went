@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.HashMap;
@@ -16,7 +17,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-
 public class AccountsOverviewActivity extends AppCompatActivity {
 
     private static final String TAG_SECTION = "SECTION";
@@ -24,8 +24,11 @@ public class AccountsOverviewActivity extends AppCompatActivity {
     private static final String TAG_ITEM = "ITEM";
 
     public static boolean needsRefresh = false;
-
     public static long forceExpandAccountId = -1L;
+
+    public static long filterAccountId = -1L;
+    @Nullable
+    public static String filterCategory = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,25 +36,43 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         setContentView(R.layout.activity_accounts_overview);
 
         String currencySymbol = AppPrefs.getCurrencySymbol(this);
+        long expandAccountId;
 
-
-
-        long expandAccountId =
-                forceExpandAccountId != -1L
-                        ? forceExpandAccountId
-                        : getIntent().getLongExtra("expand_account_id", -1L);
+        if (filterAccountId != -1L) {
+            // Filter active → always expand the filtered account
+            expandAccountId = filterAccountId;
+        } else {
+            expandAccountId =
+                    forceExpandAccountId != -1L
+                            ? forceExpandAccountId
+                            : getIntent().getLongExtra("expand_account_id", -1L);
+        }
 
         forceExpandAccountId = -1L;
 
         ExpenseDatabase.migrateAccountsFromPrefsIfNeeded(this);
-
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
 
         findViewById(R.id.btn_back).setOnLongClickListener(v -> {
-            new AccountCategoryFilterDialog()
-                    .show(getSupportFragmentManager(), "ACCOUNT_FILTER");
+
+            AccountCategoryFilterDialog dialog =
+                    new AccountCategoryFilterDialog();
+
+            dialog.setListener((accountId, category) -> {
+                filterAccountId = accountId;
+                filterCategory = category;
+
+                findViewById(R.id.accounts_container)
+                        .post(this::recreate);
+            });
+
+            dialog.show(
+                    getSupportFragmentManager(),
+                    "ACCOUNT_FILTER"
+            );
             return true;
         });
+
 
 
         ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
@@ -93,6 +114,13 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
                 if (!type.equalsIgnoreCase(account.type)) continue;
 
+                // FILTER — ACCOUNT (STRUCTURAL)
+                if (filterAccountId != -1L &&
+                        account.id != filterAccountId) {
+                    continue;
+                }
+
+
                 View accountHeader = addAccountHeader(
                         inflater,
                         container,
@@ -109,6 +137,18 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
                 for (AccountItemEntity e : items) {
 
+                    // FILTER — ACCOUNT
+                    if (filterAccountId != -1L &&
+                            account.id != filterAccountId) {
+                        continue;
+                    }
+
+                    // FILTER — CATEGORY
+                    if (filterCategory != null &&
+                            !filterCategory.equals(e.category)) {
+                        continue;
+                    }
+
                     View itemView = addAccountItem(
                             inflater,
                             container,
@@ -119,9 +159,8 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                                     CurrencyUtils.format(e.amount, currencySymbol),
                                     e.note
                             )
-
-
                     );
+
                     itemView.setTag(TAG_ITEM);
                     itemView.setVisibility(
                             account.id == expandAccountId
@@ -130,7 +169,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                     );
 
                     itemView.setOnClickListener(v -> {
-
                         EditAccountItemDialog dialog =
                                 new EditAccountItemDialog();
 
@@ -204,6 +242,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         container.addView(v);
         return v;
     }
+
     private View addAccountItem(
             LayoutInflater inflater,
             LinearLayout container,
@@ -225,9 +264,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         TextView categoryView = header.findViewById(R.id.text_category);
         TextView amountView   = header.findViewById(R.id.text_amount);
 
-        // -----------------------------
-        // DATE — from dateMillis ONLY
-        // -----------------------------
         SimpleDateFormat monthFmt =
                 new SimpleDateFormat("MMM", Locale.ENGLISH);
         SimpleDateFormat dayFmt =
