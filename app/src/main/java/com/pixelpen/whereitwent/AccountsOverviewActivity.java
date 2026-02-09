@@ -53,6 +53,26 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         ExpenseDatabase.migrateAccountsFromPrefsIfNeeded(this);
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
 
+        findViewById(R.id.btn_filter).setOnClickListener(v -> {
+
+            AccountCategoryFilterDialog dialog =
+                    new AccountCategoryFilterDialog();
+
+            dialog.setListener((accountId, category) -> {
+                filterAccountId = accountId;
+                filterCategory = category;
+
+                findViewById(R.id.accounts_container)
+                        .post(this::recreate);
+            });
+
+            dialog.show(
+                    getSupportFragmentManager(),
+                    "ACCOUNT_FILTER"
+            );
+        });
+
+
         findViewById(R.id.btn_back).setOnLongClickListener(v -> {
 
             AccountCategoryFilterDialog dialog =
