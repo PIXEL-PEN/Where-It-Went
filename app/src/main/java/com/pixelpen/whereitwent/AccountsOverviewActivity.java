@@ -35,8 +35,30 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_accounts_overview);
 
+        TextView filterIndicator =
+                findViewById(R.id.text_filter_indicator);
+
+
         String currencySymbol = AppPrefs.getCurrencySymbol(this);
         long expandAccountId;
+
+        if (filterAccountId != -1L) {
+
+            StringBuilder label = new StringBuilder("Filtered");
+
+            if (filterCategory != null) {
+                label.append(": ").append(filterCategory);
+            }
+
+            filterIndicator.setText(label.toString());
+            filterIndicator.setVisibility(View.VISIBLE);
+
+        } else {
+            filterIndicator.setVisibility(View.GONE);
+        }
+
+
+
 
         if (filterAccountId != -1L) {
             // Filter active → always expand the filtered account
