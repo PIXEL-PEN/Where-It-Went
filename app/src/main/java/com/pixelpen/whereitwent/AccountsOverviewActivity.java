@@ -25,6 +25,8 @@ import android.util.Log;
 
 import android.widget.Toast;
 
+import androidx.core.view.WindowCompat;
+
 
 
 public class AccountsOverviewActivity extends AppCompatActivity {
@@ -33,6 +35,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
     private static final String TAG_ACCOUNT = "ACCOUNT";
     private static final String TAG_ITEM = "ITEM";
 
+    private boolean showNotes = true;
 
 
 
@@ -48,11 +51,17 @@ public class AccountsOverviewActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Toast.makeText(this, "ACCOUNTS OVERVIEW HIT", Toast.LENGTH_LONG).show();
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
+
+        if (savedInstanceState != null) {
+            showNotes = savedInstanceState.getBoolean("show_notes", true);
+        }
+
+
 
         setContentView(R.layout.activity_accounts_overview);
 
-        Log.e("NOTE_DEBUG", "ACCOUNTS OVERVIEW VERSION X");
+
 
 
         TextView filterIndicator =
@@ -103,6 +112,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
             popup.getMenu().add("Manage Accounts");
 
+            popup.getMenu().add("Show / Hide Notes");
 
 
             popup.setOnMenuItemClickListener(item -> {
@@ -121,6 +131,15 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
                     return true;
                 }
+                if ("Show / Hide Notes".equals(title)) {
+                    showNotes = !showNotes;
+
+                    forceExpandAccountId = expandAccountId;
+
+                    recreate();
+                    return true;
+                }
+
 
 
 
@@ -332,6 +351,14 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("show_notes", showNotes);
+    }
+
+
+
     private View addSection(
             LayoutInflater inflater,
             LinearLayout container,
@@ -414,7 +441,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         boolean hasNote =
                 item.note != null && !item.note.trim().isEmpty();
 
-        if (hasNote) {
+        if (hasNote && showNotes) {
 
             View noteRow = inflater.inflate(
                     R.layout.row_account_item_note,
@@ -509,6 +536,112 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
         if (controller != null) {
             controller.setAppearanceLightStatusBars(false);
+        }
+    }
+    private void rebuildAccounts() {
+
+        LinearLayout container = findViewById(R.id.accounts_container);
+        container.removeAllViews();
+
+        ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
+        AccountDao accountDao = db.accountDao();
+        AccountItemDao itemDao = db.accountItemDao();
+
+        LayoutInflater inflater = LayoutInflater.from(this);
+
+        List<AccountEntity> accounts = accountDao.getActiveAccounts();
+
+        String[] ACCOUNT_TYPES = {"PROJECT", "TRAVEL", "CUSTOM"};
+
+        Map<String, String> SECTION_LABELS = new HashMap<>();
+        SECTION_LABELS.put("PROJECT", "PROJECTS");
+        SECTION_LABELS.put("TRAVEL", "TRAVEL");
+        SECTION_LABELS.put("CUSTOM", "CUSTOM");
+
+        for (String type : ACCOUNT_TYPES) {
+
+            if (filterAccountId != -1L) {
+                // filtered mode skips section header
+            } else {
+
+                boolean hasType = false;
+                for (AccountEntity a : accounts) {
+                    if (type.equalsIgnoreCase(a.type)) {
+                        hasType = true;
+                        break;
+                    }
+                }
+                if (!hasType) continue;
+
+                View section = addSection(
+                        inflater,
+                        container,
+                        type,
+                        SECTION_LABELS.get(type)
+                );
+                section.setTag(TAG_SECTION);
+            }
+
+            for (AccountEntity account : accounts) {
+
+                if (!type.equalsIgnoreCase(account.type)) continue;
+
+                if (filterAccountId != -1L &&
+                        account.id != filterAccountId) {
+                    continue;
+                }
+
+                double displayTotal = 0.0;
+
+                List<AccountItemEntity> totalItems =
+                        itemDao.getItemsForAccount(account.id);
+
+                for (AccountItemEntity e : totalItems) {
+
+                    if (filterCategory != null &&
+                            !filterCategory.equals(e.category)) {
+                        continue;
+                    }
+
+                    displayTotal += e.amount;
+                }
+
+                View accountHeader = addAccountHeader(
+                        inflater,
+                        container,
+                        account.name,
+                        CurrencyUtils.format(displayTotal,
+                                AppPrefs.getCurrencySymbol(this))
+                );
+
+                accountHeader.setTag(TAG_ACCOUNT);
+
+                List<AccountItemEntity> items =
+                        itemDao.getItemsForAccount(account.id);
+
+                for (AccountItemEntity e : items) {
+
+                    if (filterCategory != null &&
+                            !filterCategory.equals(e.category)) {
+                        continue;
+                    }
+
+                    View itemView = addAccountItem(
+                            inflater,
+                            container,
+                            new AccountItem(
+                                    e.dateMillis,
+                                    capitalize(e.item),
+                                    e.category,
+                                    CurrencyUtils.format(e.amount,
+                                            AppPrefs.getCurrencySymbol(this)),
+                                    e.note
+                            )
+                    );
+
+                    itemView.setTag(TAG_ITEM);
+                }
+            }
         }
     }
 
