@@ -21,6 +21,10 @@ import android.widget.PopupMenu;
 
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
+import android.util.Log;
+
+import android.widget.Toast;
+
 
 
 public class AccountsOverviewActivity extends AppCompatActivity {
@@ -29,7 +33,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
     private static final String TAG_ACCOUNT = "ACCOUNT";
     private static final String TAG_ITEM = "ITEM";
 
-    private boolean showNotes = false;
+
 
 
 
@@ -44,7 +48,12 @@ public class AccountsOverviewActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Toast.makeText(this, "ACCOUNTS OVERVIEW HIT", Toast.LENGTH_LONG).show();
+
         setContentView(R.layout.activity_accounts_overview);
+
+        Log.e("NOTE_DEBUG", "ACCOUNTS OVERVIEW VERSION X");
+
 
         TextView filterIndicator =
                 findViewById(R.id.text_filter_indicator);
@@ -91,7 +100,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
             PopupMenu popup = new PopupMenu(this, v);
 
             popup.getMenu().add("Filter Accounts");
-            popup.getMenu().add("Show / Hide Notes");
+
             popup.getMenu().add("Manage Accounts");
 
 
@@ -133,12 +142,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                             "ACCOUNT_FILTER"
                     );
 
-                    return true;
-                }
-
-                if ("Show / Hide Notes".equals(title)) {
-                    showNotes = !showNotes;
-                    toggleNoteVisibility();
                     return true;
                 }
 
@@ -406,38 +409,30 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         categoryView.setText(item.category);
         amountView.setText(item.amount);
 
-        View noteRow = inflater.inflate(
-                R.layout.row_account_item_note,
-                block,
-                false
-        );
-
-
-
-        TextView noteView = noteRow.findViewById(R.id.text_note);
+        block.addView(header);
 
         boolean hasNote =
                 item.note != null && !item.note.trim().isEmpty();
 
         if (hasNote) {
+
+            View noteRow = inflater.inflate(
+                    R.layout.row_account_item_note,
+                    block,
+                    false
+            );
+
+            TextView noteView =
+                    noteRow.findViewById(R.id.text_note);
+
             noteView.setText("Note: " + item.note);
             noteView.setTypeface(
                     noteView.getTypeface(),
                     android.graphics.Typeface.ITALIC
             );
+
+            block.addView(noteRow);
         }
-
-        /* SINGLE SOURCE OF TRUTH */
-        noteRow.setVisibility(
-                hasNote && showNotes
-                        ? View.VISIBLE
-                        : View.GONE
-        );
-
-        block.addView(header);
-        block.addView(noteRow);
-
-
 
         container.addView(block);
         return block;
@@ -506,29 +501,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         }
     }
 
-    private void toggleNoteVisibility() {
 
-        LinearLayout container = findViewById(R.id.accounts_container);
-
-        for (int i = 0; i < container.getChildCount(); i++) {
-
-            View block = container.getChildAt(i);
-
-            if (!(block instanceof LinearLayout)) continue;
-
-            LinearLayout layout = (LinearLayout) block;
-
-            // account item blocks have 2 children: header + noteRow
-            if (layout.getChildCount() < 2) continue;
-
-            View noteRow = layout.getChildAt(1);
-
-            Object tag = block.getTag();
-            if (!TAG_ITEM.equals(tag)) continue;
-
-            noteRow.setVisibility(showNotes ? View.VISIBLE : View.GONE);
-        }
-    }
 
     private void restoreStatusBar() {
         WindowInsetsControllerCompat controller =
