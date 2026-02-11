@@ -5,6 +5,7 @@
     android:orientation="vertical"
     android:background="#ECEFF1">
 
+    <!-- TOP BAR -->
     <RelativeLayout
         android:id="@+id/top_bar_container"
         android:layout_width="match_parent"
@@ -15,29 +16,7 @@
         android:paddingTop="4dp"
         android:paddingBottom="3dp">
 
-        <ImageButton
-            android:id="@+id/btn_filter"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginBottom="2dp"
-            android:background="@null"
-            android:src="@drawable/ic_filter_list"
-            android:contentDescription="Filter" />
-
-        <TextView
-            android:id="@+id/text_filter_indicator"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toStartOf="@id/btn_filter"
-            android:layout_alignBottom="@id/btn_filter"
-            android:layout_marginEnd="6dp"
-            android:layout_marginBottom="6dp"
-            android:textSize="12sp"
-            android:textColor="@android:color/white"
-            android:visibility="gone" />
-
+        <!-- BACK + TITLE -->
         <LinearLayout
             android:id="@+id/title_row"
             android:layout_width="wrap_content"
@@ -68,8 +47,36 @@
                 android:textStyle="bold"
                 android:includeFontPadding="false" />
         </LinearLayout>
+
+        <!-- OVERFLOW MENU -->
+        <ImageButton
+            android:id="@+id/btn_menu"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="2dp"
+            android:background="@null"
+            android:src="@drawable/baseline_more_horiz_35"
+            android:tint="@android:color/white"
+            android:scaleType="centerInside"
+            android:contentDescription="Menu" />
+
+        <!-- FILTER INDICATOR -->
+        <TextView
+            android:id="@+id/text_filter_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/btn_menu"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="10dp"
+            android:textSize="11sp"
+            android:textColor="@android:color/white"
+            android:visibility="gone" />
+
     </RelativeLayout>
 
+    <!-- CONTENT -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -17,11 +17,22 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import android.widget.PopupMenu;
+
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
+
+
 public class AccountsOverviewActivity extends AppCompatActivity {
 
     private static final String TAG_SECTION = "SECTION";
     private static final String TAG_ACCOUNT = "ACCOUNT";
     private static final String TAG_ITEM = "ITEM";
+
+    private boolean showNotes = false;
+
+
+
 
     public static boolean needsRefresh = false;
     public static long forceExpandAccountId = -1L;
@@ -75,24 +86,71 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         ExpenseDatabase.migrateAccountsFromPrefsIfNeeded(this);
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
 
-        findViewById(R.id.btn_filter).setOnClickListener(v -> {
+        findViewById(R.id.btn_menu).setOnClickListener(v -> {
 
-            AccountCategoryFilterDialog dialog =
-                    new AccountCategoryFilterDialog();
+            PopupMenu popup = new PopupMenu(this, v);
 
-            dialog.setListener((accountId, category) -> {
-                filterAccountId = accountId;
-                filterCategory = category;
+            popup.getMenu().add("Filter Accounts");
+            popup.getMenu().add("Show / Hide Notes");
+            popup.getMenu().add("Manage Accounts");
 
-                findViewById(R.id.accounts_container)
-                        .post(this::recreate);
+
+
+            popup.setOnMenuItemClickListener(item -> {
+
+                String title = item.getTitle().toString();
+
+                if ("Manage Accounts".equals(title)) {
+
+                    AddExpenseDialog dialog =
+                            AddExpenseDialog.newManageAccountsInstance();
+
+                    dialog.show(
+                            getSupportFragmentManager(),
+                            "MANAGE_ACCOUNTS"
+                    );
+
+                    return true;
+                }
+
+
+
+                if ("Filter Accounts".equals(title)) {
+
+                    AccountCategoryFilterDialog dialog =
+                            new AccountCategoryFilterDialog();
+
+                    dialog.setListener((accountId, category) -> {
+                        filterAccountId = accountId;
+                        filterCategory = category;
+
+                        findViewById(R.id.accounts_container)
+                                .post(this::recreate);
+                    });
+
+                    dialog.show(
+                            getSupportFragmentManager(),
+                            "ACCOUNT_FILTER"
+                    );
+
+                    return true;
+                }
+
+                if ("Show / Hide Notes".equals(title)) {
+                    showNotes = !showNotes;
+                    toggleNoteVisibility();
+                    return true;
+                }
+
+
+
+                return false;
             });
 
-            dialog.show(
-                    getSupportFragmentManager(),
-                    "ACCOUNT_FILTER"
-            );
+            popup.show();
         });
+
+
 
 
         findViewById(R.id.btn_back).setOnLongClickListener(v -> {
@@ -354,15 +412,32 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                 false
         );
 
+
+
         TextView noteView = noteRow.findViewById(R.id.text_note);
-        noteView.setText("Note: " + item.note);
-        noteView.setTypeface(
-                noteView.getTypeface(),
-                android.graphics.Typeface.ITALIC
+
+        boolean hasNote =
+                item.note != null && !item.note.trim().isEmpty();
+
+        if (hasNote) {
+            noteView.setText("Note: " + item.note);
+            noteView.setTypeface(
+                    noteView.getTypeface(),
+                    android.graphics.Typeface.ITALIC
+            );
+        }
+
+        /* SINGLE SOURCE OF TRUTH */
+        noteRow.setVisibility(
+                hasNote && showNotes
+                        ? View.VISIBLE
+                        : View.GONE
         );
 
         block.addView(header);
         block.addView(noteRow);
+
+
 
         container.addView(block);
         return block;
@@ -430,4 +505,40 @@ public class AccountsOverviewActivity extends AppCompatActivity {
             filterCategory = null;
         }
     }
+
+    private void toggleNoteVisibility() {
+
+        LinearLayout container = findViewById(R.id.accounts_container);
+
+        for (int i = 0; i < container.getChildCount(); i++) {
+
+            View block = container.getChildAt(i);
+
+            if (!(block instanceof LinearLayout)) continue;
+
+            LinearLayout layout = (LinearLayout) block;
+
+            // account item blocks have 2 children: header + noteRow
+            if (layout.getChildCount() < 2) continue;
+
+            View noteRow = layout.getChildAt(1);
+
+            Object tag = block.getTag();
+            if (!TAG_ITEM.equals(tag)) continue;
+
+            noteRow.setVisibility(showNotes ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void restoreStatusBar() {
+        WindowInsetsControllerCompat controller =
+                ViewCompat.getWindowInsetsController(getWindow().getDecorView());
+
+        if (controller != null) {
+            controller.setAppearanceLightStatusBars(false);
+        }
+    }
+
+
+
 }

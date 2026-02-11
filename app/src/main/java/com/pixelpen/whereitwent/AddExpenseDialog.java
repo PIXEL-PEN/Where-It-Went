@@ -128,6 +128,10 @@ public class AddExpenseDialog extends DialogFragment {
     private EditText editAccountAmount;
     private EditText editAccountNote;
 
+    private static final String ARG_MANAGE_ONLY = "manage_only";
+
+
+
     public static AddExpenseDialog newInstance(int expenseId) {
         AddExpenseDialog d = new AddExpenseDialog();
         Bundle b = new Bundle();
@@ -136,10 +140,24 @@ public class AddExpenseDialog extends DialogFragment {
         return d;
     }
 
+    public static AddExpenseDialog newManageAccountsInstance() {
+        AddExpenseDialog d = new AddExpenseDialog();
+        Bundle b = new Bundle();
+        b.putBoolean(ARG_MANAGE_ONLY, true);
+        d.setArguments(b);
+        return d;
+    }
+
+
+
+
     private enum ActiveModule {
         DAILY,
         ACCOUNTS
     }
+
+
+
 
     private ActiveModule activeModule = ActiveModule.DAILY;
 
@@ -721,14 +739,32 @@ public class AddExpenseDialog extends DialogFragment {
         Dialog d = getDialog();
         if (d != null && d.getWindow() != null) {
 
-            int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.90);
+            int width = (int) (getResources()
+                    .getDisplayMetrics().widthPixels * 0.90);
 
             d.getWindow().setLayout(
                     width,
                     ViewGroup.LayoutParams.WRAP_CONTENT
             );
         }
+
+        boolean manageOnly =
+                getArguments() != null &&
+                        getArguments().getBoolean(ARG_MANAGE_ONLY, false);
+
+        if (manageOnly) {
+
+            getArguments().remove(ARG_MANAGE_ONLY);
+
+            showManageAccountsDialog();
+
+            if (d != null) {
+                d.hide();   // ← important change
+            }
+        }
     }
+
+
 
 
     private void showAddAccountDialog() {
