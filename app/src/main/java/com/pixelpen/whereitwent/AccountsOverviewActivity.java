@@ -119,7 +119,18 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
                 String title = item.getTitle().toString();
 
+                if ("Show / Hide Notes".equals(title)) {
+                    showNotes = !showNotes;
+
+                    forceExpandAccountId = expandAccountId;
+
+                    rebuildAccounts();
+                    return true;
+                }
+
                 if ("Manage Accounts".equals(title)) {
+
+
 
                     AddExpenseDialog dialog =
                             AddExpenseDialog.newManageAccountsInstance();
@@ -129,14 +140,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                             "MANAGE_ACCOUNTS"
                     );
 
-                    return true;
-                }
-                if ("Show / Hide Notes".equals(title)) {
-                    showNotes = !showNotes;
-
-                    forceExpandAccountId = expandAccountId;
-
-                    recreate();
                     return true;
                 }
 
@@ -153,7 +156,9 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                         filterCategory = category;
 
                         findViewById(R.id.accounts_container)
-                                .post(this::recreate);
+                                .post(this::rebuildAccounts);
+
+
                     });
 
                     dialog.show(
@@ -185,7 +190,8 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                 filterCategory = category;
 
                 findViewById(R.id.accounts_container)
-                        .post(this::recreate);
+                        .post(this::rebuildAccounts);
+
             });
 
             dialog.show(
@@ -351,11 +357,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putBoolean("show_notes", showNotes);
-    }
 
 
 
@@ -495,6 +496,9 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                     hide ? View.GONE : View.VISIBLE
             );
         }
+
+
+
     }
 
     private double safe(Double d) {
@@ -508,12 +512,21 @@ public class AccountsOverviewActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("show_notes", showNotes);
+    }
+
+
+
+@Override
     protected void onResume() {
         super.onResume();
 
         if (needsRefresh) {
             needsRefresh = false;
-            recreate();
+            rebuildAccounts();
+
         }
     }
 

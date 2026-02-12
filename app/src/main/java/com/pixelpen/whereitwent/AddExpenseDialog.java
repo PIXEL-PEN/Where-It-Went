@@ -394,6 +394,19 @@ public class AddExpenseDialog extends DialogFragment {
 
         dialog.setContentView(v);
         dialog.setCancelable(true);
+
+        boolean manageOnly =
+                getArguments() != null &&
+                        getArguments().getBoolean(ARG_MANAGE_ONLY, false);
+
+        if (manageOnly) {
+
+            getArguments().remove(ARG_MANAGE_ONLY);
+
+            v.post(() -> showManageAccountsDialog());
+        }
+
+
         return dialog;
     }
 
@@ -748,22 +761,20 @@ public class AddExpenseDialog extends DialogFragment {
             );
         }
 
+        // ---- MANAGE ONLY MODE ----
         boolean manageOnly =
                 getArguments() != null &&
                         getArguments().getBoolean(ARG_MANAGE_ONLY, false);
 
         if (manageOnly) {
 
+            // Prevent re-trigger on configuration changes
             getArguments().remove(ARG_MANAGE_ONLY);
 
             showManageAccountsDialog();
-
-            if (d != null) {
-                d.hide();   // ← important change
-            }
+            dismiss();
         }
     }
-
 
 
 
