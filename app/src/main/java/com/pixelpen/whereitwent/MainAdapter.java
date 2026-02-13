@@ -133,11 +133,23 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (holder instanceof VH_SummaryHeader) {
 
             VH_SummaryHeader vh = (VH_SummaryHeader) holder;
+            RowSummaryHeader sh = (RowSummaryHeader) row;
+
             vh.title.setText("Summaries");
-            vh.total.setText("▼");
+            vh.total.setText(sh.expanded ? "▲" : "▼");
+
+            vh.itemView.setOnClickListener(v -> {
+
+                MainScreen screen =
+                        (MainScreen) vh.itemView.getContext();
+
+                screen.summariesExpanded = !screen.summariesExpanded;
+                screen.refreshAfterAdd();
+            });
 
             return;
         }
+
 
         // SUMMARY ROW
         if (holder instanceof VH_Summary) {

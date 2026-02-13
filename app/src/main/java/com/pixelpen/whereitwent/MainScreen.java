@@ -23,6 +23,8 @@ public class MainScreen extends AppCompatActivity {
     private boolean twelveMonthMode = false;
     boolean summariesExpanded = false;
 
+
+
     public boolean isTwelveMonthMode() {
         return twelveMonthMode;
     }

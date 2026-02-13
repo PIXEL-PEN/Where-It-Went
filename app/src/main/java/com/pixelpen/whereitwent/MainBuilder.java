@@ -15,7 +15,9 @@ public class MainBuilder {
 
         List<MainRow> rows = new ArrayList<>();
 
-        // -------- RECENT (Months) --------
+        // -----------------------------
+        // RECENT (Months Section)
+        // -----------------------------
         List<MonthGroup> months =
                 twelveMonthMode
                         ? MonthBuilder.buildLast12Months(ctx)
@@ -25,12 +27,17 @@ public class MainBuilder {
             rows.add(mg);
         }
 
-        // -------- SUMMARIES HEADER --------
+        // -----------------------------
+        // SUMMARIES HEADER
+        // -----------------------------
         rows.add(new RowSummaryHeader(summariesExpanded));
 
-        // -------- ONLY ADD CHILD ROWS IF EXPANDED --------
+        // -----------------------------
+        // DAILY LIVING SUMMARY ROW
+        // -----------------------------
         if (summariesExpanded) {
 
+            // Always calculate from 12 months
             List<MonthGroup> last12 =
                     MonthBuilder.buildLast12Months(ctx);
 
@@ -50,8 +57,6 @@ public class MainBuilder {
                     "Daily Living (12 months)",
                     formatted
             ));
-
-            // (Accounts row will go here later)
         }
 
         return rows;
