@@ -7,7 +7,11 @@ import java.util.List;
 
 public class MainBuilder {
 
-    public static List<MainRow> build(Context ctx, boolean twelveMonthMode) {
+    public static List<MainRow> build(
+            Context ctx,
+            boolean twelveMonthMode,
+            boolean summariesExpanded
+    ) {
 
         List<MainRow> rows = new ArrayList<>();
 
@@ -21,29 +25,34 @@ public class MainBuilder {
             rows.add(mg);
         }
 
-        // -------- SUMMARIES SECTION --------
-        rows.add(new RowSectionHeader("Summaries"));
+        // -------- SUMMARIES HEADER --------
+        rows.add(new RowSummaryHeader(summariesExpanded));
 
-        // ---- Daily Living 12-month total ----
-        List<MonthGroup> last12 =
-                MonthBuilder.buildLast12Months(ctx);
+        // -------- ONLY ADD CHILD ROWS IF EXPANDED --------
+        if (summariesExpanded) {
 
-        double total = 0;
+            List<MonthGroup> last12 =
+                    MonthBuilder.buildLast12Months(ctx);
 
-        for (MonthGroup mg : last12) {
-            total += mg.monthTotal;
+            double total = 0;
+
+            for (MonthGroup mg : last12) {
+                total += mg.monthTotal;
+            }
+
+            String formatted =
+                    CurrencyUtils.format(
+                            total,
+                            AppPrefs.getCurrencySymbol(ctx)
+                    );
+
+            rows.add(new RowSummary(
+                    "Daily Living (12 months)",
+                    formatted
+            ));
+
+            // (Accounts row will go here later)
         }
-
-        String formatted =
-                CurrencyUtils.format(
-                        total,
-                        AppPrefs.getCurrencySymbol(ctx)
-                );
-
-        rows.add(new RowSummary(
-                "Daily Living (12 months)",
-                formatted
-        ));
 
         return rows;
     }

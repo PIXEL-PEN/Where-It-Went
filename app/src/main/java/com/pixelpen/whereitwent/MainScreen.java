@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
-
 public class MainScreen extends AppCompatActivity {
 
     public static MainScreen instance;
@@ -21,7 +20,16 @@ public class MainScreen extends AppCompatActivity {
     private RecyclerView recyclerMonths;
     private RecyclerView.Adapter<?> adapter;
 
-    boolean twelveMonthMode = false;
+    private boolean twelveMonthMode = false;
+    boolean summariesExpanded = false;
+
+    public boolean isTwelveMonthMode() {
+        return twelveMonthMode;
+    }
+
+    public void toggleTwelveMonthMode() {
+        twelveMonthMode = !twelveMonthMode;
+    }
 
 
     @Override
@@ -104,7 +112,11 @@ public class MainScreen extends AppCompatActivity {
         recyclerMonths.setLayoutManager(new LinearLayoutManager(this));
 
         List<MainRow> rows =
-                MainBuilder.build(this, twelveMonthMode);
+                MainBuilder.build(
+                        this,
+                        twelveMonthMode,
+                        summariesExpanded
+                );
 
         adapter = new MainAdapter(rows);
         recyclerMonths.setAdapter(adapter);
@@ -129,7 +141,12 @@ public class MainScreen extends AppCompatActivity {
     public void refreshAfterAdd() {
 
         List<MainRow> rows =
-                MainBuilder.build(this, twelveMonthMode);
+                MainBuilder.build(
+                        this,
+                        twelveMonthMode,
+                        summariesExpanded
+                );
+
 
 
         // restore month expansion
