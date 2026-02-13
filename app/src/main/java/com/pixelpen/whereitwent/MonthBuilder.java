@@ -38,11 +38,19 @@ public class MonthBuilder {
         double grandTotal = 0;
 
         for (Expense e : all) {
+
             String iso = DateUtils.toIso(e.date);
-            if (iso == null) continue;
+            if (iso == null || iso.length() < 7) {
+                continue;
+            }
 
             String ym = iso.substring(0, 7);
-            map.computeIfAbsent(ym, k -> new ArrayList<>()).add(e);
+
+            if (!map.containsKey(ym)) {
+                map.put(ym, new ArrayList<>());
+            }
+
+            map.get(ym).add(e);
 
             grandTotal += e.amount;
         }
@@ -130,4 +138,31 @@ public class MonthBuilder {
 
         return -1;
     }
+
+    public static List<MonthGroup> buildLast3Months(Context ctx) {
+
+        List<MonthGroup> twelve =
+                buildLast12Months(ctx);
+
+        List<MonthGroup> three = new ArrayList<>();
+
+        int monthCount = 0;
+
+        for (MonthGroup mg : twelve) {
+
+            if (mg.isHeader) {
+                three.add(mg);
+                continue;
+            }
+
+            if (monthCount < 3) {
+                three.add(mg);
+                monthCount++;
+            }
+        }
+
+        return three;
+    }
+
+
 }

@@ -4,7 +4,8 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MonthGroup {
+public class MonthGroup implements MainRow {
+
 
     public boolean isHeader = false;
     public String monthLabel = "";

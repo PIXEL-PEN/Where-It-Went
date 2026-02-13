@@ -19,7 +19,10 @@ public class MainScreen extends AppCompatActivity {
     public static int expandMonthIndex = -1;
 
     private RecyclerView recyclerMonths;
-    private MonthAdapter adapter;
+    private RecyclerView.Adapter<?> adapter;
+
+    boolean twelveMonthMode = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,9 +103,12 @@ public class MainScreen extends AppCompatActivity {
         recyclerMonths = findViewById(R.id.recycler_months);
         recyclerMonths.setLayoutManager(new LinearLayoutManager(this));
 
-        List<MonthGroup> data = MonthBuilder.buildLast12Months(this);
-        adapter = new MonthAdapter(data);
+        List<MainRow> rows =
+                MainBuilder.build(this, twelveMonthMode);
+
+        adapter = new MainAdapter(rows);
         recyclerMonths.setAdapter(adapter);
+
 
         ImageButton fabAdd = findViewById(R.id.fab_add);
         if (fabAdd != null) {
@@ -122,17 +128,32 @@ public class MainScreen extends AppCompatActivity {
 
     public void refreshAfterAdd() {
 
-        List<MonthGroup> fresh = MonthBuilder.buildLast12Months(this);
+        List<MainRow> rows =
+                MainBuilder.build(this, twelveMonthMode);
 
+
+        // restore month expansion
         int idx = expandMonthIndex;
         expandMonthIndex = -1;
 
-        for (int i = 0; i < fresh.size(); i++) {
-            MonthGroup mg = fresh.get(i);
-            mg.expanded = (!mg.isHeader && i == idx);
+        if (idx >= 0) {
+
+            int monthCounter = 0;
+
+            for (MainRow row : rows) {
+
+                if (row instanceof MonthGroup) {
+
+                    MonthGroup mg = (MonthGroup) row;
+
+                    mg.expanded = (monthCounter == idx);
+
+                    monthCounter++;
+                }
+            }
         }
 
-        adapter = new MonthAdapter(fresh);
+        adapter = new MainAdapter(rows);
         recyclerMonths.setAdapter(adapter);
 
         if (idx >= 0) {
@@ -140,9 +161,10 @@ public class MainScreen extends AppCompatActivity {
                 LinearLayoutManager lm =
                         (LinearLayoutManager) recyclerMonths.getLayoutManager();
                 if (lm != null) {
-                    lm.scrollToPositionWithOffset(idx, 0);
+                    lm.scrollToPositionWithOffset(idx + 1, 0);
                 }
             });
         }
     }
+
 }
