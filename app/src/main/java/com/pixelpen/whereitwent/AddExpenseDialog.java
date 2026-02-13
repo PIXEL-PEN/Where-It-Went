@@ -242,16 +242,24 @@ public class AddExpenseDialog extends DialogFragment {
 
                 android.util.Log.e("ACCOUNTS", "SUBMIT CLICKED");
 
+                long id = getSelectedAccountId();
+
                 insertAccountExpense();
 
-                dismiss();
-
-                startActivity(new Intent(
+                Intent intent = new Intent(
                         requireContext(),
                         AccountsOverviewActivity.class
-                ));
+                );
+
+                intent.putExtra("expand_account_id", id);
+                android.util.Log.e("EXPAND_TEST", "Sending id = " + id);
+
+                startActivity(intent);
+
+                dismiss();
             });
         }
+
 
         TextView linkManage = v.findViewById(R.id.link_manage_accounts);
         if (linkManage != null) {
@@ -422,7 +430,6 @@ public class AddExpenseDialog extends DialogFragment {
         }
     }
 
-
     private void saveAccounts() {
 
         try {
@@ -442,32 +449,6 @@ public class AddExpenseDialog extends DialogFragment {
 
             prefs.edit()
                     .putString(KEY_ACCOUNTS, arr.toString())
-                    .apply();
-
-        } catch (Exception ignored) {
-        }
-    }
-
-    private void saveAccountCategories() {
-
-        try {
-            JSONObject root = new JSONObject();
-
-            for (Map.Entry<String, List<String>> e : accountCustomCategories.entrySet()) {
-                JSONArray arr = new JSONArray();
-                for (String c : e.getValue()) {
-                    arr.put(c);
-                }
-                root.put(e.getKey(), arr);
-            }
-
-            SharedPreferences prefs =
-                    requireContext().getSharedPreferences(
-                            PREF_ACCOUNT_CATEGORIES,
-                            Context.MODE_PRIVATE);
-
-            prefs.edit()
-                    .putString(KEY_ACCOUNT_CATEGORIES, root.toString())
                     .apply();
 
         } catch (Exception ignored) {
@@ -1808,6 +1789,54 @@ public class AddExpenseDialog extends DialogFragment {
         prefs.edit()
                 .putString(KEY_LAST_ACTIVE, activeModule.name())
                 .apply();
+    }
+
+    private void saveAccountCategories() {
+
+        try {
+            JSONObject root = new JSONObject();
+
+            for (Map.Entry<String, List<String>> e :
+                    accountCustomCategories.entrySet()) {
+
+                JSONArray arr = new JSONArray();
+                for (String c : e.getValue()) {
+                    arr.put(c);
+                }
+
+                root.put(e.getKey(), arr);
+            }
+
+            SharedPreferences prefs =
+                    requireContext().getSharedPreferences(
+                            PREF_ACCOUNT_CATEGORIES,
+                            Context.MODE_PRIVATE);
+
+            prefs.edit()
+                    .putString(KEY_ACCOUNT_CATEGORIES, root.toString())
+                    .apply();
+
+        } catch (Exception ignored) {
+        }
+    }
+
+
+    private long getSelectedAccountId() {
+
+        if (spinnerAccount == null) return -1L;
+
+        Object selected = spinnerAccount.getSelectedItem();
+        if (selected == null) return -1L;
+
+        String accountName = selected.toString();
+
+        ExpenseDatabase db =
+                ExpenseDatabase.getDatabase(requireContext());
+
+        AccountEntity account =
+                db.accountDao().getAccountByName(accountName);
+
+        return account != null ? account.id : -1L;
     }
 
 

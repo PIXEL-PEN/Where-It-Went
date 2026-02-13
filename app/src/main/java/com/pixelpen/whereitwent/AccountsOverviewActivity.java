@@ -42,7 +42,13 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
 
     public static boolean needsRefresh = false;
-    public static long forceExpandAccountId = -1L;
+
+
+
+
+    public static long expandAccountId = -1L;
+
+
 
     public static long filterAccountId = -1L;
     @Nullable
@@ -61,6 +67,16 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_accounts_overview);
 
+        long receivedId =
+                getIntent().getLongExtra("expand_account_id", -1L);
+
+        android.util.Log.e("EXPAND_TEST", "onCreate received id = " + receivedId);
+
+        expandAccountId = receivedId;
+
+
+        expandAccountId =
+                getIntent().getLongExtra("expand_account_id", -1L);
 
 
 
@@ -88,18 +104,13 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
 
 
-
         if (filterAccountId != -1L) {
             // Filter active → always expand the filtered account
             expandAccountId = filterAccountId;
         } else {
             expandAccountId =
-                    forceExpandAccountId != -1L
-                            ? forceExpandAccountId
-                            : getIntent().getLongExtra("expand_account_id", -1L);
+                    getIntent().getLongExtra("expand_account_id", -1L);
         }
-
-        forceExpandAccountId = -1L;
 
         ExpenseDatabase.migrateAccountsFromPrefsIfNeeded(this);
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
@@ -114,7 +125,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
             popup.getMenu().add("Show / Hide Notes");
 
-
             popup.setOnMenuItemClickListener(item -> {
 
                 String title = item.getTitle().toString();
@@ -122,15 +132,11 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                 if ("Show / Hide Notes".equals(title)) {
                     showNotes = !showNotes;
 
-                    forceExpandAccountId = expandAccountId;
-
                     rebuildAccounts();
                     return true;
                 }
 
                 if ("Manage Accounts".equals(title)) {
-
-
 
                     AddExpenseDialog dialog =
                             AddExpenseDialog.newManageAccountsInstance();
@@ -142,6 +148,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
                     return true;
                 }
+
 
 
 
@@ -345,12 +352,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                         toggleItems(container, idx);
                     });
 
-                    if (account.id == expandAccountId) {
-                        container.post(() -> {
-                            int idx = container.indexOfChild(accountHeader);
-                            toggleItems(container, idx);
-                        });
-                    }
+
                 }
 
             }
