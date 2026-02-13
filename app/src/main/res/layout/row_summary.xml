@@ -7,20 +7,30 @@
     android:background="@android:color/white">
 
     <!-- Content Row -->
+    <!-- Content Row -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingStart="20dp"
-        android:paddingEnd="20dp">
+        android:paddingEnd="20dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp">
+
+
+    <!-- INDENT SLOT (default gone) -->
+        <View
+            android:id="@+id/view_indent"
+            android:layout_width="20dp"
+            android:layout_height="match_parent"
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/text_summary_label"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Daily Living (12 months)"
             android:textSize="15sp"
             android:textStyle="bold"
             android:textColor="#4F6B7A" />
@@ -29,12 +39,12 @@
             android:id="@+id/text_summary_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="฿0.00"
             android:textSize="15sp"
             android:textStyle="bold"
             android:textColor="#4F6B7A" />
 
     </LinearLayout>
+
 
     <!-- Divider -->
     <View

@@ -106,7 +106,9 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         MainRow row = rows.get(position);
 
+        // ===============================
         // RECENT HEADER
+        // ===============================
         if (holder instanceof VH_RecentHeader) {
 
             VH_RecentHeader vh = (VH_RecentHeader) holder;
@@ -129,7 +131,9 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return;
         }
 
+        // ===============================
         // SUMMARY HEADER
+        // ===============================
         if (holder instanceof VH_SummaryHeader) {
 
             VH_SummaryHeader vh = (VH_SummaryHeader) holder;
@@ -150,8 +154,9 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return;
         }
 
-
+        // ===============================
         // SUMMARY ROW
+        // ===============================
         if (holder instanceof VH_Summary) {
 
             RowSummary summary = (RowSummary) row;
@@ -160,10 +165,38 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             vh.label.setText(summary.label);
             vh.value.setText(summary.value);
 
+            // Base styling
+            vh.label.setTextColor(0xFF4F6B7A);
+            vh.value.setTextColor(0xFF4F6B7A);
+            vh.label.setTypeface(null, android.graphics.Typeface.BOLD);
+            vh.value.setTypeface(null, android.graphics.Typeface.BOLD);
+
+            // Reset padding first (prevents stacking indentation)
+            vh.itemView.setPadding(
+                    dp(vh.itemView, 20),
+                    vh.itemView.getPaddingTop(),
+                    vh.itemView.getPaddingRight(),
+                    vh.itemView.getPaddingBottom()
+            );
+
+            // Indent only true account rows
+            if (!summary.label.equals("Daily Living (12 months)")
+                    && !summary.label.equals("Accounts (current)")) {
+
+                vh.itemView.setPadding(
+                        dp(vh.itemView, 27), // 25% reduced indent
+                        vh.itemView.getPaddingTop(),
+                        vh.itemView.getPaddingRight(),
+                        vh.itemView.getPaddingBottom()
+                );
+            }
+
             return;
         }
 
+        // ===============================
         // MONTH ROW
+        // ===============================
         if (holder instanceof VH_Month) {
 
             MonthGroup mg = (MonthGroup) row;
@@ -287,4 +320,22 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             value = v.findViewById(R.id.text_summary_value);
         }
     }
+
+    private boolean isAccountRow(String label) {
+
+        if (label == null) return false;
+
+        if (label.startsWith("Daily Living")) return false;
+        if (label.startsWith("Accounts")) return false;
+
+        return true;
+    }
+
+
+    private int dp(View v, int value) {
+        float density = v.getResources().getDisplayMetrics().density;
+        return (int) (value * density);
+    }
+
+
 }

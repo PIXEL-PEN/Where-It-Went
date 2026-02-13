@@ -28,16 +28,18 @@ public class MainBuilder {
         }
 
         // -----------------------------
-        // SUMMARIES HEADER
-        // -----------------------------
+// SUMMARIES HEADER
+// -----------------------------
         rows.add(new RowSummaryHeader(summariesExpanded));
 
-        // -----------------------------
-        // DAILY LIVING SUMMARY ROW
-        // -----------------------------
+// -----------------------------
+// SUMMARY ROWS
+// -----------------------------
         if (summariesExpanded) {
 
-            // Always calculate from 12 months
+            // -----------------------------
+            // DAILY LIVING (12 months)
+            // -----------------------------
             List<MonthGroup> last12 =
                     MonthBuilder.buildLast12Months(ctx);
 
@@ -57,6 +59,44 @@ public class MainBuilder {
                     "Daily Living (12 months)",
                     formatted
             ));
+
+            // -----------------------------
+            // ACCOUNTS (current)
+            // -----------------------------
+            rows.add(new RowSummary(
+                    "Accounts (current)",
+                    ""
+            ));
+
+            ExpenseDatabase db =
+                    ExpenseDatabase.getDatabase(ctx);
+
+            List<AccountEntity> accounts =
+                    db.accountDao().getAllAccounts();
+
+            for (AccountEntity acct : accounts) {
+
+                double acctTotal = 0;
+
+                List<AccountItemEntity> items =
+                        db.accountItemDao()
+                                .getItemsForAccount(acct.id);
+
+                for (AccountItemEntity item : items) {
+                    acctTotal += item.amount;
+                }
+
+                String acctFormatted =
+                        CurrencyUtils.format(
+                                acctTotal,
+                                AppPrefs.getCurrencySymbol(ctx)
+                        );
+
+                rows.add(new RowSummary(
+                        acct.name,
+                        acctFormatted
+                ));
+            }
         }
 
         return rows;
