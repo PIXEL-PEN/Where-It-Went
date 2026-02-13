@@ -11,6 +11,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.RelativeSizeSpan;
+
+
+
 public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final int TYPE_HEADER = 0;
@@ -20,6 +26,11 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final int COLOR_HEADER_DEFAULT  = 0xFFFFFFFF;
     private static final int COLOR_HEADER_SELECTED = 0xFFECECEC;
+
+    private static final int TYPE_SECTION_HEADER = 2;
+    private static final int TYPE_SUMMARY = 3;
+
+
 
     public MainAdapter(List<MainRow> rows) {
         this.rows = rows;
@@ -32,16 +43,33 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public int getItemViewType(int position) {
-        MonthGroup mg = (MonthGroup) rows.get(position);
-        return mg.isHeader ? TYPE_HEADER : TYPE_MONTH;
+
+        MainRow row = rows.get(position);
+
+        if (row instanceof MonthGroup) {
+            MonthGroup mg = (MonthGroup) row;
+            return mg.isHeader ? TYPE_HEADER : TYPE_MONTH;
+        }
+
+        if (row instanceof RowSectionHeader) {
+            return TYPE_SECTION_HEADER;
+        }
+
+        if (row instanceof RowSummary) {
+            return TYPE_SUMMARY;
+        }
+
+        return TYPE_MONTH; // fallback
     }
 
-    @NonNull
+
     @Override
+    @NonNull
     public RecyclerView.ViewHolder onCreateViewHolder(
             @NonNull ViewGroup parent,
             int viewType
     ) {
+
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 
         if (viewType == TYPE_HEADER) {
@@ -49,8 +77,22 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return new VH_Header(v);
         }
 
-        View v = inflater.inflate(R.layout.row_month_group, parent, false);
-        return new VH_Month(v);
+        if (viewType == TYPE_MONTH) {
+            View v = inflater.inflate(R.layout.row_month_group, parent, false);
+            return new VH_Month(v);
+        }
+
+        if (viewType == TYPE_SECTION_HEADER) {
+            View v = inflater.inflate(R.layout.row_section_header, parent, false);
+            return new VH_SectionHeader(v);
+        }
+
+        if (viewType == TYPE_SUMMARY) {
+            View v = inflater.inflate(R.layout.row_summary, parent, false);
+            return new VH_Summary(v);
+        }
+
+        throw new IllegalStateException("Unknown viewType: " + viewType);
     }
 
     @Override
@@ -59,9 +101,13 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             int position
     ) {
 
-        MonthGroup mg = (MonthGroup) rows.get(position);
+        MainRow row = rows.get(position);
 
+        // -----------------------------------
+        // RECENT HEADER (MonthGroup header)
+        // -----------------------------------
         if (holder instanceof VH_Header) {
+
             VH_Header vh = (VH_Header) holder;
 
             vh.title.setText("Recent");
@@ -71,9 +117,6 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                             ? "12 Months ▼"
                             : "3 Months ▼"
             );
-
-
-
 
             vh.total.setOnClickListener(v -> {
 
@@ -89,7 +132,55 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return;
         }
 
+        // -----------------------------------
+        // SUMMARIES SECTION HEADER
+        // -----------------------------------
+        if (holder instanceof VH_SectionHeader) {
 
+            RowSectionHeader section = (RowSectionHeader) row;
+            VH_SectionHeader vh = (VH_SectionHeader) holder;
+
+            vh.title.setText(section.title);
+            return;
+        }
+
+        // -----------------------------------
+        // SUMMARY ROW
+        // -----------------------------------
+        if (holder instanceof VH_Summary) {
+
+            RowSummary summary = (RowSummary) row;
+            VH_Summary vh = (VH_Summary) holder;
+
+            String full = summary.label;
+
+            int start = full.indexOf("(");
+
+            if (start != -1) {
+
+                SpannableString span = new SpannableString(full);
+
+                span.setSpan(
+                        new RelativeSizeSpan(0.85f),
+                        start,
+                        full.length(),
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                );
+
+                vh.label.setText(span);
+
+            } else {
+                vh.label.setText(full);
+            }
+
+            vh.value.setText(summary.value);
+            return;
+        }
+
+        // -----------------------------------
+        // MONTH ROW
+        // -----------------------------------
+        MonthGroup mg = (MonthGroup) row;
         VH_Month vh = (VH_Month) holder;
 
         vh.title.setText(mg.monthLabel);
@@ -105,9 +196,9 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             boolean wasExpanded = mg.expanded;
 
-            for (MainRow row : rows) {
-                if (row instanceof MonthGroup) {
-                    MonthGroup other = (MonthGroup) row;
+            for (MainRow r : rows) {
+                if (r instanceof MonthGroup) {
+                    MonthGroup other = (MonthGroup) r;
                     if (!other.isHeader) {
                         other.expanded = false;
                     }
@@ -119,19 +210,22 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             notifyDataSetChanged();
         });
 
-
-        LayoutInflater inflater = LayoutInflater.from(vh.children.getContext());
+        LayoutInflater inflater =
+                LayoutInflater.from(vh.children.getContext());
         vh.children.removeAllViews();
 
         for (MonthGroup.DayData data : mg.dayRows) {
 
-            View row = inflater.inflate(R.layout.row_month_entry, vh.children, false);
+            View child =
+                    inflater.inflate(R.layout.row_month_entry,
+                            vh.children,
+                            false);
 
-            TextView m = row.findViewById(R.id.text_month_abbrev);
-            TextView d = row.findViewById(R.id.text_day_number);
-            TextView item = row.findViewById(R.id.text_item);
-            TextView cat = row.findViewById(R.id.text_category);
-            TextView amt = row.findViewById(R.id.text_amount);
+            TextView m = child.findViewById(R.id.text_month_abbrev);
+            TextView d = child.findViewById(R.id.text_day_number);
+            TextView item = child.findViewById(R.id.text_item);
+            TextView cat = child.findViewById(R.id.text_category);
+            TextView amt = child.findViewById(R.id.text_amount);
 
             m.setText(data.monthAbbrev);
             d.setText(data.dayNumber);
@@ -139,26 +233,27 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             cat.setText(data.category);
             amt.setText(data.amount);
 
-            row.setTag(data.iso);
+            child.setTag(data.iso);
 
-            row.setOnClickListener(v -> {
+            child.setOnClickListener(v -> {
                 String iso = (String) v.getTag();
                 if (iso != null) {
-                    Intent intent = new Intent(v.getContext(), DayDetailActivity.class);
+                    Intent intent =
+                            new Intent(v.getContext(),
+                                    DayDetailActivity.class);
                     intent.putExtra("selected_date", iso);
                     v.getContext().startActivity(intent);
                 }
             });
 
-            if (mg.expanded) {
-                row.setBackgroundColor(0xFFFFFEF9);
-            } else {
-                row.setBackgroundColor(0x00000000);
-            }
+            child.setBackgroundColor(
+                    mg.expanded ? 0xFFFFFEF9 : 0x00000000
+            );
 
-            vh.children.addView(row);
+            vh.children.addView(child);
         }
     }
+
 
     static class VH_Header extends RecyclerView.ViewHolder {
         TextView title, total;
@@ -184,4 +279,27 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             children = v.findViewById(R.id.layout_month_children);
         }
     }
+
+    static class VH_SectionHeader extends RecyclerView.ViewHolder {
+
+        TextView title;
+
+        VH_SectionHeader(View v) {
+            super(v);
+            title = v.findViewById(R.id.text_section_header);
+        }
+    }
+    static class VH_Summary extends RecyclerView.ViewHolder {
+
+        TextView label;
+        TextView value;
+
+        VH_Summary(View v) {
+            super(v);
+            label = v.findViewById(R.id.text_summary_label);
+            value = v.findViewById(R.id.text_summary_value);
+        }
+    }
+
+
 }

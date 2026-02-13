@@ -1,8 +1,9 @@
 package com.pixelpen.whereitwent;
 
 public class RowSummary implements MainRow {
-    public String label;
-    public String value;
+
+    public final String label;
+    public final String value;
 
     public RowSummary(String label, String value) {
         this.label = label;
