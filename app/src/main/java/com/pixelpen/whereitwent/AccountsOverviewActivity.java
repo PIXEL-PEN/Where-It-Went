@@ -110,6 +110,36 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         LinearLayout container = findViewById(R.id.accounts_container);
         container.removeAllViews();
 
+        TextView filterIndicator =
+                findViewById(R.id.text_filter_indicator);
+
+        if (filterAccountId != -1L) {
+
+            StringBuilder label = new StringBuilder("✕  ");
+
+
+
+            if (filterCategory != null) {
+                label.append(filterCategory);
+            }
+
+
+            filterIndicator.setText(label.toString());
+            filterIndicator.setVisibility(View.VISIBLE);
+
+            filterIndicator.setOnClickListener(v -> {
+                filterAccountId = -1L;
+                filterCategory = null;
+                rebuildAccounts();
+            });
+
+        } else {
+            filterIndicator.setVisibility(View.GONE);
+            filterIndicator.setOnClickListener(null);
+        }
+
+
+
         ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
         AccountDao accountDao = db.accountDao();
         AccountItemDao itemDao = db.accountItemDao();
