@@ -24,7 +24,6 @@ public class MainScreen extends AppCompatActivity {
     boolean summariesExpanded = false;
 
 
-
     public boolean isTwelveMonthMode() {
         return twelveMonthMode;
     }
@@ -150,7 +149,6 @@ public class MainScreen extends AppCompatActivity {
                 );
 
 
-
         // restore month expansion
         int idx = expandMonthIndex;
         expandMonthIndex = -1;
@@ -177,13 +175,10 @@ public class MainScreen extends AppCompatActivity {
 
         if (idx >= 0) {
             recyclerMonths.post(() -> {
-                LinearLayoutManager lm =
-                        (LinearLayoutManager) recyclerMonths.getLayoutManager();
-                if (lm != null) {
-                    lm.scrollToPositionWithOffset(idx + 1, 0);
-                }
+                recyclerMonths.scrollToPosition(0);
             });
-        }
-    }
 
+        }
+
+    }
 }

@@ -11,6 +11,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
+import android.graphics.Color;
+import androidx.core.content.ContextCompat;
+
+
+
 public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final int TYPE_RECENT_HEADER = 0;
@@ -208,6 +213,19 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             vh.children.setVisibility(
                     mg.expanded ? View.VISIBLE : View.GONE
             );
+            if (mg.expanded) {
+                vh.header.setBackgroundColor(
+                        ContextCompat.getColor(
+                                vh.header.getContext(),
+                                R.color.monthExpandedGray
+                        )
+                );
+            } else {
+                vh.header.setBackgroundColor(Color.TRANSPARENT);
+            }
+
+
+
 
             vh.header.setOnClickListener(v -> {
 

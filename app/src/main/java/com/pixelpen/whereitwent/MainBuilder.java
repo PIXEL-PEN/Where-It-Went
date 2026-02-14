@@ -92,10 +92,17 @@ public class MainBuilder {
                                 AppPrefs.getCurrencySymbol(ctx)
                         );
 
+                String label = acct.name;
+
+                if (acct.archived) {
+                    label += " (archived)";
+                }
+
                 rows.add(new RowSummary(
-                        acct.name,
+                        label,
                         acctFormatted
                 ));
+
             }
         }
 

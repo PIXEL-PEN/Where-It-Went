@@ -25,5 +25,7 @@
 
     <color name="header_bg_project">#FFF6E5</color>
 
+    <color name="monthExpandedGray">#E8E8E8</color>
+
 
 </resources>
