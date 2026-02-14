@@ -5,29 +5,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.PopupMenu;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
-
-import android.widget.PopupMenu;
-
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
-import android.util.Log;
-
-import android.widget.Toast;
-
-import androidx.core.view.WindowCompat;
-
-
+import java.util.Map;
 
 public class AccountsOverviewActivity extends AppCompatActivity {
 
@@ -37,19 +28,12 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
     private boolean showNotes = true;
 
-
+    private long currentlyExpandedId = -1L;
 
 
 
     public static boolean needsRefresh = false;
-
-
-
-
     public static long expandAccountId = -1L;
-
-
-
     public static long filterAccountId = -1L;
     @Nullable
     public static String filterCategory = null;
@@ -63,56 +47,13 @@ public class AccountsOverviewActivity extends AppCompatActivity {
             showNotes = savedInstanceState.getBoolean("show_notes", true);
         }
 
-
-
         setContentView(R.layout.activity_accounts_overview);
-
-        long receivedId =
-                getIntent().getLongExtra("expand_account_id", -1L);
-
-        android.util.Log.e("EXPAND_TEST", "onCreate received id = " + receivedId);
-
-        expandAccountId = receivedId;
-
 
         expandAccountId =
                 getIntent().getLongExtra("expand_account_id", -1L);
 
-
-
-        TextView filterIndicator =
-                findViewById(R.id.text_filter_indicator);
-
-
-        String currencySymbol = AppPrefs.getCurrencySymbol(this);
-        long expandAccountId;
-
-        if (filterAccountId != -1L) {
-
-            StringBuilder label = new StringBuilder("Filtered");
-
-            if (filterCategory != null) {
-                label.append(": ").append(filterCategory);
-            }
-
-            filterIndicator.setText(label.toString());
-            filterIndicator.setVisibility(View.VISIBLE);
-
-        } else {
-            filterIndicator.setVisibility(View.GONE);
-        }
-
-
-
-        if (filterAccountId != -1L) {
-            // Filter active → always expand the filtered account
-            expandAccountId = filterAccountId;
-        } else {
-            expandAccountId =
-                    getIntent().getLongExtra("expand_account_id", -1L);
-        }
-
         ExpenseDatabase.migrateAccountsFromPrefsIfNeeded(this);
+
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
 
         findViewById(R.id.btn_menu).setOnClickListener(v -> {
@@ -120,9 +61,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
             PopupMenu popup = new PopupMenu(this, v);
 
             popup.getMenu().add("Filter Accounts");
-
             popup.getMenu().add("Manage Accounts");
-
             popup.getMenu().add("Show / Hide Notes");
 
             popup.setOnMenuItemClickListener(item -> {
@@ -131,27 +70,16 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
                 if ("Show / Hide Notes".equals(title)) {
                     showNotes = !showNotes;
-
                     rebuildAccounts();
                     return true;
                 }
 
                 if ("Manage Accounts".equals(title)) {
-
                     AddExpenseDialog dialog =
                             AddExpenseDialog.newManageAccountsInstance();
-
-                    dialog.show(
-                            getSupportFragmentManager(),
-                            "MANAGE_ACCOUNTS"
-                    );
-
+                    dialog.show(getSupportFragmentManager(), "MANAGE_ACCOUNTS");
                     return true;
                 }
-
-
-
-
 
                 if ("Filter Accounts".equals(title)) {
 
@@ -161,22 +89,12 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                     dialog.setListener((accountId, category) -> {
                         filterAccountId = accountId;
                         filterCategory = category;
-
-                        findViewById(R.id.accounts_container)
-                                .post(this::rebuildAccounts);
-
-
+                        rebuildAccounts();
                     });
 
-                    dialog.show(
-                            getSupportFragmentManager(),
-                            "ACCOUNT_FILTER"
-                    );
-
+                    dialog.show(getSupportFragmentManager(), "ACCOUNT_FILTER");
                     return true;
                 }
-
-
 
                 return false;
             });
@@ -184,36 +102,18 @@ public class AccountsOverviewActivity extends AppCompatActivity {
             popup.show();
         });
 
+        rebuildAccounts();
+    }
 
+    private void rebuildAccounts() {
 
-
-        findViewById(R.id.btn_back).setOnLongClickListener(v -> {
-
-            AccountCategoryFilterDialog dialog =
-                    new AccountCategoryFilterDialog();
-
-            dialog.setListener((accountId, category) -> {
-                filterAccountId = accountId;
-                filterCategory = category;
-
-                findViewById(R.id.accounts_container)
-                        .post(this::rebuildAccounts);
-
-            });
-
-            dialog.show(
-                    getSupportFragmentManager(),
-                    "ACCOUNT_FILTER"
-            );
-            return true;
-        });
-
+        LinearLayout container = findViewById(R.id.accounts_container);
+        container.removeAllViews();
 
         ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
         AccountDao accountDao = db.accountDao();
         AccountItemDao itemDao = db.accountItemDao();
 
-        LinearLayout container = findViewById(R.id.accounts_container);
         LayoutInflater inflater = LayoutInflater.from(this);
 
         List<AccountEntity> accounts = accountDao.getActiveAccounts();
@@ -227,10 +127,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
         for (String type : ACCOUNT_TYPES) {
 
-            // FILTER ACTIVE → skip section headers entirely
-            if (filterAccountId != -1L) {
-                // We will render only the filtered account below
-            } else {
+            if (filterAccountId == -1L) {
 
                 boolean hasType = false;
                 for (AccountEntity a : accounts) {
@@ -241,21 +138,14 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                 }
                 if (!hasType) continue;
 
-                View section = addSection(
-                        inflater,
-                        container,
-                        type,
-                        SECTION_LABELS.get(type)
-                );
+                View section = addSection(inflater, container, type, SECTION_LABELS.get(type));
                 section.setTag(TAG_SECTION);
             }
-
 
             for (AccountEntity account : accounts) {
 
                 if (!type.equalsIgnoreCase(account.type)) continue;
 
-                // FILTER — ACCOUNT (STRUCTURAL)
                 if (filterAccountId != -1L &&
                         account.id != filterAccountId) {
                     continue;
@@ -267,12 +157,10 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                         itemDao.getItemsForAccount(account.id);
 
                 for (AccountItemEntity e : totalItems) {
-
                     if (filterCategory != null &&
                             !filterCategory.equals(e.category)) {
                         continue;
                     }
-
                     displayTotal += e.amount;
                 }
 
@@ -280,7 +168,10 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                         inflater,
                         container,
                         account.name,
-                        CurrencyUtils.format(displayTotal, "฿")
+                        CurrencyUtils.format(
+                                displayTotal,
+                                AppPrefs.getCurrencySymbol(this)
+                        )
                 );
 
                 accountHeader.setTag(TAG_ACCOUNT);
@@ -290,13 +181,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
                 for (AccountItemEntity e : items) {
 
-                    // FILTER — ACCOUNT
-                    if (filterAccountId != -1L &&
-                            account.id != filterAccountId) {
-                        continue;
-                    }
-
-                    // FILTER — CATEGORY
                     if (filterCategory != null &&
                             !filterCategory.equals(e.category)) {
                         continue;
@@ -309,65 +193,67 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                                     e.dateMillis,
                                     capitalize(e.item),
                                     e.category,
-                                    CurrencyUtils.format(e.amount, currencySymbol),
+                                    CurrencyUtils.format(
+                                            e.amount,
+                                            AppPrefs.getCurrencySymbol(this)
+                                    ),
                                     e.note
                             )
                     );
 
                     itemView.setTag(TAG_ITEM);
-                    if (filterAccountId != -1L) {
-                        // Filtered view: always expanded
+
+                    // Default collapsed
+                    itemView.setVisibility(View.GONE);
+
+                    // Expand only if filtered or explicitly requested
+                    if (filterAccountId != -1L ||
+                            account.id == expandAccountId ||
+                            account.id == currentlyExpandedId) {
                         itemView.setVisibility(View.VISIBLE);
-                    } else {
-                        // Normal view: respect expand/collapse
-                        itemView.setVisibility(
-                                account.id == expandAccountId
-                                        ? View.VISIBLE
-                                        : View.GONE
-                        );
                     }
 
 
                     itemView.setOnClickListener(v -> {
                         EditAccountItemDialog dialog =
                                 new EditAccountItemDialog();
-
                         Bundle args = new Bundle();
                         args.putLong(
                                 EditAccountItemDialog.ARG_ACCOUNT_ITEM_ID,
                                 e.id
                         );
                         dialog.setArguments(args);
-
                         dialog.show(
                                 getSupportFragmentManager(),
                                 "EDIT_ACCOUNT_ITEM"
                         );
                     });
                 }
-                if (filterAccountId == -1L) {
 
-                    accountHeader.setOnClickListener(v -> {
-                        int idx = container.indexOfChild(accountHeader);
-                        toggleItems(container, idx);
+                if (filterAccountId == -1L) {
+                    accountHeader
+                            .setOnClickListener(v -> {
+
+                        if (currentlyExpandedId == account.id) {
+                            currentlyExpandedId = -1L;
+                        } else {
+                            currentlyExpandedId = account.id;
+                        }
+
+                        rebuildAccounts();
                     });
 
-
                 }
-
             }
         }
     }
 
+    // --- helpers unchanged ---
 
-
-
-    private View addSection(
-            LayoutInflater inflater,
-            LinearLayout container,
-            String type,
-            String title
-    ) {
+    private View addSection(LayoutInflater inflater,
+                            LinearLayout container,
+                            String type,
+                            String title) {
 
         int layoutRes =
                 "TRAVEL".equalsIgnoreCase(type)
@@ -381,12 +267,10 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         return v;
     }
 
-    private View addAccountHeader(
-            LayoutInflater inflater,
-            LinearLayout container,
-            String name,
-            String total
-    ) {
+    private View addAccountHeader(LayoutInflater inflater,
+                                  LinearLayout container,
+                                  String name,
+                                  String total) {
 
         View v = inflater.inflate(
                 R.layout.row_account_item,
@@ -404,11 +288,9 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         return v;
     }
 
-    private View addAccountItem(
-            LayoutInflater inflater,
-            LinearLayout container,
-            AccountItem item
-    ) {
+    private View addAccountItem(LayoutInflater inflater,
+                                LinearLayout container,
+                                AccountItem item) {
 
         LinearLayout block = new LinearLayout(this);
         block.setOrientation(LinearLayout.VERTICAL);
@@ -441,10 +323,9 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
         block.addView(header);
 
-        boolean hasNote =
-                item.note != null && !item.note.trim().isEmpty();
-
-        if (hasNote && showNotes) {
+        if (item.note != null &&
+                !item.note.trim().isEmpty() &&
+                showNotes) {
 
             View noteRow = inflater.inflate(
                     R.layout.row_account_item_note,
@@ -456,22 +337,23 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                     noteRow.findViewById(R.id.text_note);
 
             noteView.setText("Note: " + item.note);
-            noteView.setTypeface(
-                    noteView.getTypeface(),
-                    android.graphics.Typeface.ITALIC
-            );
-
             block.addView(noteRow);
         }
 
         container.addView(block);
         return block;
     }
+    private String capitalize(String s) {
+        if (s == null || s.isEmpty()) return "";
+        return s.substring(0, 1).toUpperCase()
+                + s.substring(1);
+    }
 
-    private void toggleItems(
-            LinearLayout container,
-            int headerIndex
-    ) {
+
+
+
+    private void toggleItems(LinearLayout container,
+                             int headerIndex) {
 
         boolean hide;
 
@@ -498,168 +380,5 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                     hide ? View.GONE : View.VISIBLE
             );
         }
-
-
-
     }
-
-    private double safe(Double d) {
-        return d == null ? 0.0 : d;
-    }
-
-    private String capitalize(String s) {
-        if (s == null || s.isEmpty()) return "";
-        return s.substring(0, 1).toUpperCase()
-                + s.substring(1);
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putBoolean("show_notes", showNotes);
-    }
-
-
-
-@Override
-    protected void onResume() {
-        super.onResume();
-
-        if (needsRefresh) {
-            needsRefresh = false;
-            rebuildAccounts();
-
-        }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        // Clear filter ONLY when leaving the screen for real
-        if (isFinishing()) {
-            filterAccountId = -1L;
-            filterCategory = null;
-        }
-    }
-
-
-
-    private void restoreStatusBar() {
-        WindowInsetsControllerCompat controller =
-                ViewCompat.getWindowInsetsController(getWindow().getDecorView());
-
-        if (controller != null) {
-            controller.setAppearanceLightStatusBars(false);
-        }
-    }
-    private void rebuildAccounts() {
-
-        LinearLayout container = findViewById(R.id.accounts_container);
-        container.removeAllViews();
-
-        ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
-        AccountDao accountDao = db.accountDao();
-        AccountItemDao itemDao = db.accountItemDao();
-
-        LayoutInflater inflater = LayoutInflater.from(this);
-
-        List<AccountEntity> accounts = accountDao.getActiveAccounts();
-
-        String[] ACCOUNT_TYPES = {"PROJECT", "TRAVEL", "CUSTOM"};
-
-        Map<String, String> SECTION_LABELS = new HashMap<>();
-        SECTION_LABELS.put("PROJECT", "PROJECTS");
-        SECTION_LABELS.put("TRAVEL", "TRAVEL");
-        SECTION_LABELS.put("CUSTOM", "CUSTOM");
-
-        for (String type : ACCOUNT_TYPES) {
-
-            if (filterAccountId != -1L) {
-                // filtered mode skips section header
-            } else {
-
-                boolean hasType = false;
-                for (AccountEntity a : accounts) {
-                    if (type.equalsIgnoreCase(a.type)) {
-                        hasType = true;
-                        break;
-                    }
-                }
-                if (!hasType) continue;
-
-                View section = addSection(
-                        inflater,
-                        container,
-                        type,
-                        SECTION_LABELS.get(type)
-                );
-                section.setTag(TAG_SECTION);
-            }
-
-            for (AccountEntity account : accounts) {
-
-                if (!type.equalsIgnoreCase(account.type)) continue;
-
-                if (filterAccountId != -1L &&
-                        account.id != filterAccountId) {
-                    continue;
-                }
-
-                double displayTotal = 0.0;
-
-                List<AccountItemEntity> totalItems =
-                        itemDao.getItemsForAccount(account.id);
-
-                for (AccountItemEntity e : totalItems) {
-
-                    if (filterCategory != null &&
-                            !filterCategory.equals(e.category)) {
-                        continue;
-                    }
-
-                    displayTotal += e.amount;
-                }
-
-                View accountHeader = addAccountHeader(
-                        inflater,
-                        container,
-                        account.name,
-                        CurrencyUtils.format(displayTotal,
-                                AppPrefs.getCurrencySymbol(this))
-                );
-
-                accountHeader.setTag(TAG_ACCOUNT);
-
-                List<AccountItemEntity> items =
-                        itemDao.getItemsForAccount(account.id);
-
-                for (AccountItemEntity e : items) {
-
-                    if (filterCategory != null &&
-                            !filterCategory.equals(e.category)) {
-                        continue;
-                    }
-
-                    View itemView = addAccountItem(
-                            inflater,
-                            container,
-                            new AccountItem(
-                                    e.dateMillis,
-                                    capitalize(e.item),
-                                    e.category,
-                                    CurrencyUtils.format(e.amount,
-                                            AppPrefs.getCurrencySymbol(this)),
-                                    e.note
-                            )
-                    );
-
-                    itemView.setTag(TAG_ITEM);
-                }
-            }
-        }
-    }
-
-
-
 }
