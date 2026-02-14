@@ -91,5 +91,9 @@ public interface AccountItemDao {
     List<String> getCategoriesForAccount(long accountId);
 
 
+    @Query("SELECT DISTINCT category FROM account_items WHERE accountId = :accountId ORDER BY category")
+    List<String> getDistinctCategoriesForAccount(long accountId);
+
+
 
 }
