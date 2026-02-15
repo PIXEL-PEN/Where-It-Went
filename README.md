@@ -1,137 +1,120 @@
+# Where It Went
+
+Where It Went is a lightweight, offline-first expense tracking app designed to answer a simple question:
+
+Where did it go?
+
+Unlike traditional budgeting apps, Where It Went does not require income tracking, envelopes, or complex budgeting systems. Your income already lives in your bank. This app focuses purely on understanding spending.
+
+No ads.  
+No cloud sync.  
+No login.  
+No tracking.  
+Everything stays on your device.
 
 ---
 
-# 📱 Where It Went
+## Core Philosophy
 
-*A simple, offline-first budgeting app designed for real life.*
+Most finance apps demand structure before insight.
 
----
+Where It Went reverses that.
 
-# **Where It Went**
+Log expenses quickly.  
+Let categories and tags organize them.  
+Review patterns month to month.  
 
-**Track your spending — not your soul.**
-*A no-fluff, privacy-respecting expense tracker built for everyday use.*
-
----
-
-## 🧭 What Is This?
-
-**Where It Went** is a simple, intentional daily expense tracker built for people who just want to know:
-
-> *“Where did all my money go?”*
-
-No accounts.
-No syncing.
-No ads.
-No tracking.
-
-Just fast, clean expense logging with clear overviews.
+Clarity without overhead.
 
 ---
 
-## 🌱 Why It Exists
+## Architecture Overview
 
-Most expense trackers are:
+The app is structured into two independent modules:
 
-* Bloated with dashboards and subscriptions
-* Full of tracking SDKs
-* Designed to harvest personal data
-* Or require bank access just to log a sandwich
+### 1. Daily Living
 
-**Where It Went** is the opposite — intentionally simple, private, and focused.
+The primary ledger for everyday expenses.
 
-It does one thing well:
-**help you understand where your money actually went.**
+Features:
+- Fast entry workflow
+- Month grouping with expand/collapse
+- 3-Month / 12-Month toggle
+- Tag-based Distribution graph
+- Category management
+- Export and Reset tools
 
----
+Each category is assigned one of four tags:
 
-## ✨ Key Features (v2.0)
+- Fixed
+- Necessity
+- Discretionary
+- Off-Budget
 
-* 🚀 **New Add-Expense Dialog** via floating action button
-* 🗂️ **Clean navigation** across Month, Date, Category, Day Detail
-* 📊 **Distribution Graph**: Fixed · Necessities · Discretionary · Off-Budget
-* 👜 **Off-Budget Summary** (great for trips, projects, special events)
-* 📤 **Export** to HTML and CSV
-* 🔒 **Fully offline** (no network permission at all)
-* 🙅 **No ads, no analytics, no nonsense**
-
----
-
-## 🛠️ Who It’s For
-
-* People who want a simple spending log
-* Makers tracking project expenses
-* Travelers tracking trip costs
-* Privacy-conscious users
-* Anyone tired of “budgeting tools” that feel like tax software
+Tags drive the Distribution graph and allow meaningful monthly comparison.
 
 ---
 
-## 📦 Installation
+### 2. Accounts (Projects, Travel, Custom)
 
-* Download the **signed v2.0 APK** from:
-  👉 [https://github.com/PIXEL-PEN/Where-It-Went/releases](https://github.com/PIXEL-PEN/Where-It-Went/releases)
+Accounts allow expenses to be tracked independently from Daily Living.
 
-* **F-Droid version** will be available after the metadata merge request is approved.
+Designed for:
+- Renovations
+- Travel
+- Events
+- Special purchases
+- Temporary or isolated financial activity
 
----
+Account types:
+- Project
+- Travel
+- Custom
 
-## 📌 Philosophy
+Features:
+- Independent grouping
+- Filtering by account and category
+- Optional note visibility
+- Archived account support
+- Long-press edit for items
+- Submit-to-expand behavior for quick review
 
-> *“A system is only as good as the data you feed it.”*
-
-**Where It Went** stays out of your way — so you can log expenses consistently and actually benefit from clear, accurate insights.
-
-Perfect for:
-
-* Daily spending habits
-* Multi-day trips
-* Home improvement or maker projects
-* Tracking categories without spreadsheets
-
----
-
-## 🧱 Open Source
-
-* MIT-licensed
-* Zero telemetry
-* No remote connections
-* Transparent, minimal codebase
+Accounts do not distort Daily Living insights.
 
 ---
 
-## 📬 Feedback & Contributions
+## Design Principles
 
-Ideas, issues, or suggestions?
-Open an issue or start a discussion on GitHub.
+- Minimal UI
+- No unnecessary automation
+- Deterministic behavior
+- Clear data ownership
+- Local-only storage (Room database)
+- Explicit backup and export
 
----
-
-## 📱 Screenshots (v2.0)
-
-### Main Actions
-
-| Add Expense (Dialog)                                 | Month View                                             |
-| ---------------------------------------------------- | ------------------------------------------------------ |
-| <img src="docs/screenshots/01_add.png" width="260"/> | <img src="docs/screenshots/02_month.png" width="260"/> |
-
-### Month & Category Views
-
-| Expanded Month                                           | Categories                                                  |
-| -------------------------------------------------------- | ----------------------------------------------------------- |
-| <img src="docs/screenshots/03_month_2.png" width="260"/> | <img src="docs/screenshots/04_categories.png" width="260"/> |
-
-### Distribution & Navigation
-
-| Distribution Graph                                            | Navigation Drawer                                       |
-| ------------------------------------------------------------- | ------------------------------------------------------- |
-| <img src="docs/screenshots/05_distribution.png" width="260"/> | <img src="docs/screenshots/06_drawer.png" width="260"/> |
+The app is built for clarity, not financial gamification.
 
 ---
 
-## 📄 License
+## Data & Privacy
 
-MIT License. See [LICENSE](LICENSE).
+Where It Went:
+- Stores data locally
+- Uses no analytics
+- Requires no internet
+- Contains no advertisements
+
+Your data is yours.
 
 ---
 
+## Version Status
+
+v2.x – Stable Daily Living release  
+v3.x – Accounts architecture expansion  
+
+---
+
+## License
+
+[Insert your license here]
