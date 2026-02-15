@@ -244,20 +244,27 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                     }
 
 
-                    itemView.setOnClickListener(v -> {
+                    itemView.setOnLongClickListener(v -> {
+
                         EditAccountItemDialog dialog =
                                 new EditAccountItemDialog();
+
                         Bundle args = new Bundle();
                         args.putLong(
                                 EditAccountItemDialog.ARG_ACCOUNT_ITEM_ID,
                                 e.id
                         );
+
                         dialog.setArguments(args);
+
                         dialog.show(
                                 getSupportFragmentManager(),
                                 "EDIT_ACCOUNT_ITEM"
                         );
+
+                        return true;
                     });
+
                 }
 
                 if (filterAccountId == -1L) {

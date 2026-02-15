@@ -1,30 +1,58 @@
-Where It Went — A Short Guide
 
-Welcome to Where It Went, a simple and uncluttered way to understand your spending without the stress found in most finance apps.
+## Where It Went — Quick Guide
 
-This app is built on a straightforward idea:
-you don’t need to track income, budgets, or accounts to understand your daily spending. Your income already lives in your bank. What most of us need to see more clearly is where it went.
+Where It Went helps you understand your spending without budgets, income tracking, or complexity.
 
-Where It Went keeps things clean and lightweight. You log an expense in seconds, and the app automatically organizes it by category, month, and type. There are no ads, no cloud, no login, and no surveillance. Everything stays on your device.
+You log what you spend. The app organizes it. That’s it.
 
-Why This Approach Works
+---
 
-Most budgeting apps expect you to balance income vs. expenses, manage envelopes, or maintain detailed budgets. For everyday life, this becomes more work than it’s worth. Where It Went takes a different approach: focus only on spending, and make that process effortless.
+### Daily Living
 
-The app is also ideal for situations that don’t fit traditional budgeting—projects, vacations, renovations, special events, or one-off plans. These can be tracked independently by creating custom categories and tagging them appropriately.
+This is your everyday spending.
 
-Tags and the Distribution Graph
+Entries are grouped by month and category. Each category has a tag:
 
-Every category has a tag: Fixed, Necessity, Discretionary, or Off-Budget.
+* Fixed
+* Necessity
+* Discretionary
+* Off-Budget
 
-These tags drive the three-slice Distribution graph, showing how spending changes month to month. Fixed covers recurring essentials, Necessity covers practical everyday items, Discretionary covers flexible or optional spending, and Off-Budget is excluded entirely—perfect for trips and projects that would otherwise distort your normal spending picture.
+These tags power the Distribution graph, helping you see how your spending changes over time.
 
-Category Management and Data Tools
+Off-Budget items are excluded from the graph — ideal for trips or special situations that shouldn’t distort normal life.
 
-Categories can be added, renamed, or removed (default ones stay protected). The Category Manager can restore the original defaults at any time.
+---
 
-Export saves all entries to a file. Reset clears your expenses but keeps your category setup intact.
+### Accounts
 
-Final Thought:
+Accounts are for spending that doesn’t belong in normal monthly life.
 
-If you keep your entries simple and consistent, the app will give you a clear, honest picture of where your money goes—no spreadsheets, no pressure, just clarity.
+You can create:
+
+* Projects
+* Travel
+* Custom accounts
+
+Each account stands on its own and does not affect Daily Living totals or the Distribution graph.
+
+Accounts can be expanded or collapsed.
+If a filter is active, a small ✕ indicator appears in the top bar — tap it to return to the full view.
+
+Archived accounts remain visible in summaries but no longer accept new entries.
+
+---
+
+### Your Data
+
+Everything stays on your device.
+
+No ads.
+No cloud.
+No tracking.
+
+Keep entries simple and consistent, and Where It Went will give you a clear picture of where your money went.
+
+---
+
+
