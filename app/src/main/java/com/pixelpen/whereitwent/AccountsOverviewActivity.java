@@ -20,6 +20,22 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import android.content.Intent;
+import android.text.Html;
+
+import java.io.File;
+import java.io.FileWriter;
+import android.net.Uri;
+import java.io.OutputStream;
+
+import androidx.core.content.FileProvider;
+
+import android.widget.Toast;
+
+
+
+
+
 public class AccountsOverviewActivity extends AppCompatActivity {
 
     private static final String TAG_SECTION = "SECTION";
@@ -29,7 +45,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
     private boolean showNotes = true;
 
     private long currentlyExpandedId = -1L;
-
 
 
     public static boolean needsRefresh = false;
@@ -64,6 +79,9 @@ public class AccountsOverviewActivity extends AppCompatActivity {
             popup.getMenu().add("Manage Accounts");
             popup.getMenu().add("Show / Hide Notes");
 
+            popup.getMenu().add("Export Accounts");
+
+
             popup.setOnMenuItemClickListener(item -> {
 
                 String title = item.getTitle().toString();
@@ -80,6 +98,12 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                     dialog.show(getSupportFragmentManager(), "MANAGE_ACCOUNTS");
                     return true;
                 }
+
+                if ("Export Accounts".equals(title)) {
+                    showExportAccountsDialog();
+                    return true;
+                }
+
 
                 if ("Filter Accounts".equals(title)) {
 
@@ -118,7 +142,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
             StringBuilder label = new StringBuilder("✕  ");
 
 
-
             if (filterCategory != null) {
                 label.append(filterCategory);
             }
@@ -137,7 +160,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
             filterIndicator.setVisibility(View.GONE);
             filterIndicator.setOnClickListener(null);
         }
-
 
 
         ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
@@ -271,14 +293,14 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                     accountHeader
                             .setOnClickListener(v -> {
 
-                        if (currentlyExpandedId == account.id) {
-                            currentlyExpandedId = -1L;
-                        } else {
-                            currentlyExpandedId = account.id;
-                        }
+                                if (currentlyExpandedId == account.id) {
+                                    currentlyExpandedId = -1L;
+                                } else {
+                                    currentlyExpandedId = account.id;
+                                }
 
-                        rebuildAccounts();
-                    });
+                                rebuildAccounts();
+                            });
 
                 }
             }
@@ -380,13 +402,12 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         container.addView(block);
         return block;
     }
+
     private String capitalize(String s) {
         if (s == null || s.isEmpty()) return "";
         return s.substring(0, 1).toUpperCase()
                 + s.substring(1);
     }
-
-
 
 
     private void toggleItems(LinearLayout container,
@@ -418,4 +439,168 @@ public class AccountsOverviewActivity extends AppCompatActivity {
             );
         }
     }
+
+    private void showExportAccountsDialog() {
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Export Accounts")
+                .setMessage("Choose export method:")
+                .setPositiveButton("STORAGE (CSV)", (d, w) -> exportAccountsCsv())
+                .setNeutralButton("EMAIL (HTML)", (d, w) -> exportAccountsHtml())
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void exportAccountsCsv() {
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.setType("text/csv");
+        intent.putExtra(Intent.EXTRA_TITLE, "where_it_went_accounts.csv");
+
+        startActivityForResult(intent, 9001);
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 9001 && resultCode == RESULT_OK && data != null) {
+
+            Uri uri = data.getData();
+            if (uri == null) return;
+
+            try (OutputStream os = getContentResolver().openOutputStream(uri)) {
+
+                ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
+                AccountDao accountDao = db.accountDao();
+                AccountItemDao itemDao = db.accountItemDao();
+
+                List<AccountEntity> accounts = accountDao.getAllAccounts();
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("AccountType,AccountName,Date,Item,Category,Amount,Note\n");
+
+                for (AccountEntity account : accounts) {
+
+                    List<AccountItemEntity> items =
+                            itemDao.getItemsForAccount(account.id);
+
+                    for (AccountItemEntity item : items) {
+
+                        sb.append(account.type).append(",");
+
+                        sb.append(account.name);
+                        if (account.archived) {
+                            sb.append(" (archived)");
+                        }
+                        sb.append(",");
+
+                        sb.append(item.date).append(",");
+                        sb.append(item.item).append(",");
+                        sb.append(item.category).append(",");
+                        sb.append(item.amount).append(",");
+                        sb.append(item.note == null ? "" :
+                                item.note.replace(",", " "));
+                        sb.append("\n");
+                    }
+                }
+
+                os.write(sb.toString().getBytes());
+                os.flush();
+
+                Toast.makeText(this,
+                        "Accounts exported successfully",
+                        Toast.LENGTH_SHORT).show();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this,
+                        "Export failed",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+
+    private void exportAccountsHtml() {
+
+        try {
+
+            ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
+            AccountDao accountDao = db.accountDao();
+            AccountItemDao itemDao = db.accountItemDao();
+
+            List<AccountEntity> accounts = accountDao.getAllAccounts();
+
+            StringBuilder html = new StringBuilder();
+            html.append("<html><body>");
+            html.append("<h1>Accounts Export</h1>");
+
+            String currentType = "";
+
+            for (AccountEntity account : accounts) {
+
+                if (!account.type.equals(currentType)) {
+                    currentType = account.type;
+                    html.append("<h2>").append(currentType).append("</h2>");
+                }
+
+                html.append("<h3>")
+                        .append(account.name);
+
+                if (account.archived) {
+                    html.append(" (archived)");
+                }
+
+                html.append("</h3>");
+
+                html.append("<table border='1' cellpadding='4' cellspacing='0'>");
+                html.append("<tr><th>Date</th><th>Item</th><th>Category</th><th>Amount</th><th>Note</th></tr>");
+
+                List<AccountItemEntity> items =
+                        itemDao.getItemsForAccount(account.id);
+
+                for (AccountItemEntity item : items) {
+                    html.append("<tr>");
+                    html.append("<td>").append(item.date).append("</td>");
+                    html.append("<td>").append(item.item).append("</td>");
+                    html.append("<td>").append(item.category).append("</td>");
+                    html.append("<td>").append(item.amount).append("</td>");
+                    html.append("<td>").append(item.note == null ? "" : item.note).append("</td>");
+                    html.append("</tr>");
+                }
+
+                html.append("</table><br>");
+            }
+
+            html.append("</body></html>");
+
+            File file = new File(getExternalFilesDir(null), "where_it_went_accounts.html");
+
+            FileWriter writer = new FileWriter(file);
+            writer.write(html.toString());
+            writer.close();
+
+            Uri uri = FileProvider.getUriForFile(
+                    this,
+                    getPackageName() + ".fileprovider",
+                    file
+            );
+
+
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("text/html");
+            intent.putExtra(Intent.EXTRA_SUBJECT, "Where It Went - Accounts Export");
+            intent.putExtra(Intent.EXTRA_STREAM, uri);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            startActivity(Intent.createChooser(intent, "Send email"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
