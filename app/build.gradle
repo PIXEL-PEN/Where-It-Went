@@ -5,12 +5,12 @@ plugins {
 android {
 
     namespace 'com.pixelpen.whereitwent'
-    compileSdk 36
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.pixelpen.whereitwent"
         minSdk 24
-        targetSdk 36
+        targetSdk 34
         versionCode 20001
         versionName "2.0"
     }
