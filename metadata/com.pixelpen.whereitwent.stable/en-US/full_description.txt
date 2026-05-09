@@ -1,0 +1,1 @@
+Where It Went is a personal expense tracker that helps you monitor your spending by category, month, and distribution.
