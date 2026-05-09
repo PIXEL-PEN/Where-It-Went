@@ -4,17 +4,34 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.pixelpen.whereitwent",
+  "applicationId": "com.pixelpen.whereitwent.stable",
   "variantName": "stableRelease",
   "elements": [
     {
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 20000,
+      "versionCode": 20001,
       "versionName": "2.0",
-      "outputFile": "WhereItWent-release-v2.0-2025-12-16.apk"
+      "outputFile": "WhereItWent-stable-release-v2.0.apk"
     }
   ],
-  "elementType": "File"
+  "elementType": "File",
+  "baselineProfiles": [
+    {
+      "minApi": 28,
+      "maxApi": 30,
+      "baselineProfiles": [
+        "baselineProfiles/1/WhereItWent-stable-release-v2.0.dm"
+      ]
+    },
+    {
+      "minApi": 31,
+      "maxApi": 2147483647,
+      "baselineProfiles": [
+        "baselineProfiles/0/WhereItWent-stable-release-v2.0.dm"
+      ]
+    }
+  ],
+  "minSdkVersionForDexing": 24
 }
