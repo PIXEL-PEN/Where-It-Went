@@ -6,7 +6,7 @@
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
     android:gravity="center_vertical"
-    android:background="@android:color/white">
+    android:background="?attr/colorSurface">
 
     <TextView
         android:id="@+id/text_month_label"

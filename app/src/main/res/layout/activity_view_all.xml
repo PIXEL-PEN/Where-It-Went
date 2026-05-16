@@ -100,7 +100,7 @@
         android:padding="8dp"
         android:clipToPadding="false"
         android:scrollbars="vertical"
-        android:background="@android:color/white" />
+        android:background="?attr/colorSurface" />
 
     <LinearLayout
         android:id="@+id/pager_bar"

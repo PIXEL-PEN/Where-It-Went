@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:paddingVertical="8dp"
     android:paddingHorizontal="12dp"
-    android:background="@android:color/white">
+    android:background="?attr/colorSurface">
 
 
 
