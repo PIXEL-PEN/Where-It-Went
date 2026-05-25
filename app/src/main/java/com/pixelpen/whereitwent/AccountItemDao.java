@@ -94,6 +94,12 @@ public interface AccountItemDao {
     @Query("SELECT DISTINCT category FROM account_items WHERE accountId = :accountId ORDER BY category")
     List<String> getDistinctCategoriesForAccount(long accountId);
 
+    @Query("SELECT * FROM account_items ORDER BY dateMillis DESC")
+    List<AccountItemEntity> getAllItems();
 
 
+    @Query("SELECT * FROM account_items WHERE dateMillis >= :startMs AND dateMillis < :endMs ORDER BY dateMillis DESC")
+    List<AccountItemEntity> getItemsForMonth(long startMs, long endMs);
+
+    // Already in AccountDao presumably - we need account names
 }

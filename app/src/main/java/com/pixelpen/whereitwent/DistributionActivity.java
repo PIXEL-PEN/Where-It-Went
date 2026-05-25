@@ -58,6 +58,9 @@ public class DistributionActivity extends AppCompatActivity {
         }
 
         refreshCurrencyValues();
+
+
+
     }
 
     @Override
@@ -143,7 +146,9 @@ public class DistributionActivity extends AppCompatActivity {
         }
 
         renderOffBudget(all, money, currencySymbol);
-    }
+        renderAccountsMonthly(money, currencySymbol);  // ← add this line
+    }  // ← closing brace of refreshCurrencyValues()
+
 
     /* -------------------------------------------------
        OFF-BUDGET CATEGORY SUMMARY (ALL-TIME)
@@ -338,5 +343,126 @@ public class DistributionActivity extends AppCompatActivity {
     private int dp(int dps) {
         float density = getResources().getDisplayMetrics().density;
         return Math.round(dps * density);
+    }
+
+    private void renderAccountsMonthly(DecimalFormat money, String currencySymbol) {
+
+        LinearLayout container = findViewById(R.id.off_budget_container);
+        if (container == null) return;
+
+        // Current month bounds
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        long startMs = cal.getTimeInMillis();
+        cal.add(Calendar.MONTH, 1);
+        long endMs = cal.getTimeInMillis();
+
+        // Month label e.g. "May 2026"
+        cal.add(Calendar.MONTH, -1);
+        String monthLabel = new SimpleDateFormat("MMM yyyy", Locale.ENGLISH)
+                .format(cal.getTime());
+
+        AccountDao accountDao = ExpenseDatabase.getDatabase(this).accountDao();
+        AccountItemDao itemDao = ExpenseDatabase.getDatabase(this).accountItemDao();
+
+        List<AccountEntity> accounts = accountDao.getActiveAccounts();
+
+        // Build per-account totals for this month
+        Map<String, Double> accountTotals = new LinkedHashMap<>();
+        double grandTotal = 0.0;
+
+        for (AccountEntity account : accounts) {
+            List<AccountItemEntity> items = itemDao.getItemsForAccount(account.id);
+            double total = 0.0;
+            for (AccountItemEntity item : items) {
+                // Use dateMillis if available, fallback to date string
+                boolean inMonth = false;
+                if (item.dateMillis > 0) {
+                    inMonth = item.dateMillis >= startMs && item.dateMillis < endMs;
+                } else if (item.date != null) {
+                    // fallback: parse date string
+                    try {
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
+                        long ms = sdf.parse(item.date).getTime();
+                        inMonth = ms >= startMs && ms < endMs;
+                    } catch (Exception ignored) {}
+                }
+                if (inMonth) total += item.amount;
+            }
+            if (total > 0) {
+                accountTotals.put(account.name, total);
+                grandTotal += total;
+            }
+        }
+
+        if (grandTotal == 0) return; // nothing to show
+
+        // Divider
+        View divider = new View(this);
+        divider.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(1)));
+        divider.setBackgroundColor(0x33000000);
+        container.addView(divider);
+
+        // Header
+        TextView header = new TextView(this);
+        header.setText("Accounts — " + monthLabel);
+        header.setTextSize(15);
+        header.setTypeface(Typeface.DEFAULT_BOLD);
+        header.setPadding(0, dp(8), 0, dp(4));
+        container.addView(header);
+
+        // Per-account rows
+        for (Map.Entry<String, Double> entry : accountTotals.entrySet()) {
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setPadding(0, dp(3), 0, dp(3));
+
+            TextView left = new TextView(this);
+            left.setLayoutParams(new LinearLayout.LayoutParams(
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+            left.setText(entry.getKey());
+            left.setTextSize(14);
+
+            TextView right = new TextView(this);
+            right.setText(money.format(entry.getValue()) + " " + currencySymbol);
+            right.setTextSize(14);
+            right.setTypeface(Typeface.DEFAULT_BOLD);
+
+            row.addView(left);
+            row.addView(right);
+            container.addView(row);
+        }
+
+        // Total row
+        View totalDivider = new View(this);
+        totalDivider.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(1)));
+        totalDivider.setBackgroundColor(0x33000000);
+        container.addView(totalDivider);
+
+        LinearLayout totalRow = new LinearLayout(this);
+        totalRow.setOrientation(LinearLayout.HORIZONTAL);
+        totalRow.setPadding(0, dp(4), 0, dp(4));
+
+        TextView totalLabel = new TextView(this);
+        totalLabel.setLayoutParams(new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        totalLabel.setText("Total");
+        totalLabel.setTextSize(14);
+        totalLabel.setTypeface(Typeface.DEFAULT_BOLD);
+
+        TextView totalAmount = new TextView(this);
+        totalAmount.setText(money.format(grandTotal) + " " + currencySymbol);
+        totalAmount.setTextSize(14);
+        totalAmount.setTypeface(Typeface.DEFAULT_BOLD);
+
+        totalRow.addView(totalLabel);
+        totalRow.addView(totalAmount);
+        container.addView(totalRow);
     }
 }

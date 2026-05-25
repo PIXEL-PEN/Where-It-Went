@@ -112,6 +112,7 @@ public abstract class ExpenseDatabase extends RoomDatabase {
                             MIGRATION_3_4,
                             MIGRATION_4_5
                     )
+                    .fallbackToDestructiveMigration()
                     .allowMainThreadQueries()
                     .build();
         }
