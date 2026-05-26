@@ -209,10 +209,23 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 vh.value.setAlpha(1.0f);
             }
 
+// Make account rows clickable
+            if (!summary.label.equals("Daily Living (12 months)")
+                    && !summary.label.equals("Accounts (current)")) {
+                vh.itemView.setOnClickListener(v -> {
+                    Intent intent = new Intent(
+                            v.getContext(),
+                            AccountsOverviewActivity.class
+                    );
+                    v.getContext().startActivity(intent);
+                });
+            } else {
+                vh.itemView.setOnClickListener(null);
+            }
+
             return;
+
         }
-
-
 
         // ===============================
         // MONTH ROW
