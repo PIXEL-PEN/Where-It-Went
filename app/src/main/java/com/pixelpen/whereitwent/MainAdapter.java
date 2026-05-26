@@ -160,8 +160,8 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
 
         // ===============================
-        // SUMMARY ROW
-        // ===============================
+// SUMMARY ROW
+// ===============================
         if (holder instanceof VH_Summary) {
 
             RowSummary summary = (RowSummary) row;
@@ -169,6 +169,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             vh.label.setText(summary.label);
             vh.value.setText(summary.value);
+
 
             // Base styling
             vh.label.setTextColor(0xFF4F6B7A);
@@ -189,15 +190,29 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     && !summary.label.equals("Accounts (current)")) {
 
                 vh.itemView.setPadding(
-                        dp(vh.itemView, 27), // 25% reduced indent
+                        dp(vh.itemView, 27),
                         vh.itemView.getPaddingTop(),
                         vh.itemView.getPaddingRight(),
                         vh.itemView.getPaddingBottom()
                 );
             }
 
+            // Strikethrough for archived accounts
+            if (summary.label.endsWith(" (archived)")) {
+                vh.label.setPaintFlags(vh.label.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+                vh.value.setPaintFlags(vh.value.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+                vh.label.setAlpha(0.5f);
+                vh.value.setAlpha(0.5f);
+            } else {
+                vh.label.setPaintFlags(vh.label.getPaintFlags() & ~android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+                vh.label.setAlpha(1.0f);
+                vh.value.setAlpha(1.0f);
+            }
+
             return;
         }
+
+
 
         // ===============================
         // MONTH ROW
