@@ -11,4 +11,4 @@
     android:ellipsize="end"
     android:textSize="14sp"
     android:textStyle="bold"
-    android:textColor="@android:color/black" />
+    android:textColor="?attr/colorOnSurface" />

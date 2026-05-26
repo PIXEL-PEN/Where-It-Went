@@ -9,8 +9,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp"
-        android:background="@android:color/white">
-
+        android:background="?attr/colorSurface">
         <TextView
             android:text="EDIT ACCOUNT ITEM"
             android:textStyle="bold"
@@ -53,7 +52,7 @@
             android:layout_height="wrap_content"
             android:text="Date"
             android:textStyle="bold"
-            android:textColor="#666666"
+            android:textColor="?attr/colorOnSurface"
             android:layout_marginTop="14dp"/>
 
         <!-- ACTION BUTTONS -->

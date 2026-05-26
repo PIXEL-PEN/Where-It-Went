@@ -20,7 +20,7 @@
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/white"
+            android:background="?attr/colorSurface"
             android:elevation="6dp"
             android:padding="20dp">
 
@@ -82,7 +82,7 @@
                     android:text="22 Dec 2025"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    android:textColor="#000000" />
+                    android:textColor="?attr/colorOnSurface" />
 
                 <ImageView
                     android:id="@+id/icon_calendar"
@@ -90,7 +90,7 @@
                     android:layout_height="19dp"
                     android:layout_marginStart="8dp"
                     android:src="@drawable/ic_calendar"
-                    android:tint="#000000" />
+                    android:tint="?attr/colorOnSurface" />
             </LinearLayout>
 
             <LinearLayout
@@ -122,205 +122,193 @@
         <!-- ============================
              CARD 2 — ACCOUNTS
         ============================ -->
-    <LinearLayout
-        android:id="@+id/card_other"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:elevation="4dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="14dp">
-
         <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="10dp">
-
-            <TextView
-                android:id="@+id/header_other_accounts"
-                android:text="ACCOUNTS"
-                android:textStyle="bold"
-                android:textSize="13sp"
-                android:textColor="#444444"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <TextView
-                android:id="@+id/text_add_account"
-                android:text="+ Add Account"
-                android:textColor="#0066CC"
-                android:textSize="14sp"
-                android:padding="4dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-
-
-
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/text_no_accounts"
-            android:text="No accounts created yet."
-            android:textColor="#777777"
-            android:textSize="13sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp" />
-
-        <LinearLayout
-            android:id="@+id/container_account_entry"
+            android:id="@+id/card_other"
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone">
+            android:background="?attr/colorSurface"
+            android:elevation="4dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp">
 
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                android:gravity="center_vertical">
-
-                <Spinner
-                    android:id="@+id/spinner_account_project"
-                    android:layout_width="0dp"
-                    android:layout_height="36dp"
-                    android:layout_weight="1" />
-
-                <Spinner
-                    android:id="@+id/spinner_account_category"
-                    android:layout_width="0dp"
-                    android:layout_height="36dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp" />
-
-                <ImageButton
-                    android:id="@+id/btn_add_account_category"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_marginStart="6dp"
-                    android:src="@drawable/ic_add"
-                    android:background="@drawable/bg_add_small"
-                    android:padding="6dp"
-                    android:scaleX="0.8"
-                    android:scaleY="0.8"
-                    android:contentDescription="Add category" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
                 android:layout_marginBottom="10dp">
 
-                <EditText
-                    android:id="@+id/input_account_item"
+                <TextView
+                    android:id="@+id/header_other_accounts"
+                    android:text="ACCOUNTS"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:textColor="#444444"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
-                    android:layout_weight="1"
-                    android:hint="Item"
-                    android:inputType="textCapSentences"
-                    android:textSize="14sp" />
-
-
-                <EditText
-                    android:id="@+id/input_account_amount"
-                    android:layout_width="0dp"
-                    android:layout_height="36dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:hint="Amount"
-                    android:inputType="numberDecimal"
-                    android:textSize="14sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp">
-
-
-
-                <EditText
-                    android:id="@+id/input_account_note"
-                    android:layout_width="match_parent"
-                    android:layout_height="36dp"
-                    android:layout_marginTop="0dp"
-                    android:layout_marginBottom="4dp"
-                    android:hint="Note"
-                    android:inputType="textCapSentences"
-                    android:textSize="14sp" />
-
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="10dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:id="@+id/text_account_date"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text=""
-                        tools:text="01 Jan 2025"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:textColor="#666666"
-                        android:padding="4dp"/>
-
-                    <ImageView
-                        android:id="@+id/icon_calendar"
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:layout_marginStart="6dp"
-                        android:src="@drawable/ic_calendar"
-                        android:tint="#666666"/>
-
-                </LinearLayout>
-
-
-
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="1dp"
                     android:layout_weight="1" />
 
                 <TextView
-                    android:id="@+id/text_account_submit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="SUBMIT"
+                    android:id="@+id/text_add_account"
+                    android:text="+ Add Account"
+                    android:textColor="#0066CC"
                     android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="#666666" />
+                    android:padding="4dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
             </LinearLayout>
 
+            <TextView
+                android:id="@+id/text_no_accounts"
+                android:text="No accounts created yet."
+                android:textColor="#777777"
+                android:textSize="13sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp" />
 
+            <LinearLayout
+                android:id="@+id/container_account_entry"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:gravity="center_vertical">
+
+                    <Spinner
+                        android:id="@+id/spinner_account_project"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1" />
+
+                    <Spinner
+                        android:id="@+id/spinner_account_category"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp" />
+
+                    <ImageButton
+                        android:id="@+id/btn_add_account_category"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginStart="6dp"
+                        android:src="@drawable/ic_add"
+                        android:background="@drawable/bg_add_small"
+                        android:padding="6dp"
+                        android:scaleX="0.8"
+                        android:scaleY="0.8"
+                        android:contentDescription="Add category" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp">
+
+                    <EditText
+                        android:id="@+id/input_account_item"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:hint="Item"
+                        android:inputType="textCapSentences"
+                        android:textSize="14sp" />
+
+                    <EditText
+                        android:id="@+id/input_account_amount"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:hint="Amount"
+                        android:inputType="numberDecimal"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp">
+
+                    <EditText
+                        android:id="@+id/input_account_note"
+                        android:layout_width="match_parent"
+                        android:layout_height="36dp"
+                        android:layout_marginTop="0dp"
+                        android:layout_marginBottom="4dp"
+                        android:hint="Note"
+                        android:inputType="textCapSentences"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="10dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/text_account_date"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text=""
+                            tools:text="01 Jan 2025"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurface"
+                            android:padding="4dp"/>
+
+                        <ImageView
+                            android:id="@+id/icon_calendar"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginStart="6dp"
+                            android:src="@drawable/ic_calendar"
+                            android:tint="?attr/colorOnSurface"/>
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:id="@+id/text_account_submit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="SUBMIT"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurface" />
+                </LinearLayout>
+
+            </LinearLayout>
 
         </LinearLayout>
-
-    </LinearLayout>
 
     </LinearLayout>
 

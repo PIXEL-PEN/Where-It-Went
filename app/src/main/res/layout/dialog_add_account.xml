@@ -4,13 +4,12 @@
     android:padding="22dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/white">
-
+    android:background="?attr/colorSurface">
     <TextView
         android:text="Create Account"
         android:textStyle="bold"
         android:textSize="18sp"
-        android:textColor="#000000"
+        android:textColor="?attr/colorOnSurface"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="14dp" />
