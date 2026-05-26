@@ -124,6 +124,10 @@ public class DistributionActivity extends AppCompatActivity {
                 (float) basicLatest
         );
 
+        TextView monthTotal = findViewById(R.id.pie_month_total);
+        double grandMonthTotal = fixedLatest + basicLatest + discLatest;
+        setSafeLegend(monthTotal, money.format(grandMonthTotal) + " " + currencySymbol);
+
         setSafeLegend(fixedTotal, money.format(fixedLatest) + " " + currencySymbol);
         setSafeLegend(basicTotal, money.format(basicLatest) + " " + currencySymbol);
         setSafeLegend(discTotal,  money.format(discLatest)  + " " + currencySymbol);
