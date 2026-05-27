@@ -197,16 +197,18 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 );
             }
 
-            // Strikethrough for archived accounts
+            // Always reset first
+            vh.label.setPaintFlags(vh.label.getPaintFlags() & ~android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+            vh.value.setPaintFlags(vh.value.getPaintFlags() & ~android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+            vh.label.setAlpha(1.0f);
+            vh.value.setAlpha(1.0f);
+
+// Then apply strikethrough only for archived
             if (summary.label.endsWith(" (archived)")) {
                 vh.label.setPaintFlags(vh.label.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
                 vh.value.setPaintFlags(vh.value.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
                 vh.label.setAlpha(0.5f);
                 vh.value.setAlpha(0.5f);
-            } else {
-                vh.label.setPaintFlags(vh.label.getPaintFlags() & ~android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
-                vh.label.setAlpha(1.0f);
-                vh.value.setAlpha(1.0f);
             }
 
 // Make account rows clickable
