@@ -1,1 +1,1 @@
-Simple offline expense tracker with category tags and account budgets.
+You think you know. Then you see the numbers. Track where it really went.
