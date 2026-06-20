@@ -22,14 +22,19 @@ android {
         release {
             minifyEnabled false
             shrinkResources false
+            applicationIdSuffix ".stable"
         }
     }
+
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
     lint {
         checkReleaseBuilds false
         abortOnError false
     }
-
-
 
     flavorDimensions "mode"
 
