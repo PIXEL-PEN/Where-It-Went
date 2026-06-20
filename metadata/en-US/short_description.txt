@@ -1,0 +1,1 @@
+Simple offline expense tracker with category tags and account budgets.

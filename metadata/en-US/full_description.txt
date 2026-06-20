@@ -1,0 +1,1 @@
+Track where your money went with a clean, offline-first expense tracker. Log daily expenses by category, view spending by month, date or category, and see your distribution across Fixed, Necessity and Discretionary tags. Includes a separate Accounts module for projects and travel budgets. No ads, no tracking, no cloud.
