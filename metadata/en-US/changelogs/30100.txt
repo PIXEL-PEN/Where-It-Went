@@ -1,0 +1,2 @@
+• New: 12-month category summary. Settings → Export → "12-month category summary" lets you pick any 12-month period and export only the category totals for Daily Living and Accounts, as CSV or by email (HTML).
+• Fix: the "Last 12 Months" header total now counts only the 12 months shown.

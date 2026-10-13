@@ -4,7 +4,26 @@ All notable changes to this project will be documented here.
 
 ---
 
-## v3.0 (In Progress)
+## v3.1
+
+### Added
+- 12-month category summary export (Settings → Export → 12-month category summary).
+  Pick any 12-month period back to your earliest record; exports category totals
+  only for Daily Living and Accounts, with section and grand totals, as CSV
+  (storage) or HTML (email).
+
+### Fixed
+- "Last 12 Months" header total now counts only the 12 months shown
+  (it previously added up every expense ever recorded).
+
+### Notes
+- No records are deleted automatically. Daily Living and Accounts data are kept
+  indefinitely; the 12-month view is a display window only. The item exports
+  ("All items") export every record.
+
+---
+
+## v3.0
 
 ### Added
 - Accounts module (Project, Travel, Custom)

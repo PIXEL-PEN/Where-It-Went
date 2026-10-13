@@ -51,14 +51,11 @@ public class MonthBuilder {
             }
 
             map.get(ym).add(e);
-
-            grandTotal += e.amount;
         }
 
         // HEADER
         MonthGroup header = MonthGroup.makeHeader();
         header.monthLabel = "Last 12 Months";
-        header.totalFormatted = CurrencyUtils.format(grandTotal, currencySymbol);
         list.add(header);
 
         Calendar cal = Calendar.getInstance();
@@ -116,8 +113,12 @@ public class MonthBuilder {
             group.totalFormatted = CurrencyUtils.format(monthlyTotal, currencySymbol);
 
             list.add(group);
+            grandTotal += monthlyTotal;
             cal.add(Calendar.MONTH, -1);
         }
+
+        // Header total = the 12 months shown (v3.1 fix: previously summed all rows ever)
+        header.totalFormatted = CurrencyUtils.format(grandTotal, currencySymbol);
 
         lastBuilt = list;
         return list;

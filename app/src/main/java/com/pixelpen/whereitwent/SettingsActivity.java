@@ -176,12 +176,19 @@ public class SettingsActivity extends AppCompatActivity {
         // EXPORT BUTTON
         // ----------------------------------------------------
         findViewById(R.id.btn_export).setOnClickListener(v -> {
+            String[] options = {
+                    "All items – Storage (CSV)",
+                    "All items – Email (HTML)",
+                    "12-month category summary"
+            };
             new AlertDialog.Builder(this)
                     .setTitle("Export Data")
-                    .setMessage("Choose export method:")
-                    .setPositiveButton("Storage (CSV)", (d, w) -> exportToStorage())
-                    .setNegativeButton("Email (HTML)", (d, w) -> exportAndEmail())
-                    .setNeutralButton("Cancel", null)
+                    .setItems(options, (d, which) -> {
+                        if (which == 0) exportToStorage();
+                        else if (which == 1) exportAndEmail();
+                        else chooseSummaryPeriod();
+                    })
+                    .setNegativeButton("Cancel", null)
                     .show();
         });
 
@@ -263,6 +270,87 @@ public class SettingsActivity extends AppCompatActivity {
                     Toast.makeText(this, "CSV export failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
             }
+        }
+    }
+
+    // =====================================================
+    // EXPORT → 12-MONTH CATEGORY SUMMARY (v3.1)
+    // =====================================================
+    private void chooseSummaryPeriod() {
+        ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
+        List<Expense> expenses = db.expenseDao().getAll();
+        List<AccountItemEntity> items = db.accountItemDao().getAllItems();
+
+        List<String> ends = CategorySummary.availablePeriodEnds(
+                expenses, items, CategorySummary.currentYm());
+
+        String[] labels = new String[ends.size()];
+        for (int i = 0; i < ends.size(); i++) {
+            labels[i] = CategorySummary.periodLabel(ends.get(i));
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Choose 12-month period")
+                .setItems(labels, (d, which) -> {
+                    CategorySummary summary =
+                            CategorySummary.build(expenses, items, ends.get(which));
+                    chooseSummaryMethod(summary);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void chooseSummaryMethod(CategorySummary summary) {
+        new AlertDialog.Builder(this)
+                .setTitle("Category Summary")
+                .setMessage(summary.periodLabel() + "\n\nChoose export method:")
+                .setPositiveButton("Storage (CSV)", (d, w) -> exportSummaryCsv(summary))
+                .setNegativeButton("Email (HTML)", (d, w) -> exportSummaryEmail(summary))
+                .setNeutralButton("Cancel", null)
+                .show();
+    }
+
+    private void exportSummaryCsv(CategorySummary summary) {
+        // Reuses the CSV save flow in onActivityResult
+        csvContent = summary.toCsv();
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("text/csv");
+        intent.putExtra(Intent.EXTRA_TITLE,
+                "Summary_" + summary.fileTag() + ".csv");
+
+        startActivityForResult(intent, CREATE_CSV_FILE);
+    }
+
+    private void exportSummaryEmail(CategorySummary summary) {
+        try {
+            File file = new File(
+                    getExternalFilesDir(null),
+                    "Summary_" + summary.fileTag() + ".html"
+            );
+
+            try (FileWriter writer = new FileWriter(file)) {
+                writer.write(summary.toHtml(AppPrefs.getCurrencySymbol(this)));
+            }
+
+            Uri uri = androidx.core.content.FileProvider.getUriForFile(
+                    this,
+                    getPackageName() + ".fileprovider",
+                    file
+            );
+
+            Intent emailIntent = new Intent(Intent.ACTION_SEND);
+            emailIntent.setType("text/html");
+            emailIntent.putExtra(Intent.EXTRA_SUBJECT,
+                    "Where It Went – Category Summary " + summary.periodLabel());
+            emailIntent.putExtra(Intent.EXTRA_STREAM, uri);
+            emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            startActivity(Intent.createChooser(emailIntent, "Send email..."));
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Export failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
