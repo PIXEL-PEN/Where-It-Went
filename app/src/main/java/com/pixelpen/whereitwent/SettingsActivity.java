@@ -104,7 +104,8 @@ public class SettingsActivity extends AppCompatActivity {
 
 
             // --- Full HTML ---
-            String fullHtml = header + getString(R.string.about_text);
+            String fullHtml = header + getString(R.string.about_text)
+                    .replace("{SUBJECT}", Uri.encode("Where It Went " + cleanVersion + " feedback"));
 
             about.setText(Html.fromHtml(fullHtml, Html.FROM_HTML_MODE_LEGACY));
             about.setMovementMethod(LinkMovementMethod.getInstance());
