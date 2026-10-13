@@ -295,7 +295,7 @@ public class YearlySummaryActivity extends AppCompatActivity {
     private void addExportButton(LinearLayout body, CategorySummary s) {
         // Low-key text link rather than a filled button, so it doesn't
         // dominate a collapsed year; padding keeps a comfortable tap area
-        TextView btn = text("Export ›", 13,
+        TextView btn = text("Export ›", 14,
                 ContextCompat.getColor(this, R.color.colorAccent2), true);
         btn.setGravity(Gravity.CENTER);
         btn.setPadding(dp(10), dp(8), dp(4), dp(6));
