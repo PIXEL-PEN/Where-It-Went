@@ -32,7 +32,8 @@ public class YearlySummaryActivity extends AppCompatActivity {
     private static final int COLOR_SECTION_TEXT = 0xFF4F6B7A;
     private static final int COLOR_BANNER_SUB = 0xFFB9CFDB;
 
-    // Expanded periods ("yyyy-MM" end month) and accounts ("yyyy-MM|accountId");
+    // Expanded periods ("yyyy-MM" end month), sections ("yyyy-MM|DL", "yyyy-MM|ACC")
+    // and accounts ("yyyy-MM|accountId");
     // kept across refreshes while the screen is open
     private final Set<String> expanded = new HashSet<>();
     private boolean firstBuild = true;
@@ -143,8 +144,7 @@ public class YearlySummaryActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         bodyLp.setMargins(dp(12), 0, dp(12), 0);
 
-        addSection(body, "Daily Living", s.dailyLiving, s.dailyLivingTotal,
-                R.color.header_bg_blue, sym);
+        addDailyLivingSection(body, s, sym);
         addAccountsSection(body, s, sym);
         addExportButton(body, s);
 
@@ -158,55 +158,87 @@ public class YearlySummaryActivity extends AppCompatActivity {
         });
     }
 
-    private void addSection(LinearLayout body, String title, Map<String, Double> rows,
-                            double total, int bgColorRes, String sym) {
+    // Space taken by a row's ▲/▼ arrow, so amounts in rows without an arrow
+    // line up with amounts in rows that have one
+    private static final int ARROW_DP = 19;
+
+    /**
+     * Coloured section header (Daily Living / Accounts) with total and ▲/▼.
+     * Returns the container for the section's rows, which the header toggles.
+     * Sections start collapsed; open state is remembered under {@code key}.
+     */
+    private LinearLayout addToggleSection(LinearLayout body, String title, double total,
+                                          int bgColorRes, String sym, String key) {
+        boolean open = expanded.contains(key);
 
         LinearLayout header = row(title, CurrencyUtils.format(total, sym),
                 COLOR_SECTION_TEXT, true, dp(14));
         header.setBackgroundColor(ContextCompat.getColor(this, bgColorRes));
         header.setPadding(dp(14), dp(7), dp(14), dp(7));
+        header.setClickable(true);
+        header.setFocusable(true);
+        header.setContentDescription(title + ", total " + CurrencyUtils.format(total, sym));
+
+        TextView arrow = text(open ? "▲" : "▼", 11, COLOR_SECTION_TEXT, false);
+        arrow.setPadding(dp(8), 0, 0, 0);
+        header.addView(arrow);
         body.addView(header);
 
-        if (rows.isEmpty()) {
-            TextView none = text("No records in this period", 13, 0xFF888888, false);
-            none.setTypeface(null, Typeface.ITALIC);
-            none.setPadding(dp(26), dp(8), dp(14), dp(8));
-            body.addView(none);
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setVisibility(open ? View.VISIBLE : View.GONE);
+        body.addView(content);
+
+        header.setOnClickListener(v -> {
+            boolean nowOpen = content.getVisibility() != View.VISIBLE;
+            content.setVisibility(nowOpen ? View.VISIBLE : View.GONE);
+            arrow.setText(nowOpen ? "▲" : "▼");
+            if (nowOpen) expanded.add(key); else expanded.remove(key);
+        });
+        return content;
+    }
+
+    private void addNoRecords(LinearLayout parent) {
+        TextView none = text("No records in this period", 13, 0xFF888888, false);
+        none.setTypeface(null, Typeface.ITALIC);
+        none.setPadding(dp(26), dp(8), dp(14), dp(8));
+        parent.addView(none);
+    }
+
+    private void addDailyLivingSection(LinearLayout body, CategorySummary s, String sym) {
+        LinearLayout content = addToggleSection(body, "Daily Living", s.dailyLivingTotal,
+                R.color.header_bg_blue, sym, s.endYm + "|DL");
+
+        if (s.dailyLiving.isEmpty()) {
+            addNoRecords(content);
             return;
         }
 
         boolean first = true;
-        for (Map.Entry<String, Double> en : rows.entrySet()) {
-            if (!first) body.addView(divider());
+        for (Map.Entry<String, Double> en : s.dailyLiving.entrySet()) {
+            if (!first) content.addView(divider());
             first = false;
             LinearLayout r = row(en.getKey(), CurrencyUtils.format(en.getValue(), sym),
                     COLOR_TEXT, false, dp(26));
-            r.setPadding(dp(26), dp(7), dp(14), dp(7));
-            body.addView(r);
+            r.setPadding(dp(26), dp(7), dp(14 + ARROW_DP), dp(7));
+            content.addView(r);
         }
     }
 
     private void addAccountsSection(LinearLayout body, CategorySummary s, String sym) {
-
-        LinearLayout header = row("Accounts", CurrencyUtils.format(s.accountsTotal, sym),
-                COLOR_SECTION_TEXT, true, dp(14));
-        header.setBackgroundColor(ContextCompat.getColor(this, R.color.header_bg_amber));
-        header.setPadding(dp(14), dp(7), dp(14), dp(7));
-        body.addView(header);
+        LinearLayout content = addToggleSection(body, "Accounts", s.accountsTotal,
+                R.color.header_bg_amber, sym, s.endYm + "|ACC");
 
         if (s.accounts.isEmpty()) {
-            TextView none = text("No records in this period", 13, 0xFF888888, false);
-            none.setTypeface(null, Typeface.ITALIC);
-            none.setPadding(dp(26), dp(8), dp(14), dp(8));
-            body.addView(none);
+            addNoRecords(content);
             return;
         }
 
         boolean first = true;
         for (CategorySummary.AccountGroup g : s.accounts) {
-            if (!first) body.addView(divider());
+            if (!first) content.addView(divider());
             first = false;
-            addAccount(body, s, g, sym);
+            addAccount(content, s, g, sym);
         }
     }
 
@@ -247,7 +279,7 @@ public class YearlySummaryActivity extends AppCompatActivity {
         for (Map.Entry<String, Double> en : g.categories.entrySet()) {
             LinearLayout c = row(en.getKey(), CurrencyUtils.format(en.getValue(), sym),
                     COLOR_TEXT, false, dp(44));
-            c.setPadding(dp(44), dp(5), dp(14 + 19), dp(5)); // amounts line up under the account total
+            c.setPadding(dp(44), dp(5), dp(14 + ARROW_DP), dp(5)); // amounts line up in one column
             cats.addView(c);
         }
         body.addView(cats);
