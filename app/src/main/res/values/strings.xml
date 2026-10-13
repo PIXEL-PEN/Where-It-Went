@@ -29,12 +29,11 @@
     <string name="about_text">
     <![CDATA[
     © 2025 by SpokenFor (TST) PIXEL-PEN<br/><br/>
-    Designed for daily use as a simple, offline expense tracker. No ads, no cloud, no tracking.<br/><br/>
-    Features: quick expense entry; views by month, date and category; spending distribution;
-    separate Accounts for projects and travel; Yearly Summary; CSV and HTML export;
-    full backup and restore.<br/><br/>
-    <b>Feedback is always welcome.</b> If you find Where It Went useful, or something
-    could work better, it would be good to hear from you.<br/><br/>
+    A simple, offline expense tracker. No ads, no cloud, no tracking.<br/>
+    It tracks spending only, not income. That’s by design.<br/>
+    The Guide (menu → Guide) explains every feature.<br/><br/>
+    <b>Feedback welcome.</b> If you find Where It Went useful, or something
+    could be better, it’s good to hear from you.<br/><br/>
     Email: <b><a href="mailto:wiw-feedback@hotmail.com?subject={SUBJECT}">wiw-feedback@hotmail.com</a></b><br/>
     GitHub: <b><a href="https://github.com/PIXEL-PEN/Where-It-Went/discussions">Discussions</a></b>
     ]]>
