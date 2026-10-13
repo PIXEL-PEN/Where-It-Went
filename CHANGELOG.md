@@ -9,8 +9,9 @@ All notable changes to this project will be documented here.
 ### Added
 - Yearly Summary screen (drawer → Yearly Summary, or Summaries → Yearly summaries).
   One banner per 12-month period showing the period total; tap a banner to show
-  or hide category totals for Daily Living and Accounts. Each period can be
-  exported as CSV (storage) or HTML (email).
+  or hide category totals for Daily Living and the list of Accounts. Each account
+  shows its own total and can be tapped to show its category totals. Each period
+  can be exported as CSV (storage) or HTML (email), grouped the same way.
 - Periods are anchored to the month of your first record: a January starter
   sees Jan–Dec years, a May starter sees May–Apr. The current period is marked
   "In progress · N of 12 months".

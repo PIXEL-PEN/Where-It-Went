@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -13,8 +14,8 @@ import java.util.TreeMap;
 /**
  * 12-month category summary (v3.1).
  *
- * Totals per category for Daily Living and for Accounts over any
- * 12 consecutive calendar months. Item detail is intentionally left out.
+ * Totals per category for Daily Living, and per account then per category
+ * for Accounts, over 12 consecutive calendar months. Item detail is left out.
  *
  * Pure Java (no Android imports) so the period and total logic can be
  * unit-tested off-device. Rendering to CSV / HTML lives here too.
@@ -30,20 +31,48 @@ public final class CategorySummary {
 
     // category -> total, sorted by category name (case-insensitive)
     public final Map<String, Double> dailyLiving;
-    public final Map<String, Double> accounts;
+
+    // Accounts with items in this period: active first, then archived, each by name
+    public final List<AccountGroup> accounts;
 
     public final double dailyLivingTotal;
     public final double accountsTotal;
 
+    /** One account's category totals within the period. */
+    public static final class AccountGroup {
+        public final long accountId;
+        public final String name;
+        public final boolean archived;
+        public final Map<String, Double> categories = newCategoryMap();
+        private double total;
+
+        AccountGroup(long accountId, String name, boolean archived) {
+            this.accountId = accountId;
+            this.name = name;
+            this.archived = archived;
+        }
+
+        public double total() {
+            return total;
+        }
+
+        /** Name as shown and exported, e.g. "Condo (archived)". */
+        public String displayName() {
+            return archived ? name + " (archived)" : name;
+        }
+    }
+
     private CategorySummary(String startYm, String endYm,
                             Map<String, Double> dailyLiving,
-                            Map<String, Double> accounts) {
+                            List<AccountGroup> accounts) {
         this.startYm = startYm;
         this.endYm = endYm;
         this.dailyLiving = dailyLiving;
         this.accounts = accounts;
         this.dailyLivingTotal = sum(dailyLiving);
-        this.accountsTotal = sum(accounts);
+        double t = 0;
+        for (AccountGroup g : accounts) t += g.total;
+        this.accountsTotal = t;
     }
 
     public double grandTotal() {
@@ -60,10 +89,12 @@ public final class CategorySummary {
      *
      * @param expenses     Daily Living expenses (any date; out-of-period rows are ignored)
      * @param accountItems Account items from all accounts, active and archived
+     * @param accountList  all accounts, used for names and archived state
      * @param endYm        last month of the period, "yyyy-MM"
      */
     public static CategorySummary build(Collection<Expense> expenses,
                                         Collection<AccountItemEntity> accountItems,
+                                        Collection<AccountEntity> accountList,
                                         String endYm) {
 
         String startYm = addMonths(endYm, -(PERIOD_MONTHS - 1));
@@ -78,15 +109,36 @@ public final class CategorySummary {
             }
         }
 
-        Map<String, Double> acc = newCategoryMap();
+        Map<Long, AccountEntity> byId = new HashMap<>();
+        if (accountList != null) {
+            for (AccountEntity a : accountList) byId.put(a.id, a);
+        }
+
+        Map<Long, AccountGroup> groups = new HashMap<>();
         if (accountItems != null) {
             for (AccountItemEntity it : accountItems) {
                 String ym = monthOf(it.date, it.dateMillis);
-                if (inRange(ym, startYm, endYm)) {
-                    add(acc, it.category, it.amount);
+                if (!inRange(ym, startYm, endYm)) continue;
+
+                AccountGroup g = groups.get(it.accountId);
+                if (g == null) {
+                    AccountEntity a = byId.get(it.accountId);
+                    g = (a != null)
+                            ? new AccountGroup(a.id, a.name == null ? "Account" : a.name, a.archived)
+                            : new AccountGroup(it.accountId, "Unknown account", false);
+                    groups.put(it.accountId, g);
                 }
+                add(g.categories, it.category, it.amount);
+                g.total += it.amount;
             }
         }
+
+        List<AccountGroup> acc = new ArrayList<>(groups.values());
+        acc.sort((x, y) -> {
+            if (x.archived != y.archived) return x.archived ? 1 : -1;
+            int c = String.CASE_INSENSITIVE_ORDER.compare(x.name, y.name);
+            return c != 0 ? c : Long.compare(x.accountId, y.accountId);
+        });
 
         return new CategorySummary(startYm, endYm, dl, acc);
     }
@@ -191,21 +243,26 @@ public final class CategorySummary {
         StringBuilder sb = new StringBuilder();
         sb.append("Category Summary,").append(csv(periodLabel())).append(",")
                 .append(csv(statusLabel(currentYm))).append("\n");
-        sb.append("Section,Category,Total\n");
+        sb.append("Section,Account,Category,Total\n");
 
         for (Map.Entry<String, Double> en : dailyLiving.entrySet()) {
-            sb.append("Daily Living,").append(csv(en.getKey())).append(",")
+            sb.append("Daily Living,,").append(csv(en.getKey())).append(",")
                     .append(plain(en.getValue())).append("\n");
         }
-        sb.append("Daily Living,TOTAL,").append(plain(dailyLivingTotal)).append("\n");
+        sb.append("Daily Living,,TOTAL,").append(plain(dailyLivingTotal)).append("\n");
 
-        for (Map.Entry<String, Double> en : accounts.entrySet()) {
-            sb.append("Accounts,").append(csv(en.getKey())).append(",")
-                    .append(plain(en.getValue())).append("\n");
+        for (AccountGroup g : accounts) {
+            String name = csv(g.displayName());
+            for (Map.Entry<String, Double> en : g.categories.entrySet()) {
+                sb.append("Accounts,").append(name).append(",").append(csv(en.getKey()))
+                        .append(",").append(plain(en.getValue())).append("\n");
+            }
+            sb.append("Accounts,").append(name).append(",SUBTOTAL,")
+                    .append(plain(g.total)).append("\n");
         }
-        sb.append("Accounts,TOTAL,").append(plain(accountsTotal)).append("\n");
+        sb.append("Accounts,,TOTAL,").append(plain(accountsTotal)).append("\n");
 
-        sb.append("All,GRAND TOTAL,").append(plain(grandTotal())).append("\n");
+        sb.append("All,,GRAND TOTAL,").append(plain(grandTotal())).append("\n");
         return sb.toString();
     }
 
@@ -217,8 +274,19 @@ public final class CategorySummary {
         h.append("<p>").append(esc(periodLabel())).append("<br><i>")
                 .append(esc(statusLabel(currentYm))).append("</i></p>");
 
-        section(h, "Daily Living", dailyLiving, dailyLivingTotal, currencySymbol);
-        section(h, "Accounts", accounts, accountsTotal, currencySymbol);
+        h.append("<h3>Daily Living</h3>");
+        table(h, dailyLiving, "Total", dailyLivingTotal, currencySymbol);
+
+        h.append("<h3>Accounts: ")
+                .append(esc(CurrencyUtils.format(accountsTotal, currencySymbol)))
+                .append("</h3>");
+        if (accounts.isEmpty()) {
+            h.append("<p><i>No records in this period</i></p>");
+        }
+        for (AccountGroup g : accounts) {
+            h.append("<h4>").append(esc(g.displayName())).append("</h4>");
+            table(h, g.categories, "Subtotal", g.total, currencySymbol);
+        }
 
         h.append("<h3>Grand total: ")
                 .append(esc(CurrencyUtils.format(grandTotal(), currencySymbol)))
@@ -227,9 +295,8 @@ public final class CategorySummary {
         return h.toString();
     }
 
-    private static void section(StringBuilder h, String title, Map<String, Double> rows,
-                                double total, String sym) {
-        h.append("<h3>").append(esc(title)).append("</h3>");
+    private static void table(StringBuilder h, Map<String, Double> rows,
+                              String totalLabel, double total, String sym) {
         h.append("<table border='1' cellpadding='4' cellspacing='0'>");
         h.append("<tr><th>Category</th><th>Total</th></tr>");
         if (rows.isEmpty()) {
@@ -241,7 +308,7 @@ public final class CategorySummary {
                     .append(esc(CurrencyUtils.format(en.getValue(), sym)))
                     .append("</td></tr>");
         }
-        h.append("<tr><td><b>Total</b></td><td align='right'><b>")
+        h.append("<tr><td><b>").append(totalLabel).append("</b></td><td align='right'><b>")
                 .append(esc(CurrencyUtils.format(total, sym)))
                 .append("</b></td></tr>");
         h.append("</table><br>");

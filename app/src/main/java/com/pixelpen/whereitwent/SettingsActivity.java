@@ -282,13 +282,14 @@ public class SettingsActivity extends AppCompatActivity {
         ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
         List<Expense> expenses = db.expenseDao().getAll();
         List<AccountItemEntity> items = db.accountItemDao().getAllItems();
+        List<AccountEntity> accounts = db.accountDao().getAllAccounts();
 
         String nowYm = CategorySummary.currentYm();
         List<String> ends = CategorySummary.anchoredPeriodEnds(expenses, items, nowYm);
 
         String[] labels = new String[ends.size()];
         for (int i = 0; i < ends.size(); i++) {
-            CategorySummary s = CategorySummary.build(null, null, ends.get(i));
+            CategorySummary s = CategorySummary.build(null, null, null, ends.get(i));
             labels[i] = s.periodLabel() + (s.isInProgress(nowYm) ? "  (in progress)" : "");
         }
 
@@ -296,7 +297,7 @@ public class SettingsActivity extends AppCompatActivity {
                 .setTitle("Choose 12-month period")
                 .setItems(labels, (d, which) -> {
                     CategorySummary summary =
-                            CategorySummary.build(expenses, items, ends.get(which));
+                            CategorySummary.build(expenses, items, accounts, ends.get(which));
                     SummaryExport.show(this, summary);
                 })
                 .setNegativeButton("Cancel", null)

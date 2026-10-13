@@ -23,7 +23,8 @@ import java.util.Set;
  * One banner per 12-month period, anchored to the user's start month
  * (Jan–Dec for a January starter, May–Apr for a May starter), newest first.
  * The banner shows the period's total; tapping it shows or hides the
- * category totals for Daily Living and Accounts.
+ * category totals for Daily Living, and the list of accounts. Each account
+ * row shows its total and toggles that account's own category totals.
  */
 public class YearlySummaryActivity extends AppCompatActivity {
 
@@ -31,7 +32,8 @@ public class YearlySummaryActivity extends AppCompatActivity {
     private static final int COLOR_SECTION_TEXT = 0xFF4F6B7A;
     private static final int COLOR_BANNER_SUB = 0xFFB9CFDB;
 
-    // Period end months ("yyyy-MM") currently expanded; survives refresh
+    // Expanded periods ("yyyy-MM" end month) and accounts ("yyyy-MM|accountId");
+    // kept across refreshes while the screen is open
     private final Set<String> expanded = new HashSet<>();
     private boolean firstBuild = true;
 
@@ -71,6 +73,7 @@ public class YearlySummaryActivity extends AppCompatActivity {
         ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
         List<Expense> expenses = db.expenseDao().getAll();
         List<AccountItemEntity> items = db.accountItemDao().getAllItems();
+        List<AccountEntity> accounts = db.accountDao().getAllAccounts();
 
         String nowYm = CategorySummary.currentYm();
         String sym = AppPrefs.getCurrencySymbol(this);
@@ -83,7 +86,7 @@ public class YearlySummaryActivity extends AppCompatActivity {
         }
 
         for (String endYm : ends) {
-            CategorySummary s = CategorySummary.build(expenses, items, endYm);
+            CategorySummary s = CategorySummary.build(expenses, items, accounts, endYm);
             addPeriod(container, s, nowYm, sym);
         }
     }
@@ -140,8 +143,7 @@ public class YearlySummaryActivity extends AppCompatActivity {
 
         addSection(body, "Daily Living", s.dailyLiving, s.dailyLivingTotal,
                 R.color.header_bg_blue, sym);
-        addSection(body, "Accounts", s.accounts, s.accountsTotal,
-                R.color.header_bg_amber, sym);
+        addAccountsSection(body, s, sym);
         addExportButton(body, s);
 
         container.addView(body, bodyLp);
@@ -180,6 +182,80 @@ public class YearlySummaryActivity extends AppCompatActivity {
             r.setPadding(dp(26), dp(7), dp(14), dp(7));
             body.addView(r);
         }
+    }
+
+    private void addAccountsSection(LinearLayout body, CategorySummary s, String sym) {
+
+        LinearLayout header = row("Accounts", CurrencyUtils.format(s.accountsTotal, sym),
+                COLOR_SECTION_TEXT, true, dp(14));
+        header.setBackgroundColor(ContextCompat.getColor(this, R.color.header_bg_amber));
+        header.setPadding(dp(14), dp(7), dp(14), dp(7));
+        body.addView(header);
+
+        if (s.accounts.isEmpty()) {
+            TextView none = text("No records in this period", 13, 0xFF888888, false);
+            none.setTypeface(null, Typeface.ITALIC);
+            none.setPadding(dp(26), dp(8), dp(14), dp(8));
+            body.addView(none);
+            return;
+        }
+
+        boolean first = true;
+        for (CategorySummary.AccountGroup g : s.accounts) {
+            if (!first) body.addView(divider());
+            first = false;
+            addAccount(body, s, g, sym);
+        }
+    }
+
+    /** One account: a toggle row with its total, then its categories when open. */
+    private void addAccount(LinearLayout body, CategorySummary s,
+                            CategorySummary.AccountGroup g, String sym) {
+
+        String key = s.endYm + "|" + g.accountId;
+        boolean open = expanded.contains(key);
+
+        LinearLayout r = new LinearLayout(this);
+        r.setOrientation(LinearLayout.HORIZONTAL);
+        r.setGravity(Gravity.CENTER_VERTICAL);
+        r.setPadding(dp(26), dp(8), dp(14), dp(8));
+        r.setClickable(true);
+        r.setFocusable(true);
+
+        TextView name = text(g.displayName(), 14, COLOR_TEXT, true);
+        name.setLayoutParams(new LinearLayout.LayoutParams(0,
+                LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        TextView total = text(CurrencyUtils.format(g.total(), sym), 14, COLOR_TEXT, true);
+        total.setGravity(Gravity.END);
+        TextView arrow = text(open ? "▲" : "▼", 11, COLOR_SECTION_TEXT, false);
+        arrow.setPadding(dp(8), 0, 0, 0);
+
+        r.addView(name);
+        r.addView(total);
+        r.addView(arrow);
+        if (g.archived) r.setAlpha(0.55f);   // matches dimmed archived accounts elsewhere
+        r.setContentDescription(g.displayName() + ", total "
+                + CurrencyUtils.format(g.total(), sym));
+        body.addView(r);
+
+        LinearLayout cats = new LinearLayout(this);
+        cats.setOrientation(LinearLayout.VERTICAL);
+        cats.setVisibility(open ? View.VISIBLE : View.GONE);
+        if (g.archived) cats.setAlpha(0.55f);
+        for (Map.Entry<String, Double> en : g.categories.entrySet()) {
+            LinearLayout c = row(en.getKey(), CurrencyUtils.format(en.getValue(), sym),
+                    COLOR_TEXT, false, dp(44));
+            c.setPadding(dp(44), dp(5), dp(14 + 19), dp(5)); // amounts line up under the account total
+            cats.addView(c);
+        }
+        body.addView(cats);
+
+        r.setOnClickListener(v -> {
+            boolean nowOpen = cats.getVisibility() != View.VISIBLE;
+            cats.setVisibility(nowOpen ? View.VISIBLE : View.GONE);
+            arrow.setText(nowOpen ? "▲" : "▼");
+            if (nowOpen) expanded.add(key); else expanded.remove(key);
+        });
     }
 
     private void addExportButton(LinearLayout body, CategorySummary s) {

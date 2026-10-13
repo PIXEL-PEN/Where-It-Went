@@ -1,2 +1,2 @@
-• New: Yearly Summary screen. One banner per 12-month period with its total; tap to show the category totals for Daily Living and Accounts. Years start in the month of your first record (Jan–Dec, May–Apr, …). Export any year as CSV or by email.
+• New: Yearly Summary screen. One banner per 12-month period with its total; tap to show Daily Living category totals and each Account with its own total and categories. Years start in the month of your first record (Jan–Dec, May–Apr, …). Export any year as CSV or by email.
 • Fix: the "Last 12 Months" header total now counts only the 12 months shown.
