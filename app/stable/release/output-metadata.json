@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.pixelpen.whereitwent",
+  "applicationId": "com.pixelpen.whereitwent.stable",
   "variantName": "stableRelease",
   "elements": [
     {
@@ -16,5 +16,22 @@
       "outputFile": "WhereItWent-stable-release-v3.0.apk"
     }
   ],
-  "elementType": "File"
+  "elementType": "File",
+  "baselineProfiles": [
+    {
+      "minApi": 28,
+      "maxApi": 30,
+      "baselineProfiles": [
+        "baselineProfiles/1/WhereItWent-stable-release-v3.0.dm"
+      ]
+    },
+    {
+      "minApi": 31,
+      "maxApi": 2147483647,
+      "baselineProfiles": [
+        "baselineProfiles/0/WhereItWent-stable-release-v3.0.dm"
+      ]
+    }
+  ],
+  "minSdkVersionForDexing": 24
 }

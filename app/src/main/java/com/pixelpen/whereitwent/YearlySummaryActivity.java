@@ -112,7 +112,9 @@ public class YearlySummaryActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
         TextView period = text(s.displayLabel(nowYm), 16, 0xFFFFFFFF, true);
-        TextView status = text(s.statusLabel(nowYm), 12, COLOR_BANNER_SUB, false);
+        // "ends Aug 2027" on its own line under the banner title
+        TextView status = text(s.statusLabel(nowYm).replace(" · ends ", "\nends "),
+                12, COLOR_BANNER_SUB, false);
         left.addView(period);
         left.addView(status);
 
