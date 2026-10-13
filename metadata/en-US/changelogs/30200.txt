@@ -1,2 +1,4 @@
-• New: Full backup and Import. Settings → Export → Full backup saves everything (entries, accounts, categories with their tags, currency) in one file. Settings → Import restores it, or imports an "All items" CSV export, adding only what's missing; nothing is deleted.
-• CSV exports now keep commas in items and notes intact.
+• New: Full backup and Import. Settings → Export → Full backup saves everything in one file; Settings → Import restores it, or imports an "All items" CSV export, adding only what's missing.
+• Reset can now clear Daily Living, Accounts, or both.
+• Fix: deleting an account also removes its entries from the Yearly Summary.
+• Refreshed Settings colours and an updated Guide.

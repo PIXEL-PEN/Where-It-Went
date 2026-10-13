@@ -18,7 +18,16 @@ All notable changes to this project will be documented here.
 ### Improved
 - "All items" CSV exports quote their fields, so commas in items and notes no
   longer shift columns, and amounts are written in plain form.
-- The Reset warning suggests saving a full backup first.
+- Reset asks what to delete: Daily Living entries, Accounts, or both, and
+  offers to make a full backup first.
+- Settings: section colours restored (lost in the 3.0 dark-mode change), with
+  dark-mode versions; About text, feature list and feedback links refreshed.
+- Guide: new sections on the Yearly Summary and on backup and restore.
+
+### Fixed
+- Deleting an account now also deletes its entries. Entries left behind by
+  accounts deleted in earlier versions are ignored by the Yearly Summary, its
+  exports and the full backup.
 
 ---
 

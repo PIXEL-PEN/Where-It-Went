@@ -36,6 +36,9 @@ public interface AccountItemDao {
     @Query("DELETE FROM account_items WHERE accountId = :accountId")
     void deleteAllForAccount(long accountId);
 
+    @Query("DELETE FROM account_items")
+    void clearAll();
+
     // ----------------------------------------------------
     // TOTALS
     // ----------------------------------------------------

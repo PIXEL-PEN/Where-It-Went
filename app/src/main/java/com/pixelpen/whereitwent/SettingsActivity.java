@@ -203,19 +203,54 @@ public class SettingsActivity extends AppCompatActivity {
         // ----------------------------------------------------
         // RESET BUTTON
         // ----------------------------------------------------
-        findViewById(R.id.btn_reset).setOnClickListener(v -> {
-            new AlertDialog.Builder(this)
-                    .setTitle("Reset Database")
-                    .setMessage("This will delete all Daily Living expenses.\n\n"
-                            + "Tip: save a Full backup first (Export → Full backup), "
-                            + "so you can restore them with Import.\n\nAre you sure?")
-                    .setPositiveButton("Yes", (d, w) -> {
-                        ExpenseDatabase.getDatabase(this).expenseDao().clearAll();
-                        Toast.makeText(this, "All expenses cleared", Toast.LENGTH_SHORT).show();
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
+        findViewById(R.id.btn_reset).setOnClickListener(v -> chooseReset());
+    }
+
+    // =====================================================
+    // RESET (v3.2: choose Daily Living, Accounts or both)
+    // =====================================================
+    private static final int RESET_DAILY = 0, RESET_ACCOUNTS = 1, RESET_ALL = 2;
+
+    private void chooseReset() {
+        String[] options = {
+                "Daily Living entries",
+                "Accounts (all accounts and their entries)",
+                "Everything (Daily Living and Accounts)"
+        };
+        new AlertDialog.Builder(this)
+                .setTitle("Reset: what should be deleted?")
+                .setItems(options, (d, which) -> confirmReset(which, options[which]))
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void confirmReset(int what, String label) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete " + label.split(" \\(")[0] + "?")
+                .setMessage("This deletes: " + label + ".\nIt cannot be undone. "
+                        + "Categories and settings are kept.\n\n"
+                        + "Tip: make a Full backup first, so you can restore with Import.")
+                .setPositiveButton("Delete", (d, w) -> doReset(what))
+                .setNeutralButton("Back up first", (d, w) -> DataTransfer.startFullBackup(this))
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void doReset(int what) {
+        ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
+        db.runInTransaction(() -> {
+            if (what == RESET_DAILY || what == RESET_ALL) {
+                db.expenseDao().clearAll();
+            }
+            if (what == RESET_ACCOUNTS || what == RESET_ALL) {
+                db.accountItemDao().clearAll();
+                db.accountDao().clearAll();
+            }
         });
+        String msg = what == RESET_DAILY ? "Daily Living entries deleted"
+                : what == RESET_ACCOUNTS ? "Accounts deleted"
+                : "All entries deleted";
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
     private String fmt(String iso) {
