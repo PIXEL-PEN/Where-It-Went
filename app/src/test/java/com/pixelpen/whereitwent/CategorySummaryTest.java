@@ -142,7 +142,7 @@ public class CategorySummaryTest {
         String html = s.toHtml("฿", "2026-10");
         assertTrue(html.contains("<h4>Trip, Chiang Mai</h4>"));
         assertTrue(html.contains("<h4>Condo (archived)</h4>"));
-        assertTrue(html.contains("In progress · 2 of 12 months"));
+        assertTrue(html.contains("Sep – Oct 2026<br><i>In progress · 2 of 12 months · ends Aug 2027"));
     }
 
     @Test
@@ -156,10 +156,14 @@ public class CategorySummaryTest {
                 CategorySummary.anchoredPeriodEnds(ex, null, "2027-01"));
 
         CategorySummary y = CategorySummary.build(ex, null, null, "2026-12");
-        assertEquals("Jan 2026 – Dec 2026", y.periodLabel());
-        assertEquals("In progress · 10 of 12 months", y.statusLabel("2026-10"));
-        assertEquals("In progress · 12 of 12 months", y.statusLabel("2026-12"));
+        assertEquals("Jan – Dec 2026", y.periodLabel());
+        assertEquals("Jan – Oct 2026", y.displayLabel("2026-10"));
+        assertEquals("In progress · 10 of 12 months · ends Dec 2026", y.statusLabel("2026-10"));
+        assertEquals("Jan – Dec 2026", y.displayLabel("2026-12"));
+        assertEquals("In progress · 12 of 12 months · ends Dec 2026", y.statusLabel("2026-12"));
+        assertEquals("Jan – Dec 2026", y.displayLabel("2027-01"));
         assertEquals("Complete", y.statusLabel("2027-01"));
+        assertEquals("Jan 2026", y.displayLabel("2026-01"));
     }
 
     @Test
@@ -170,7 +174,10 @@ public class CategorySummaryTest {
 
         CategorySummary s = CategorySummary.build(null, it, null, ends.get(0));
         assertEquals("May 2026 – Apr 2027", s.periodLabel());
-        assertEquals("In progress · 6 of 12 months", s.statusLabel("2026-10"));
+        assertEquals("May – Oct 2026", s.displayLabel("2026-10"));
+        assertEquals("In progress · 6 of 12 months · ends Apr 2027", s.statusLabel("2026-10"));
+        assertEquals("May 2026 – Jan 2027", s.displayLabel("2027-01"));
+        assertEquals("May 2026 – Apr 2027", s.displayLabel("2027-05"));
 
         assertEquals(Arrays.asList("2028-04", "2027-04"),
                 CategorySummary.anchoredPeriodEnds(null, it, "2027-05"));
@@ -209,6 +216,7 @@ public class CategorySummaryTest {
                 exp("Rent", 100, "2026-09-01"));
         String csv = CategorySummary.build(ex, null, null, "2026-10").toCsv("2026-11");
         assertTrue(csv.startsWith("Category Summary,Nov 2025 – Oct 2026,Complete\n"));
+        assertEquals("Nov 2025 – Oct 2026", CategorySummary.build(null, null, null, "2026-10").displayLabel("2026-11"));
         assertTrue(csv.contains("Daily Living,,\"Food, drink\",12.50\n"));
         assertTrue(csv.contains("Daily Living,,TOTAL,112.50\n"));
         assertTrue(csv.contains("Accounts,,TOTAL,0.00\n"));

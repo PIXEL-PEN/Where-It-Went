@@ -34,7 +34,7 @@ public final class SummaryExport {
         String nowYm = CategorySummary.currentYm();
         new AlertDialog.Builder(activity)
                 .setTitle("Export Category Summary")
-                .setMessage(summary.periodLabel() + "\n" + summary.statusLabel(nowYm)
+                .setMessage(summary.displayLabel(nowYm) + "\n" + summary.statusLabel(nowYm)
                         + "\n\nChoose export method:")
                 .setPositiveButton("Storage (CSV)", (d, w) -> saveCsv(activity, summary))
                 .setNegativeButton("Email (HTML)", (d, w) -> email(activity, summary))
@@ -99,7 +99,8 @@ public final class SummaryExport {
             Intent intent = new Intent(Intent.ACTION_SEND);
             intent.setType("text/html");
             intent.putExtra(Intent.EXTRA_SUBJECT,
-                    "Where It Went – Category Summary " + summary.periodLabel());
+                    "Where It Went – Category Summary "
+                    + summary.displayLabel(CategorySummary.currentYm()));
             intent.putExtra(Intent.EXTRA_STREAM, uri);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 

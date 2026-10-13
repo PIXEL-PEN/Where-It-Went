@@ -201,12 +201,22 @@ public final class CategorySummary {
         return Math.max(0, Math.min(PERIOD_MONTHS, n));
     }
 
-    /** "In progress · 10 of 12 months" or "Complete". */
+    /** "In progress · 10 of 12 months · ends Dec 2026" or "Complete". */
     public String statusLabel(String currentYm) {
         if (isInProgress(currentYm)) {
-            return "In progress · " + monthsElapsed(currentYm) + " of " + PERIOD_MONTHS + " months";
+            return "In progress · " + monthsElapsed(currentYm) + " of " + PERIOD_MONTHS
+                    + " months · ends " + monthLabel(endYm);
         }
         return "Complete";
+    }
+
+    /**
+     * Banner title. While in progress, only the months so far
+     * ("Sep – Oct 2026"); once complete, the whole year ("Jan – Dec 2026").
+     */
+    public String displayLabel(String currentYm) {
+        if (isInProgress(currentYm)) return rangeLabel(startYm, currentYm);
+        return rangeLabel(startYm, endYm);
     }
 
     /** Whole months from {@code fromYm} to {@code toYm} (negative if earlier). */
@@ -222,14 +232,18 @@ public final class CategorySummary {
     // RENDER
     // --------------------------------------------------------
 
-    /** "Nov 2025 – Oct 2026" */
+    /** The full 12-month span: "Jan – Dec 2026" or "Nov 2025 – Oct 2026". */
     public String periodLabel() {
-        return periodLabel(endYm);
+        return rangeLabel(startYm, endYm);
     }
 
-    public static String periodLabel(String endYm) {
-        return monthLabel(addMonths(endYm, -(PERIOD_MONTHS - 1)))
-                + " – " + monthLabel(endYm);
+    /** "Oct 2026", "Sep – Oct 2026" or "Nov 2025 – Oct 2026". */
+    static String rangeLabel(String fromYm, String toYm) {
+        if (fromYm.equals(toYm)) return monthLabel(fromYm);
+        if (fromYm.substring(0, 4).equals(toYm.substring(0, 4))) {
+            return monthLabel(fromYm).substring(0, 3) + " – " + monthLabel(toYm);
+        }
+        return monthLabel(fromYm) + " – " + monthLabel(toYm);
     }
 
     /** "Nov2025-Oct2026", safe for file names. */
@@ -241,7 +255,7 @@ public final class CategorySummary {
     /** CSV with plain two-decimal amounts (no currency symbol) for spreadsheets. */
     public String toCsv(String currentYm) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Category Summary,").append(csv(periodLabel())).append(",")
+        sb.append("Category Summary,").append(csv(displayLabel(currentYm))).append(",")
                 .append(csv(statusLabel(currentYm))).append("\n");
         sb.append("Section,Account,Category,Total\n");
 
@@ -271,7 +285,7 @@ public final class CategorySummary {
         StringBuilder h = new StringBuilder();
         h.append("<html><head><meta charset='utf-8'></head><body>");
         h.append("<h2>Category Summary</h2>");
-        h.append("<p>").append(esc(periodLabel())).append("<br><i>")
+        h.append("<p>").append(esc(displayLabel(currentYm))).append("<br><i>")
                 .append(esc(statusLabel(currentYm))).append("</i></p>");
 
         h.append("<h3>Daily Living</h3>");

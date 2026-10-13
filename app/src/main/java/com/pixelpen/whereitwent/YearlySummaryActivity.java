@@ -111,7 +111,7 @@ public class YearlySummaryActivity extends AppCompatActivity {
         left.setLayoutParams(new LinearLayout.LayoutParams(0,
                 LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
-        TextView period = text(s.periodLabel(), 16, 0xFFFFFFFF, true);
+        TextView period = text(s.displayLabel(nowYm), 16, 0xFFFFFFFF, true);
         TextView status = text(s.statusLabel(nowYm), 12, COLOR_BANNER_SUB, false);
         left.addView(period);
         left.addView(status);
@@ -126,7 +126,7 @@ public class YearlySummaryActivity extends AppCompatActivity {
         banner.addView(left);
         banner.addView(total);
         banner.addView(arrow);
-        banner.setContentDescription(s.periodLabel() + ", " + s.statusLabel(nowYm)
+        banner.setContentDescription(s.displayLabel(nowYm) + ", " + s.statusLabel(nowYm)
                 + ", total " + CurrencyUtils.format(s.grandTotal(), sym));
         container.addView(banner, bannerLp);
 

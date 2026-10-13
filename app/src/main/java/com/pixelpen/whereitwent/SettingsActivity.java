@@ -290,7 +290,7 @@ public class SettingsActivity extends AppCompatActivity {
         String[] labels = new String[ends.size()];
         for (int i = 0; i < ends.size(); i++) {
             CategorySummary s = CategorySummary.build(null, null, null, ends.get(i));
-            labels[i] = s.periodLabel() + (s.isInProgress(nowYm) ? "  (in progress)" : "");
+            labels[i] = s.displayLabel(nowYm) + (s.isInProgress(nowYm) ? "  (in progress)" : "");
         }
 
         new AlertDialog.Builder(this)
