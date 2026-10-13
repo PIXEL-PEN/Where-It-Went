@@ -29,11 +29,10 @@
     <string name="about_text">
     <![CDATA[
     © 2025 by SpokenFor (TST) PIXEL-PEN<br/><br/>
-    A simple, offline expense tracker. No ads, no cloud, no tracking.<br/>
-    It tracks spending only, not income. That’s by design.<br/>
-    The Guide (menu → Guide) explains every feature.<br/><br/>
-    <b>Feedback welcome.</b> If you find Where It Went useful, or something
-    could be better, it’s good to hear from you.<br/><br/>
+    Where It Went is a simple, offline expense app with no ads, no cloud and no tracking.
+    It deliberately leaves income out, keeping the focus on where your money goes, and the
+    Guide (menu → Guide) explains every feature. Feedback is welcome: if you find the app
+    useful, or something could be better, it’s good to hear from you.<br/><br/>
     Email: <b><a href="mailto:wiw-feedback@hotmail.com?subject={SUBJECT}">wiw-feedback@hotmail.com</a></b><br/>
     GitHub: <b><a href="https://github.com/PIXEL-PEN/Where-It-Went/discussions">Discussions</a></b>
     ]]>
