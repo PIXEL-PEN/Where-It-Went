@@ -11,8 +11,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Works out what an import would add (v3.2). Never removes or changes
- * anything already in the app.
+ * Works out what an import would add (v3.2). Never removes or changes any
+ * entry already in the app. The one thing a full backup may change is a
+ * category's tag, so that restoring a backup restores the tags too.
  *
  * Duplicates are matched by count: if the app already has two identical
  * entries (same date, category, item, amount) and the file has three, one is
@@ -30,6 +31,8 @@ public final class ImportPlan {
     public final List<BackupFormat.AccountItemRec> accountItemsToAdd = new ArrayList<>();
     /** Categories not yet in the app, name -> tag. */
     public final Map<String, String> categoriesToAdd = new LinkedHashMap<>();
+    /** Existing categories whose tag a full backup changes, name (as in the app) -> new tag. */
+    public final Map<String, String> categoriesToRetag = new LinkedHashMap<>();
 
     public int expensesSkipped;
     public int accountItemsSkipped;
@@ -56,14 +59,14 @@ public final class ImportPlan {
     }
 
     /**
-     * @param existingCategoryNames categories already known to the app
+     * @param existingCategories    categories already in the app, name -> current tag
      * @param defaultTag            tag for categories the file doesn't give one for
      */
     public static ImportPlan build(BackupFormat.Parsed parsed,
                                    Collection<Expense> existingExpenses,
                                    Collection<AccountEntity> existingAccounts,
                                    Collection<AccountItemEntity> existingItems,
-                                   Collection<String> existingCategoryNames,
+                                   Map<String, String> existingCategories,
                                    String currentCurrency,
                                    String defaultTag) {
 
@@ -87,11 +90,24 @@ public final class ImportPlan {
 
         // ---------- Categories ----------
         Set<String> knownCats = new HashSet<>();
-        if (existingCategoryNames != null) {
-            for (String c : existingCategoryNames) knownCats.add(norm(c));
+        Map<String, String> appName = new HashMap<>();   // normalised -> name as in the app
+        Map<String, String> appTag = new HashMap<>();    // normalised -> current tag
+        if (existingCategories != null) {
+            for (Map.Entry<String, String> c : existingCategories.entrySet()) {
+                knownCats.add(norm(c.getKey()));
+                appName.put(norm(c.getKey()), c.getKey());
+                appTag.put(norm(c.getKey()), c.getValue());
+            }
         }
+        // A full backup is the authority on tags: new categories get its tag,
+        // and existing ones whose tag differs are updated to match it.
         for (Map.Entry<String, String> c : parsed.categories.entrySet()) {
-            if (knownCats.add(norm(c.getKey()))) plan.categoriesToAdd.put(c.getKey(), c.getValue());
+            String k = norm(c.getKey());
+            if (knownCats.add(k)) {
+                plan.categoriesToAdd.put(c.getKey(), c.getValue());
+            } else if (appTag.containsKey(k) && !norm(appTag.get(k)).equals(norm(c.getValue()))) {
+                plan.categoriesToRetag.put(appName.get(k), c.getValue());
+            }
         }
         for (BackupFormat.ExpenseRec r : plan.expensesToAdd) {
             if (knownCats.add(norm(r.category))) plan.categoriesToAdd.put(r.category, defaultTag);
@@ -193,6 +209,14 @@ public final class ImportPlan {
             }
         }
 
+        if (!categoriesToRetag.isEmpty()) {
+            List<String> names = new ArrayList<>();
+            for (Map.Entry<String, String> c : categoriesToRetag.entrySet()) {
+                names.add(c.getKey() + " → " + c.getValue());
+            }
+            sb.append("\nTags restored from backup: ").append(list(names)).append('\n');
+        }
+
         if (currencyToApply != null) {
             sb.append("\nCurrency will be set to ").append(currencyToApply).append('\n');
         } else if (currencyInFile != null && !currencyInFile.equals(currentCurrency)) {
@@ -210,7 +234,9 @@ public final class ImportPlan {
             sb.append(")\n");
         }
 
-        sb.append("\nNothing already in the app is changed or deleted.");
+        sb.append(categoriesToRetag.isEmpty()
+                ? "\nNothing already in the app is changed or deleted."
+                : "\nNo entries are changed or deleted; only the tags listed above are updated.");
         return sb.toString();
     }
 

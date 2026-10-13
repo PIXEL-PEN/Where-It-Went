@@ -155,12 +155,13 @@ public final class DataTransfer {
                 db.expenseDao().getAll(),
                 db.accountDao().getAllAccounts(),
                 db.accountItemDao().getAllItems(),
-                CategoryManager.getOrderedCategories(activity),
+                currentCategoryTags(activity),
                 currency,
                 CategoryManager.TAG_FIXED);
 
         boolean nothingNew = plan.totalToAdd() == 0 && plan.accountsToCreate.isEmpty()
-                && plan.categoriesToAdd.isEmpty() && plan.currencyToApply == null;
+                && plan.categoriesToAdd.isEmpty() && plan.categoriesToRetag.isEmpty()
+                && plan.currencyToApply == null;
 
         AlertDialog.Builder b = new AlertDialog.Builder(activity)
                 .setTitle(plan.title())
@@ -232,6 +233,9 @@ public final class DataTransfer {
         for (Map.Entry<String, String> c : plan.categoriesToAdd.entrySet()) {
             CategoryManager.saveCategoryWithTag(activity, c.getKey(), c.getValue());
         }
+        for (Map.Entry<String, String> c : plan.categoriesToRetag.entrySet()) {
+            CategoryManager.saveCategoryWithTag(activity, c.getKey(), c.getValue());
+        }
         if (plan.currencyToApply != null) {
             AppPrefs.setCurrencySymbol(activity, plan.currencyToApply);
         }
@@ -292,6 +296,15 @@ public final class DataTransfer {
             }
             return new String(out.toByteArray(), StandardCharsets.UTF_8);
         }
+    }
+
+    /** Every category in the app with its current tag. */
+    private static Map<String, String> currentCategoryTags(Activity activity) {
+        Map<String, String> m = new LinkedHashMap<>();
+        for (String name : CategoryManager.getOrderedCategories(activity)) {
+            m.put(name, CategoryManager.getTagForCategory(activity, name));
+        }
+        return m;
     }
 
     private static void message(Activity activity, String title, String text) {

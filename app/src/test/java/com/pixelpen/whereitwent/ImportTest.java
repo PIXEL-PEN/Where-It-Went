@@ -34,8 +34,12 @@ public class ImportTest {
         return new AccountItemEntity(acctId, date, 0, item, cat, amt, null);
     }
 
-    private static final List<String> DEFAULT_CATS =
-            Arrays.asList("Groceries", "Rent", "Utilities", "Bills", "Transport", "Other");
+    private static final Map<String, String> DEFAULT_CATS = new LinkedHashMap<>();
+    static {
+        for (String c : Arrays.asList("Groceries", "Rent", "Utilities", "Bills", "Transport", "Other")) {
+            DEFAULT_CATS.put(c, "Fixed");
+        }
+    }
 
     // ---------- Daily Living CSV ----------
 
@@ -255,6 +259,41 @@ public class ImportTest {
         assertTrue(text, text.contains("New categories: Pets"));
         assertTrue(text, text.contains("Lines that couldn't be read: 1 (line 4)"));
         assertTrue(text, text.endsWith("Nothing already in the app is changed or deleted."));
+    }
+
+    @Test
+    public void fullBackupRestoresTagsOfExistingCategories() {
+        Map<String, String> backupCats = new LinkedHashMap<>();
+        backupCats.put("Groceries", "Fixed");          // built-in, same tag: no change
+        backupCats.put("snacks", "Discretionary");     // exists as Fixed (case differs)
+        backupCats.put("Pharmacy", "Necessity");       // exists, already Necessity
+        backupCats.put("Pets", "Discretionary");       // new
+        String text = BackupFormat.writeBackup("฿", backupCats,
+                Collections.<BackupFormat.AccountRec>emptyList(),
+                Collections.<BackupFormat.ExpenseRec>emptyList(),
+                Collections.<BackupFormat.AccountItemRec>emptyList(), new Date());
+
+        Map<String, String> app = new LinkedHashMap<>(DEFAULT_CATS);
+        app.put("Snacks", "Fixed");
+        app.put("Pharmacy", "Necessity");
+
+        ImportPlan plan = ImportPlan.build(BackupFormat.parse(text), null, null, null, app, "฿", "Fixed");
+        assertEquals(Collections.singletonMap("Snacks", "Discretionary"), plan.categoriesToRetag);
+        assertEquals(Collections.singletonMap("Pets", "Discretionary"), plan.categoriesToAdd);
+        String preview = plan.describe("฿");
+        assertTrue(preview, preview.contains("Tags restored from backup: Snacks → Discretionary"));
+        assertTrue(preview, preview.endsWith("only the tags listed above are updated."));
+    }
+
+    @Test
+    public void csvImportNeverChangesExistingTags() {
+        Map<String, String> app = new LinkedHashMap<>(DEFAULT_CATS);
+        app.put("Snacks", "Discretionary");
+        ImportPlan plan = ImportPlan.build(BackupFormat.parse("Category,Item,Amount,Date\n"
+                        + "Snacks,Chips,30.0,03 Jan 2026\n"),
+                null, null, null, app, "฿", "Fixed");
+        assertTrue(plan.categoriesToRetag.isEmpty());
+        assertTrue(plan.categoriesToAdd.isEmpty());
     }
 
     @Test

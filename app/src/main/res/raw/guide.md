@@ -65,7 +65,7 @@ Settings → Export → Full backup saves everything in one file: Daily Living, 
 
 Settings → Import restores a full backup. It can also bring in an "All items" CSV export from Daily Living or Accounts.
 
-Before importing, you'll see what the file contains. Entries already in the app are skipped, and nothing is changed or deleted, so importing the same file twice is harmless.
+Before importing, you'll see what the file contains. Entries already in the app are skipped and nothing is deleted, so importing the same file twice is harmless. A full backup also restores your category tags; CSV exports don't include tags, so categories they add start as Fixed.
 
 Settings → Reset lets you delete Daily Living entries, Accounts, or both. Make a full backup first.
 
