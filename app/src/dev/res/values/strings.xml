@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">ExpTrack-dev</string>
+    <!-- Launcher label for dev builds, so they can't be mistaken for the real app -->
+    <string name="app_label_where_it_went">WIW-dev</string>
 </resources>
