@@ -2,3 +2,4 @@
 • Reset can now clear Daily Living, Accounts, or both.
 • Fix: deleting an account also removes its entries from the Yearly Summary.
 • Refreshed Settings colours and an updated Guide.
+• Also new since 3.0: Yearly Summary (menu → Yearly Summary), and a feedback email in Settings → About.
