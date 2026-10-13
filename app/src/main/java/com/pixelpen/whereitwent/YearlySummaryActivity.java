@@ -293,10 +293,12 @@ public class YearlySummaryActivity extends AppCompatActivity {
     }
 
     private void addExportButton(LinearLayout body, CategorySummary s) {
-        TextView btn = text("Export", 14, 0xFFFFFFFF, false);
+        // Low-key text link rather than a filled button, so it doesn't
+        // dominate a collapsed year; padding keeps a comfortable tap area
+        TextView btn = text("Export ›", 13,
+                ContextCompat.getColor(this, R.color.colorAccent2), false);
         btn.setGravity(Gravity.CENTER);
-        btn.setBackgroundColor(ContextCompat.getColor(this, R.color.colorAccent2));
-        btn.setPadding(dp(18), dp(6), dp(18), dp(6));
+        btn.setPadding(dp(10), dp(8), dp(4), dp(6));
         btn.setClickable(true);
         btn.setFocusable(true);
         btn.setContentDescription("Export " + s.periodLabel());
@@ -305,7 +307,7 @@ public class YearlySummaryActivity extends AppCompatActivity {
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         lp.gravity = Gravity.END;
-        lp.setMargins(0, dp(8), dp(14), dp(4));
+        lp.setMargins(0, 0, dp(10), 0);
         body.addView(btn, lp);
     }
 
