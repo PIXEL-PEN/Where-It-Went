@@ -12,6 +12,7 @@ Features:
 - Quick expense entry with category tags
 - View spending by Month, Date, or Category
 - Distribution pie chart across Fixed, Necessity and Discretionary
+- Yearly Summary: category totals for each 12-month year, with export
 - Monthly account totals on the Distribution page
 - Export to CSV or HTML
 - Fully offline — no ads, no tracking, no cloud
