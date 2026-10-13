@@ -4,6 +4,24 @@ All notable changes to this project will be documented here.
 
 ---
 
+## v3.2
+
+### Added
+- Full backup (Settings → Export → Full backup): one file with every Daily Living
+  entry, every account (including empty and archived ones) and its items, all
+  categories with their tags, and the currency.
+- Import (Settings → Import): restores a full backup, or imports an "All items"
+  CSV export from Daily Living or Accounts, including exports made by older
+  versions. Shows a preview first; adds only what is missing and never changes
+  or deletes existing entries, so importing the same file twice is harmless.
+
+### Improved
+- "All items" CSV exports quote their fields, so commas in items and notes no
+  longer shift columns, and amounts are written in plain form.
+- The Reset warning suggests saving a full backup first.
+
+---
+
 ## v3.1
 
 ### Added

@@ -1,0 +1,2 @@
+• New: Full backup and Import. Settings → Export → Full backup saves everything (entries, accounts, categories with their tags, currency) in one file. Settings → Import restores it, or imports an "All items" CSV export, adding only what's missing; nothing is deleted.
+• CSV exports now keep commas in items and notes intact.

@@ -178,6 +178,7 @@ public class SettingsActivity extends AppCompatActivity {
         // ----------------------------------------------------
         findViewById(R.id.btn_export).setOnClickListener(v -> {
             String[] options = {
+                    "Full backup (for restoring)",
                     "All items – Storage (CSV)",
                     "All items – Email (HTML)",
                     "12-month category summary"
@@ -185,8 +186,9 @@ public class SettingsActivity extends AppCompatActivity {
             new AlertDialog.Builder(this)
                     .setTitle("Export Data")
                     .setItems(options, (d, which) -> {
-                        if (which == 0) exportToStorage();
-                        else if (which == 1) exportAndEmail();
+                        if (which == 0) DataTransfer.startFullBackup(this);
+                        else if (which == 1) exportToStorage();
+                        else if (which == 2) exportAndEmail();
                         else chooseSummaryPeriod();
                     })
                     .setNegativeButton("Cancel", null)
@@ -194,12 +196,19 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         // ----------------------------------------------------
+        // IMPORT BUTTON (v3.2)
+        // ----------------------------------------------------
+        findViewById(R.id.btn_import).setOnClickListener(v -> DataTransfer.startImport(this));
+
+        // ----------------------------------------------------
         // RESET BUTTON
         // ----------------------------------------------------
         findViewById(R.id.btn_reset).setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("Reset Database")
-                    .setMessage("This will delete all expenses. Are you sure?")
+                    .setMessage("This will delete all Daily Living expenses.\n\n"
+                            + "Tip: save a Full backup first (Export → Full backup), "
+                            + "so you can restore them with Import.\n\nAre you sure?")
                     .setPositiveButton("Yes", (d, w) -> {
                         ExpenseDatabase.getDatabase(this).expenseDao().clearAll();
                         Toast.makeText(this, "All expenses cleared", Toast.LENGTH_SHORT).show();
@@ -235,14 +244,16 @@ public class SettingsActivity extends AppCompatActivity {
         StringBuilder sb = new StringBuilder();
 
 // ADD HEADER
-        sb.append("Category,Item,Amount,Date\n");
+        sb.append(BackupFormat.DL_HEADER).append("\n");
 
+        // v3.2: fields quoted so commas in items can't shift columns; importable
         List<Expense> expenses = ExpenseDatabase.getDatabase(this).expenseDao().getAll();
         for (Expense e : expenses) {
-            sb.append(e.category).append(",")
-                    .append(e.description).append(",")
-                    .append(e.amount).append(",")
-                    .append(fmt(e.date)).append("\n");
+            sb.append(BackupFormat.row(
+                    e.category,
+                    e.description == null ? "" : e.description,
+                    BackupFormat.plainAmount(e.amount),
+                    fmt(e.date)));
         }
         csvContent = sb.toString();
 
@@ -261,6 +272,7 @@ public class SettingsActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (SummaryExport.onActivityResult(this, requestCode, resultCode, data)) return;
+        if (DataTransfer.onActivityResult(this, requestCode, resultCode, data)) return;
 
         if (requestCode == CREATE_CSV_FILE && resultCode == RESULT_OK) {
             if (data != null && data.getData() != null && csvContent != null) {

@@ -479,30 +479,23 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                 List<AccountEntity> accounts = accountDao.getAllAccounts();
 
                 StringBuilder sb = new StringBuilder();
-                sb.append("AccountType,AccountName,Date,Item,Category,Amount,Note\n");
+                sb.append(BackupFormat.ACC_HEADER).append("\n");
 
+                // v3.2: fields quoted (notes keep their commas); importable
                 for (AccountEntity account : accounts) {
 
                     List<AccountItemEntity> items =
                             itemDao.getItemsForAccount(account.id);
 
                     for (AccountItemEntity item : items) {
-
-                        sb.append(account.type).append(",");
-
-                        sb.append(account.name);
-                        if (account.archived) {
-                            sb.append(" (archived)");
-                        }
-                        sb.append(",");
-
-                        sb.append(item.date).append(",");
-                        sb.append(item.item).append(",");
-                        sb.append(item.category).append(",");
-                        sb.append(item.amount).append(",");
-                        sb.append(item.note == null ? "" :
-                                item.note.replace(",", " "));
-                        sb.append("\n");
+                        sb.append(BackupFormat.row(
+                                account.type,
+                                account.archived ? account.name + " (archived)" : account.name,
+                                item.date,
+                                item.item == null ? "" : item.item,
+                                item.category == null ? "" : item.category,
+                                BackupFormat.plainAmount(item.amount),
+                                item.note == null ? "" : item.note));
                     }
                 }
 
