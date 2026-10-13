@@ -144,6 +144,24 @@ public final class CategorySummary {
     }
 
     /**
+     * Account items whose account still exists. Items left behind by accounts
+     * deleted before v3.2 are ignored everywhere summaries are built.
+     */
+    public static List<AccountItemEntity> withoutOrphans(Collection<AccountItemEntity> items,
+                                                         Collection<AccountEntity> accounts) {
+        List<AccountItemEntity> out = new ArrayList<>();
+        if (items == null) return out;
+        java.util.Set<Long> ids = new java.util.HashSet<>();
+        if (accounts != null) {
+            for (AccountEntity a : accounts) ids.add(a.id);
+        }
+        for (AccountItemEntity it : items) {
+            if (ids.contains(it.accountId)) out.add(it);
+        }
+        return out;
+    }
+
+    /**
      * Month ("yyyy-MM") of the earliest record in either Daily Living or
      * Accounts, or null when there is no data at all.
      */

@@ -73,8 +73,9 @@ public class YearlySummaryActivity extends AppCompatActivity {
 
         ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
         List<Expense> expenses = db.expenseDao().getAll();
-        List<AccountItemEntity> items = db.accountItemDao().getAllItems();
         List<AccountEntity> accounts = db.accountDao().getAllAccounts();
+        List<AccountItemEntity> items = CategorySummary.withoutOrphans(
+                db.accountItemDao().getAllItems(), accounts);
 
         String nowYm = CategorySummary.currentYm();
         String sym = AppPrefs.getCurrencySymbol(this);

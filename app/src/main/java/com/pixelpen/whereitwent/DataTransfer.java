@@ -92,7 +92,7 @@ public final class DataTransfer {
         SimpleDateFormat isoFmt = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
         for (AccountItemEntity it : itemEntities) {
             String name = nameById.get(it.accountId);
-            if (name == null) name = "Unknown account";
+            if (name == null) continue;   // left behind by an account deleted before v3.2
             String iso = DateUtils.toIso(it.date);
             if (iso == null && it.dateMillis > 0) iso = isoFmt.format(new Date(it.dateMillis));
             items.add(new BackupFormat.AccountItemRec(name, iso != null ? iso : String.valueOf(it.date),

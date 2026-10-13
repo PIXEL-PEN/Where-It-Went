@@ -123,6 +123,24 @@ public class CategorySummaryTest {
     }
 
     @Test
+    public void itemsOfDeletedAccountsAreIgnored() {
+        List<AccountEntity> accts = Collections.singletonList(acct(1, "House", false));
+        List<AccountItemEntity> items = Arrays.asList(
+                item(1, "Repairs", 50, "05 Oct 2026", 0),
+                item(2, "Lodging", 900, "02 Sep 2026", 0));   // account 2 was deleted
+        List<AccountItemEntity> kept = CategorySummary.withoutOrphans(items, accts);
+        assertEquals(1, kept.size());
+
+        // The deleted account's September item no longer moves the start of the year
+        List<Expense> ex = Collections.singletonList(exp("Food", 1, "2026-10-01"));
+        assertEquals(Collections.singletonList("2027-09"),
+                CategorySummary.anchoredPeriodEnds(ex, kept, "2026-10"));
+        CategorySummary s = CategorySummary.build(ex, kept, accts, "2027-09");
+        assertEquals(1, s.accounts.size());
+        assertEquals(50.0, s.accountsTotal, 0.001);
+    }
+
+    @Test
     public void csvAndHtmlListEachAccount() {
         List<AccountItemEntity> items = Arrays.asList(
                 item(1, "Lodging", 100, "02 Oct 2026", 0),

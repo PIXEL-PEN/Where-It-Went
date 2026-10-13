@@ -970,11 +970,14 @@ public class AddExpenseDialog extends DialogFragment {
                 .setMessage("Delete \"" + acc.name + "\"?\n\nThis cannot be undone.")
                 .setPositiveButton("Delete", (d, w) -> {
 
-                    AccountDao dao =
-                            ExpenseDatabase.getDatabase(requireContext()).accountDao();
+                    ExpenseDatabase db = ExpenseDatabase.getDatabase(requireContext());
 
-                    // Hard delete from Room
-                    dao.delete(acc);
+                    // Hard delete from Room: the account and its items together
+                    // (v3.2: items used to be left behind and still counted in summaries)
+                    db.runInTransaction(() -> {
+                        db.accountItemDao().deleteAllForAccount(acc.id);
+                        db.accountDao().delete(acc);
+                    });
 
                     // Remove custom categories for this account
                     accountCustomCategories.remove(acc.name);
