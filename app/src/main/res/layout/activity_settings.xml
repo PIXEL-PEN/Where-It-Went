@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/settings_page_bg">
 
     <LinearLayout
         android:orientation="vertical"
@@ -51,14 +52,14 @@
             android:text="Select Currency"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:background="?attr/colorSurface"
-            android:textColor="?attr/colorOnSurface" />
+            android:background="@color/settings_header_bg"
+            android:textColor="@color/settings_header_text" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="6dp"
-            android:background="?attr/colorSurface"
+            android:background="@color/settings_card_bg"
             android:elevation="2dp"
             android:paddingTop="16dp"
             android:paddingBottom="16dp"
@@ -86,8 +87,8 @@
             android:text="Database Management"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:background="?attr/colorSurface"
-            android:textColor="?attr/colorOnSurface" />
+            android:background="@color/settings_header_bg"
+            android:textColor="@color/settings_header_text" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -137,8 +138,8 @@
             android:text="About"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:background="?attr/colorSurface"
-            android:textColor="?attr/colorOnSurface" />
+            android:background="@color/settings_header_bg"
+            android:textColor="@color/settings_header_text" />
 
         <TextView
             android:id="@+id/text_about"

@@ -27,5 +27,11 @@
 
     <color name="monthExpandedGray">#E8E8E8</color>
 
+    <!-- Settings screen (v3.2: restores the v2.0 look; dark versions in values-night) -->
+    <color name="settings_page_bg">#ECEFF1</color>
+    <color name="settings_header_bg">#B0BEC5</color>
+    <color name="settings_header_text">#0274B2</color>
+    <color name="settings_card_bg">#FFFFFF</color>
+
 
 </resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings screen in dark mode: same structure as the light look,
+         dark surfaces with readable light-blue section titles -->
+    <color name="settings_page_bg">#121212</color>
+    <color name="settings_header_bg">#37474F</color>
+    <color name="settings_header_text">#90CAF9</color>
+    <color name="settings_card_bg">#1E1E1E</color>
+</resources>
