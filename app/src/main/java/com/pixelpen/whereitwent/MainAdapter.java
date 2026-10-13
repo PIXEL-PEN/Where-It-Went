@@ -187,7 +187,8 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             // Indent only true account rows
             if (!summary.label.equals("Daily Living (12 months)")
-                    && !summary.label.equals("Accounts (current)")) {
+                    && !summary.label.equals("Accounts (current)")
+                    && !summary.label.equals(MainBuilder.LABEL_YEARLY)) {
 
                 vh.itemView.setPadding(
                         dp(vh.itemView, 27),
@@ -211,8 +212,13 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 vh.value.setAlpha(0.5f);
             }
 
+// Yearly summaries row opens its own screen
+            if (summary.label.equals(MainBuilder.LABEL_YEARLY)) {
+                vh.itemView.setOnClickListener(v -> v.getContext().startActivity(
+                        new Intent(v.getContext(), YearlySummaryActivity.class)));
+            }
 // Make account rows clickable
-            if (!summary.label.equals("Daily Living (12 months)")
+            else if (!summary.label.equals("Daily Living (12 months)")
                     && !summary.label.equals("Accounts (current)")) {
                 vh.itemView.setOnClickListener(v -> {
                     Intent intent = new Intent(

@@ -7,10 +7,14 @@ All notable changes to this project will be documented here.
 ## v3.1
 
 ### Added
-- 12-month category summary export (Settings → Export → 12-month category summary).
-  Pick any 12-month period back to your earliest record; exports category totals
-  only for Daily Living and Accounts, with section and grand totals, as CSV
-  (storage) or HTML (email).
+- Yearly Summary screen (drawer → Yearly Summary, or Summaries → Yearly summaries).
+  One banner per 12-month period showing the period total; tap a banner to show
+  or hide category totals for Daily Living and Accounts. Each period can be
+  exported as CSV (storage) or HTML (email).
+- Periods are anchored to the month of your first record: a January starter
+  sees Jan–Dec years, a May starter sees May–Apr. The current period is marked
+  "In progress · N of 12 months".
+- The same category summary is also available from Settings → Export.
 
 ### Fixed
 - "Last 12 Months" header total now counts only the 12 months shown

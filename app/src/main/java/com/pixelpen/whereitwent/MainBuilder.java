@@ -7,6 +7,9 @@ import java.util.List;
 
 public class MainBuilder {
 
+    /** Summaries row that opens the Yearly Summary screen (v3.1). */
+    public static final String LABEL_YEARLY = "Yearly summaries";
+
     public static List<MainRow> build(
             Context ctx,
             boolean twelveMonthMode,
@@ -62,6 +65,11 @@ public class MainBuilder {
 
 
 
+
+            // -----------------------------
+            // YEARLY SUMMARIES (opens screen)
+            // -----------------------------
+            rows.add(new RowSummary(LABEL_YEARLY, "›"));
 
             // -----------------------------
             // ACCOUNTS (current)

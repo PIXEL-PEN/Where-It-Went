@@ -59,6 +59,7 @@ public class MainScreen extends AppCompatActivity {
         View linkDistribution = findViewById(R.id.linkDistribution);
         View linkTutorial = findViewById(R.id.linkTutorial);
         View linkAccounts = findViewById(R.id.linkAccounts);
+        View linkYearly = findViewById(R.id.linkYearlySummary);
 
         if (linkSettings != null) {
             linkSettings.setOnClickListener(v -> {
@@ -98,6 +99,13 @@ public class MainScreen extends AppCompatActivity {
         if (linkDistribution != null) {
             linkDistribution.setOnClickListener(v -> {
                 startActivity(new Intent(MainScreen.this, DistributionActivity.class));
+                drawerLayout.closeDrawer(Gravity.END);
+            });
+        }
+
+        if (linkYearly != null) {
+            linkYearly.setOnClickListener(v -> {
+                startActivity(new Intent(MainScreen.this, YearlySummaryActivity.class));
                 drawerLayout.closeDrawer(Gravity.END);
             });
         }

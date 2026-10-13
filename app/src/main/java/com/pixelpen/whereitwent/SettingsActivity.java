@@ -259,6 +259,8 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        if (SummaryExport.onActivityResult(this, requestCode, resultCode, data)) return;
+
         if (requestCode == CREATE_CSV_FILE && resultCode == RESULT_OK) {
             if (data != null && data.getData() != null && csvContent != null) {
                 try (OutputStream os = getContentResolver().openOutputStream(data.getData())) {
@@ -281,12 +283,13 @@ public class SettingsActivity extends AppCompatActivity {
         List<Expense> expenses = db.expenseDao().getAll();
         List<AccountItemEntity> items = db.accountItemDao().getAllItems();
 
-        List<String> ends = CategorySummary.availablePeriodEnds(
-                expenses, items, CategorySummary.currentYm());
+        String nowYm = CategorySummary.currentYm();
+        List<String> ends = CategorySummary.anchoredPeriodEnds(expenses, items, nowYm);
 
         String[] labels = new String[ends.size()];
         for (int i = 0; i < ends.size(); i++) {
-            labels[i] = CategorySummary.periodLabel(ends.get(i));
+            CategorySummary s = CategorySummary.build(null, null, ends.get(i));
+            labels[i] = s.periodLabel() + (s.isInProgress(nowYm) ? "  (in progress)" : "");
         }
 
         new AlertDialog.Builder(this)
@@ -294,64 +297,10 @@ public class SettingsActivity extends AppCompatActivity {
                 .setItems(labels, (d, which) -> {
                     CategorySummary summary =
                             CategorySummary.build(expenses, items, ends.get(which));
-                    chooseSummaryMethod(summary);
+                    SummaryExport.show(this, summary);
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
-    }
-
-    private void chooseSummaryMethod(CategorySummary summary) {
-        new AlertDialog.Builder(this)
-                .setTitle("Category Summary")
-                .setMessage(summary.periodLabel() + "\n\nChoose export method:")
-                .setPositiveButton("Storage (CSV)", (d, w) -> exportSummaryCsv(summary))
-                .setNegativeButton("Email (HTML)", (d, w) -> exportSummaryEmail(summary))
-                .setNeutralButton("Cancel", null)
-                .show();
-    }
-
-    private void exportSummaryCsv(CategorySummary summary) {
-        // Reuses the CSV save flow in onActivityResult
-        csvContent = summary.toCsv();
-
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("text/csv");
-        intent.putExtra(Intent.EXTRA_TITLE,
-                "Summary_" + summary.fileTag() + ".csv");
-
-        startActivityForResult(intent, CREATE_CSV_FILE);
-    }
-
-    private void exportSummaryEmail(CategorySummary summary) {
-        try {
-            File file = new File(
-                    getExternalFilesDir(null),
-                    "Summary_" + summary.fileTag() + ".html"
-            );
-
-            try (FileWriter writer = new FileWriter(file)) {
-                writer.write(summary.toHtml(AppPrefs.getCurrencySymbol(this)));
-            }
-
-            Uri uri = androidx.core.content.FileProvider.getUriForFile(
-                    this,
-                    getPackageName() + ".fileprovider",
-                    file
-            );
-
-            Intent emailIntent = new Intent(Intent.ACTION_SEND);
-            emailIntent.setType("text/html");
-            emailIntent.putExtra(Intent.EXTRA_SUBJECT,
-                    "Where It Went – Category Summary " + summary.periodLabel());
-            emailIntent.putExtra(Intent.EXTRA_STREAM, uri);
-            emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-            startActivity(Intent.createChooser(emailIntent, "Send email..."));
-
-        } catch (Exception e) {
-            Toast.makeText(this, "Export failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
     }
 
     // =====================================================

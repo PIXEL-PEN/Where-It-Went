@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_yearly_summary"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#ECEFF1">
+
+    <!-- TOP BAR (same as Distribution) -->
+    <RelativeLayout
+        android:id="@+id/top_bar_container"
+        android:layout_width="match_parent"
+        android:layout_height="96dp"
+        android:background="@color/colorPrimary"
+        android:paddingStart="16dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="3dp">
+
+        <LinearLayout
+            android:id="@+id/title_row"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="2dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageButton
+                android:id="@+id/btn_back"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@null"
+                android:src="@drawable/ic_arrow_back_white"
+                android:contentDescription="@string/back"
+                android:translationY="1dp"
+                android:tint="@android:color/white" />
+
+            <TextView
+                android:id="@+id/topBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Yearly Summary"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:translationY="1dp"
+                android:includeFontPadding="false" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:id="@+id/summary_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="8dp"
+            android:paddingBottom="24dp" />
+    </ScrollView>
+
+</LinearLayout>

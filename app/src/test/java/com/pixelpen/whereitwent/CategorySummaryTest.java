@@ -80,16 +80,60 @@ public class CategorySummaryTest {
     }
 
     @Test
-    public void periodEndsReachEarliestData() {
-        List<Expense> ex = Collections.singletonList(exp("Food", 1, "2025-08-02"));
-        List<AccountItemEntity> it = Collections.singletonList(item("A", 1, "10 Jun 2025", 0));
-        List<String> ends = CategorySummary.availablePeriodEnds(ex, it, "2026-10");
-        assertEquals("2026-10", ends.get(0));
-        assertEquals("2025-06", ends.get(ends.size() - 1));
-        assertEquals(17, ends.size());
+    public void januaryStarterGetsCalendarYears() {
+        List<Expense> ex = Collections.singletonList(exp("Food", 1, "2026-01-01"));
+        assertEquals(Collections.singletonList("2026-12"),
+                CategorySummary.anchoredPeriodEnds(ex, null, "2026-10"));
 
-        assertEquals(Collections.singletonList("2026-10"),
-                CategorySummary.availablePeriodEnds(null, null, "2026-10"));
+        // In January 2027 a second, fresh year appears, newest first
+        assertEquals(Arrays.asList("2027-12", "2026-12"),
+                CategorySummary.anchoredPeriodEnds(ex, null, "2027-01"));
+
+        CategorySummary y = CategorySummary.build(ex, null, "2026-12");
+        assertEquals("Jan 2026 – Dec 2026", y.periodLabel());
+        assertEquals("In progress · 10 of 12 months", y.statusLabel("2026-10"));
+        assertEquals("In progress · 12 of 12 months", y.statusLabel("2026-12"));
+        assertEquals("Complete", y.statusLabel("2027-01"));
+    }
+
+    @Test
+    public void mayStarterGetsMayToApril() {
+        List<AccountItemEntity> it = Collections.singletonList(item("A", 1, "20 May 2026", 0));
+        List<String> ends = CategorySummary.anchoredPeriodEnds(null, it, "2026-10");
+        assertEquals(Collections.singletonList("2027-04"), ends);
+
+        CategorySummary s = CategorySummary.build(null, it, ends.get(0));
+        assertEquals("May 2026 – Apr 2027", s.periodLabel());
+        assertEquals("In progress · 6 of 12 months", s.statusLabel("2026-10"));
+
+        assertEquals(Arrays.asList("2028-04", "2027-04"),
+                CategorySummary.anchoredPeriodEnds(null, it, "2027-05"));
+    }
+
+    @Test
+    public void earliestRecordAcrossBothSectionsSetsTheAnchor() {
+        List<Expense> ex = Collections.singletonList(exp("Food", 1, "2026-03-02"));
+        List<AccountItemEntity> it = Collections.singletonList(item("A", 1, "10 Feb 2026", 0));
+        assertEquals("2026-02", CategorySummary.earliestMonth(ex, it));
+        assertEquals(Collections.singletonList("2027-01"),
+                CategorySummary.anchoredPeriodEnds(ex, it, "2026-10"));
+    }
+
+    @Test
+    public void noDataStartsAPeriodThisMonth() {
+        assertEquals(Collections.singletonList("2027-09"),
+                CategorySummary.anchoredPeriodEnds(null, null, "2026-10"));
+        // Future-dated only: anchor falls back to the current month
+        List<Expense> future = Collections.singletonList(exp("Food", 1, "2027-03-01"));
+        assertEquals(Collections.singletonList("2027-09"),
+                CategorySummary.anchoredPeriodEnds(future, null, "2026-10"));
+    }
+
+    @Test
+    public void manyYearsListNewestFirst() {
+        List<Expense> ex = Collections.singletonList(exp("Food", 1, "2023-01-15"));
+        assertEquals(Arrays.asList("2026-12", "2025-12", "2024-12", "2023-12"),
+                CategorySummary.anchoredPeriodEnds(ex, null, "2026-10"));
     }
 
     @Test
@@ -97,7 +141,8 @@ public class CategorySummaryTest {
         List<Expense> ex = Arrays.asList(
                 exp("Food, drink", 12.5, "2026-10-01"),
                 exp("Rent", 100, "2026-09-01"));
-        String csv = CategorySummary.build(ex, null, "2026-10").toCsv();
+        String csv = CategorySummary.build(ex, null, "2026-10").toCsv("2026-11");
+        assertTrue(csv.startsWith("Category Summary,Nov 2025 – Oct 2026,Complete\n"));
         assertTrue(csv.contains("Daily Living,\"Food, drink\",12.50\n"));
         assertTrue(csv.contains("Daily Living,TOTAL,112.50\n"));
         assertTrue(csv.contains("Accounts,TOTAL,0.00\n"));
@@ -108,9 +153,10 @@ public class CategorySummaryTest {
     public void htmlEscapesCategoryNames() {
         String html = CategorySummary.build(
                 Collections.singletonList(exp("<b>Kids & Pets</b>", 3, "2026-10-01")),
-                null, "2026-10").toHtml("$");
+                null, "2026-10").toHtml("$", "2026-11");
         assertTrue(html.contains("&lt;b&gt;Kids &amp; Pets&lt;/b&gt;"));
         assertTrue(html.contains("No records in this period")); // empty Accounts section
         assertTrue(html.contains("Grand total: 3.00 $"));
+        assertTrue(html.contains("<i>Complete</i>"));
     }
 }

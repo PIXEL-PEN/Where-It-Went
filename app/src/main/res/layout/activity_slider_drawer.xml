@@ -123,6 +123,18 @@
                 android:background="#024265" />
 
             <TextView
+                android:id="@+id/linkYearlySummary"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="8dp"
+                android:paddingVertical="6dp"
+                android:gravity="center"
+                android:text="Yearly Summary"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:background="#024265" />
+
+            <TextView
                 android:id="@+id/linkTutorial"
                 android:layout_width="110dp"
                 android:layout_height="wrap_content"

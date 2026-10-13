@@ -92,35 +92,78 @@ public final class CategorySummary {
     }
 
     /**
-     * Months ("yyyy-MM") that can end a 12-month period: from {@code currentYm}
-     * back to the earliest month holding any data, newest first. Always contains
-     * at least {@code currentYm}.
+     * Month ("yyyy-MM") of the earliest record in either Daily Living or
+     * Accounts, or null when there is no data at all.
      */
-    public static List<String> availablePeriodEnds(Collection<Expense> expenses,
-                                                   Collection<AccountItemEntity> accountItems,
-                                                   String currentYm) {
-        String earliest = currentYm;
-
+    public static String earliestMonth(Collection<Expense> expenses,
+                                       Collection<AccountItemEntity> accountItems) {
+        String earliest = null;
         if (expenses != null) {
             for (Expense e : expenses) {
                 String ym = monthOf(e.date, 0);
-                if (ym != null && ym.compareTo(earliest) < 0) earliest = ym;
+                if (ym != null && (earliest == null || ym.compareTo(earliest) < 0)) earliest = ym;
             }
         }
         if (accountItems != null) {
             for (AccountItemEntity it : accountItems) {
                 String ym = monthOf(it.date, it.dateMillis);
-                if (ym != null && ym.compareTo(earliest) < 0) earliest = ym;
+                if (ym != null && (earliest == null || ym.compareTo(earliest) < 0)) earliest = ym;
             }
         }
+        return earliest;
+    }
+
+    /**
+     * Summary periods anchored to the user's start month (the month of their
+     * earliest record), newest first, as the "yyyy-MM" month each period ends.
+     *
+     * Someone who started in Jan 2026 gets Jan–Dec periods; someone who started
+     * in May 2026 gets May–Apr periods. The last period contains {@code currentYm}
+     * and is usually still in progress. With no data, the single period starts
+     * in the current month.
+     */
+    public static List<String> anchoredPeriodEnds(Collection<Expense> expenses,
+                                                  Collection<AccountItemEntity> accountItems,
+                                                  String currentYm) {
+        String start = earliestMonth(expenses, accountItems);
+        if (start == null || start.compareTo(currentYm) > 0) start = currentYm;
 
         List<String> ends = new ArrayList<>();
-        String ym = currentYm;
-        while (ym.compareTo(earliest) >= 0) {
-            ends.add(ym);
-            ym = addMonths(ym, -1);
+        String periodStart = start;
+        while (periodStart.compareTo(currentYm) <= 0) {
+            ends.add(0, addMonths(periodStart, PERIOD_MONTHS - 1));
+            periodStart = addMonths(periodStart, PERIOD_MONTHS);
         }
         return ends;
+    }
+
+    /** True while {@code currentYm} falls inside this period (period not yet complete). */
+    public boolean isInProgress(String currentYm) {
+        // The final month counts as in progress until it is over
+        return currentYm.compareTo(startYm) >= 0 && currentYm.compareTo(endYm) <= 0;
+    }
+
+    /** Months of this period that have started by {@code currentYm}, 0–12. */
+    public int monthsElapsed(String currentYm) {
+        int n = monthsBetween(startYm, currentYm) + 1;
+        return Math.max(0, Math.min(PERIOD_MONTHS, n));
+    }
+
+    /** "In progress · 10 of 12 months" or "Complete". */
+    public String statusLabel(String currentYm) {
+        if (isInProgress(currentYm)) {
+            return "In progress · " + monthsElapsed(currentYm) + " of " + PERIOD_MONTHS + " months";
+        }
+        return "Complete";
+    }
+
+    /** Whole months from {@code fromYm} to {@code toYm} (negative if earlier). */
+    static int monthsBetween(String fromYm, String toYm) {
+        int fy = Integer.parseInt(fromYm.substring(0, 4));
+        int fm = Integer.parseInt(fromYm.substring(5, 7));
+        int ty = Integer.parseInt(toYm.substring(0, 4));
+        int tm = Integer.parseInt(toYm.substring(5, 7));
+        return (ty - fy) * 12 + (tm - fm);
     }
 
     // --------------------------------------------------------
@@ -144,9 +187,10 @@ public final class CategorySummary {
     }
 
     /** CSV with plain two-decimal amounts (no currency symbol) for spreadsheets. */
-    public String toCsv() {
+    public String toCsv(String currentYm) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Category Summary,").append(csv(periodLabel())).append("\n");
+        sb.append("Category Summary,").append(csv(periodLabel())).append(",")
+                .append(csv(statusLabel(currentYm))).append("\n");
         sb.append("Section,Category,Total\n");
 
         for (Map.Entry<String, Double> en : dailyLiving.entrySet()) {
@@ -166,11 +210,12 @@ public final class CategorySummary {
     }
 
     /** Simple HTML table, matching the style of the existing email exports. */
-    public String toHtml(String currencySymbol) {
+    public String toHtml(String currencySymbol, String currentYm) {
         StringBuilder h = new StringBuilder();
         h.append("<html><head><meta charset='utf-8'></head><body>");
         h.append("<h2>Category Summary</h2>");
-        h.append("<p>").append(esc(periodLabel())).append("</p>");
+        h.append("<p>").append(esc(periodLabel())).append("<br><i>")
+                .append(esc(statusLabel(currentYm))).append("</i></p>");
 
         section(h, "Daily Living", dailyLiving, dailyLivingTotal, currencySymbol);
         section(h, "Accounts", accounts, accountsTotal, currencySymbol);
