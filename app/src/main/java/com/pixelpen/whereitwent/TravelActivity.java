@@ -401,12 +401,13 @@ public class TravelActivity extends AppCompatActivity {
         return boldMiddle("Total ", AccountCurrency.home(trip, home, settingsSymbol), "");
     }
 
-    /** lead + <b>middle</b> + after */
+    /** lead + middle (bold, 10% larger) + after */
     private static CharSequence boldMiddle(String lead, String middle, String after) {
         android.text.SpannableString out = new android.text.SpannableString(lead + middle + after);
-        out.setSpan(new android.text.style.StyleSpan(Typeface.BOLD),
-                lead.length(), lead.length() + middle.length(),
-                android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        int from = lead.length(), to = from + middle.length();
+        int f = android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE;
+        out.setSpan(new android.text.style.StyleSpan(Typeface.BOLD), from, to, f);
+        out.setSpan(new android.text.style.RelativeSizeSpan(1.1f), from, to, f);   // a fraction bigger
         return out;
     }
 
