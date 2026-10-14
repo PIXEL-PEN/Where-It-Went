@@ -202,7 +202,7 @@ public class TravelActivity extends AppCompatActivity {
                 .accountItemDao().getItemsForAccount(trip.id);   // newest first
 
         tripName.setText("✈  " + trip.name + "  ▾");
-        tripTotal.setText(all.isEmpty() ? "No spending yet" : "Total " + total(all));
+        tripTotal.setText(all.isEmpty() ? "No spending yet" : topBarTotal(all));
         showJourneyTotal();
 
         items = all;
@@ -240,11 +240,12 @@ public class TravelActivity extends AppCompatActivity {
         for (AccountEntity a : members) totals.put(a.id, db.accountItemDao().getTotalForAccount(a.id));
         Journey.Total t = Journey.total(members, totals, home, settingsCode);
 
-        StringBuilder line = new StringBuilder(name);
-        if (t.included > 1) line.append("  ·  ").append(t.included).append(" countries");
-        line.append("  ·  ").append(TripCurrency.formatWhole(t.amount, home, false));
-        if (t.excluded > 0) line.append("  (+").append(t.excluded).append(" in another currency)");
-        journeyTotal.setText(line.toString());
+        StringBuilder lead = new StringBuilder(name);
+        if (t.included > 1) lead.append("  ·  ").append(t.included).append(" countries");
+        lead.append("  ·  ");
+        String after = t.excluded > 0 ? "  (+" + t.excluded + " in another currency)" : "";
+        journeyTotal.setText(boldMiddle(lead.toString(),
+                TripCurrency.formatWhole(t.amount, home, false), after));
         journeyTotal.setVisibility(View.VISIBLE);
     }
 
@@ -386,6 +387,27 @@ public class TravelActivity extends AppCompatActivity {
         if (!Journey.same(a.journey, journey)) {
             ExpenseDatabase.getDatabase(this).accountDao().setJourney(a.id, journey);
         }
+    }
+
+    /** Top bar: "Total 1,955,000 ₫ · 2,500 ฿" with the home-currency amount in bold. */
+    private CharSequence topBarTotal(List<AccountItemEntity> items) {
+        double home = 0;
+        for (AccountItemEntity it : items) home += it.amount;
+        Double foreign = AccountCurrency.foreignTotal(trip, items);
+        if (foreign != null) {
+            return boldMiddle("Total " + AccountCurrency.foreign(trip, foreign) + "  ·  ",
+                    AccountCurrency.homeWhole(trip, home, settingsSymbol), "");
+        }
+        return boldMiddle("Total ", AccountCurrency.home(trip, home, settingsSymbol), "");
+    }
+
+    /** lead + <b>middle</b> + after */
+    private static CharSequence boldMiddle(String lead, String middle, String after) {
+        android.text.SpannableString out = new android.text.SpannableString(lead + middle + after);
+        out.setSpan(new android.text.style.StyleSpan(Typeface.BOLD),
+                lead.length(), lead.length() + middle.length(),
+                android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return out;
     }
 
     /** "1,955,000 ₫ · 2,500 ฿", or the home amount for a trip without a currency. */

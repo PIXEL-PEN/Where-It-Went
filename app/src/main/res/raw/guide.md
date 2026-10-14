@@ -45,6 +45,41 @@ Deleting an account removes it together with all of its entries.
 
 ---
 
+### Travel: spending in another currency
+
+A Travel account can have its own currency. When you create it, turn on Foreign currency; for an existing trip use Manage Accounts → the trip → Currency….
+
+Choose your home currency and the trip currency, then the rate. It is written the way banks show it, in whole numbers: 1 USD = 34 THB, 1 THB = 772 VND. A suggested rate is filled in (approximate, from the date shown); change it to your bank's or exchange booth's rate if you know it.
+
+Enter amounts in the trip currency. Each entry shows the home value underneath, in whole numbers, and keeps the rate it was entered at, so changing the rate later only affects new entries. A trip whose home currency differs from Settings is shown in its own currency and kept out of mixed totals.
+
+---
+
+### Travel mode
+
+On a trip you can leave Daily Living aside. Menu → Travel mode → pick the trip.
+
+The travel screen shows the trip day by day, with each day's total; tap a day to show or hide its entries. The card at the bottom takes new entries: item, amount, category, date and an optional note (the restaurant, tour or taxi). While you type, the card moves up out of the keyboard's way. Tap the rate line to change the rate.
+
+While travel mode is on, the app opens on the travel screen with the same trip, category and date you used last. A date left on Today follows the calendar; a date you picked stays until you change it.
+
+The home button takes you back to the main screen, where a ✈ button returns you to the trip. ✕ ends travel mode; the trip and its entries stay in Accounts.
+
+---
+
+### Journeys: trips across several countries
+
+Each country is its own Travel account with its own currency. A journey groups them under one name, such as "SE Asia 2026".
+
+On the travel screen, tap the trip name, then:
+
+* Next country… starts the next country in the same journey, keeping its home currency. You only choose the new currency.
+* Journey… puts the current trip in a journey, renames the journey, or (cleared) takes the trip out.
+
+The top bar then shows the journey total in your home currency as well as the country's own total. A journey is only a grouping: entries always belong to a country's account, and removing the journey name deletes nothing.
+
+---
+
 ### Yearly Summary
 
 Open it from the menu, or from Summaries → Yearly summaries.
