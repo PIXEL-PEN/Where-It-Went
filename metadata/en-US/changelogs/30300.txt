@@ -1,5 +1,7 @@
-• New: trip currencies. A Travel account can use any of 92 currencies, with a suggested rate; amounts show in both currencies, in whole numbers.
-• New: Travel mode (menu → Travel mode). A full screen for your trip that opens where you left off.
-• New: journeys group a multi-country trip; a trip can also be kept in its own currency.
-• Full backup now keeps trip currencies, rates and journeys.
-• Fix: updating from 2.x no longer erases data.
+Major update: Travel and foreign currency.
+
+• Trips in any of 92 currencies, with a suggested exchange rate. Enter what you pay; see it in your home currency too, in whole numbers.
+• Travel mode (menu → Travel mode): a full screen for your trip that opens where you left off.
+• Journeys group a multi-country trip; a trip can also stay in its own currency.
+
+Also: full backup keeps trip currencies and rates; updating from 2.x no longer erases data.
