@@ -21,6 +21,7 @@ public class MainScreen extends AppCompatActivity {
     private RecyclerView.Adapter<?> adapter;
 
     private boolean twelveMonthMode = false;
+    private TravelCard travelCard;
     boolean summariesExpanded = false;
 
 
@@ -60,6 +61,7 @@ public class MainScreen extends AppCompatActivity {
         View linkTutorial = findViewById(R.id.linkTutorial);
         View linkAccounts = findViewById(R.id.linkAccounts);
         View linkYearly = findViewById(R.id.linkYearlySummary);
+        View linkTravel = findViewById(R.id.linkTravelMode);
 
         if (linkSettings != null) {
             linkSettings.setOnClickListener(v -> {
@@ -110,6 +112,13 @@ public class MainScreen extends AppCompatActivity {
             });
         }
 
+        if (linkTravel != null) {
+            linkTravel.setOnClickListener(v -> {
+                drawerLayout.closeDrawer(Gravity.END);
+                if (travelCard != null) travelCard.startFromDrawer();
+            });
+        }
+
         if (linkTutorial != null) {
             linkTutorial.setOnClickListener(v -> {
                 startActivity(new Intent(MainScreen.this, TutorialActivity.class));
@@ -139,6 +148,22 @@ public class MainScreen extends AppCompatActivity {
                 dialog.show(getSupportFragmentManager(), "ADD_EXPENSE");
             });
         }
+
+        // v3.3 Travel mode: reopens on the trip card when it was left on
+        travelCard = new TravelCard(this);
+        travelCard.restore();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        // Back from Accounts or Settings: the trip may have changed
+        refreshTravelCard();
+    }
+
+    /** Redraws the Travel mode card (after an entry was edited, say). */
+    public void refreshTravelCard() {
+        if (travelCard != null) travelCard.refresh();
     }
 
     @Override
@@ -148,6 +173,9 @@ public class MainScreen extends AppCompatActivity {
     }
 
     public void refreshAfterAdd() {
+
+        // The Travel mode card shows the trip total and latest entries
+        refreshTravelCard();
 
         List<MainRow> rows =
                 MainBuilder.build(

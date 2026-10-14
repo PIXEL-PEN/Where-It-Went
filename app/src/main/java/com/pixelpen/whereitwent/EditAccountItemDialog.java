@@ -232,6 +232,9 @@ public class EditAccountItemDialog extends DialogFragment {
         if (getActivity() instanceof AccountsOverviewActivity) {
             ((AccountsOverviewActivity) getActivity()).refreshAccounts();
         }
+        if (getActivity() instanceof MainScreen) {
+            ((MainScreen) getActivity()).refreshAfterAdd();   // includes the Travel card
+        }
     }
 
     @Override

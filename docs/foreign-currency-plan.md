@@ -157,3 +157,20 @@ glance line (point 2).
 - Decimal places: yen, won, dong have no minor unit. Show those with 0
   decimals.
 - Version number: 3.3, or 4.0 as the last major feature.
+
+## Travel mode (requested 14 Oct 2026)
+
+On a trip, Daily Living can be left aside. Menu → **Travel mode** → pick a
+Travel account. A floating card on the main screen then holds quick entry for
+that trip: item, amount in the trip currency (with the "= 3,000 ฿ · 1 THB =
+772 VND" line, tap to change the rate), category and date, plus the trip total
+and its last three entries (tap one to edit).
+
+- **Opens where you left off**: while travel mode is on, the app starts on the
+  card, with the same trip, the last category used on that trip, and the date.
+  A date left on "today" moves with the calendar; a date picked by hand stays
+  until changed (`TravelDate`).
+- **Toggle**: ⌄ (or Back, or a tap outside the card) minimises it to a
+  "✈ trip" button above home; one tap brings it back. Tapping the trip name
+  switches trips. ✕ ends travel mode; the trip and entries stay in Accounts.
+- State lives in the `travel_mode` preferences; no database change.
