@@ -81,6 +81,16 @@ public final class TravelMode {
 
     /** Asks which Travel account to use (or explains how to make one). */
     public static void pickTrip(Activity a, long currentId, OnTrip onTrip) {
+        pickTrip(a, currentId, onTrip, null, null);
+    }
+
+    /**
+     * Trip picker, with the trips of a journey listed together
+     * ("SE Asia 2026 › Vietnam"). From the travel screen it also offers
+     * "Next country…" and "Journey…" (null = not shown).
+     */
+    public static void pickTrip(Activity a, long currentId, OnTrip onTrip,
+                                Runnable onNextCountry, Runnable onJourney) {
         List<AccountEntity> trips = new ArrayList<>();
         for (AccountEntity acc : ExpenseDatabase.getDatabase(a).accountDao().getActiveAccounts()) {
             if ("travel".equals(acc.type)) trips.add(acc);
@@ -94,21 +104,36 @@ public final class TravelMode {
                     .show();
             return;
         }
+        // Journeys first (alphabetical), each with its countries; then single trips
+        java.util.Collections.sort(trips, (x, y) -> {
+            String jx = Journey.clean(x.journey), jy = Journey.clean(y.journey);
+            if (jx == null && jy != null) return 1;
+            if (jx != null && jy == null) return -1;
+            if (jx != null) {
+                int c = jx.compareToIgnoreCase(jy);
+                if (c != 0) return c;
+            }
+            return x.name.compareToIgnoreCase(y.name);
+        });
         String[] names = new String[trips.size()];
         int checked = -1;
         for (int i = 0; i < trips.size(); i++) {
             AccountEntity t = trips.get(i);
-            names[i] = t.hasForeignCurrency() ? t.name + "  (" + t.foreignCurrency + ")" : t.name;
+            String j = Journey.clean(t.journey);
+            names[i] = (j != null ? j + "  ›  " : "") + t.name
+                    + (t.hasForeignCurrency() ? "  (" + t.foreignCurrency + ")" : "");
             if (t.id == currentId) checked = i;
         }
-        new AlertDialog.Builder(a)
+        AlertDialog.Builder b = new AlertDialog.Builder(a)
                 .setTitle("Travel mode: which trip?")
                 .setSingleChoiceItems(names, checked, (d, which) -> {
                     d.dismiss();
                     begin(a, trips.get(which));
                     onTrip.onTrip(trips.get(which));
                 })
-                .setNegativeButton("Cancel", null)
-                .show();
+                .setNegativeButton("Cancel", null);
+        if (onNextCountry != null) b.setNeutralButton("Next country…", (d, w) -> onNextCountry.run());
+        if (onJourney != null) b.setPositiveButton("Journey…", (d, w) -> onJourney.run());
+        b.show();
     }
 }

@@ -67,6 +67,7 @@ public class TravelActivity extends AppCompatActivity {
     private LinearLayout body;
     private View listFrame, card;
     private RecyclerView list;
+    private TextView journeyTotal;
     private TextView emptyList, tripName, tripTotal, amountCurrency, conversion, dateView;
     private EditText editItem, editAmount, editNote;
     private Spinner spinnerCategory;
@@ -95,6 +96,7 @@ public class TravelActivity extends AppCompatActivity {
         emptyList = findViewById(R.id.travel_list_empty);
         tripName = findViewById(R.id.travel_trip_name);
         tripTotal = findViewById(R.id.travel_trip_total);
+        journeyTotal = findViewById(R.id.travel_journey_total);
         amountCurrency = findViewById(R.id.travel_amount_currency);
         conversion = findViewById(R.id.travel_conversion);
         dateView = findViewById(R.id.travel_date);
@@ -118,14 +120,7 @@ public class TravelActivity extends AppCompatActivity {
 
         findViewById(R.id.travel_btn_home).setOnClickListener(v -> finish());
         findViewById(R.id.travel_btn_end).setOnClickListener(v -> confirmEnd());
-        findViewById(R.id.travel_header_text).setOnClickListener(v ->
-                TravelMode.pickTrip(this, trip != null ? trip.id : -1, t -> {
-                    editItem.setText("");
-                    editAmount.setText("");
-                    editNote.setText("");
-                    openDays.clear();        // new trip: every day closed
-                    bind();
-                }));
+        findViewById(R.id.travel_header_text).setOnClickListener(v -> showTripPicker());
         findViewById(R.id.travel_btn_add).setOnClickListener(v -> add());
         dateView.setOnClickListener(v -> pickDate());
         conversion.setOnClickListener(v -> changeRate());
@@ -208,6 +203,7 @@ public class TravelActivity extends AppCompatActivity {
 
         tripName.setText("✈  " + trip.name + "  ▾");
         tripTotal.setText(all.isEmpty() ? "No spending yet" : "Total " + total(all));
+        showJourneyTotal();
 
         items = all;
         showList();
@@ -230,6 +226,166 @@ public class TravelActivity extends AppCompatActivity {
 
         date.setTimeInMillis(TravelMode.date(this));
         showDate();
+    }
+
+    /** "SE Asia 2026 · 2 countries · 6,800 ฿" under the trip total, for a trip in a journey. */
+    private void showJourneyTotal() {
+        String name = Journey.clean(trip.journey);
+        if (name == null) { journeyTotal.setVisibility(View.GONE); return; }
+        ExpenseDatabase db = ExpenseDatabase.getDatabase(this);
+        String settingsCode = AppPrefs.getCurrencyCode(this);
+        String home = Journey.homeOf(trip, settingsCode);
+        List<AccountEntity> members = Journey.members(db.accountDao().getAllAccounts(), name);
+        java.util.Map<Long, Double> totals = new java.util.HashMap<>();
+        for (AccountEntity a : members) totals.put(a.id, db.accountItemDao().getTotalForAccount(a.id));
+        Journey.Total t = Journey.total(members, totals, home, settingsCode);
+
+        StringBuilder line = new StringBuilder(name);
+        if (t.included > 1) line.append("  ·  ").append(t.included).append(" countries");
+        line.append("  ·  ").append(TripCurrency.formatWhole(t.amount, home, false));
+        if (t.excluded > 0) line.append("  (+").append(t.excluded).append(" in another currency)");
+        journeyTotal.setText(line.toString());
+        journeyTotal.setVisibility(View.VISIBLE);
+    }
+
+    // ------------------------------------------------------------------
+    // Trips and journeys
+    // ------------------------------------------------------------------
+
+    private void showTripPicker() {
+        TravelMode.pickTrip(this, trip != null ? trip.id : -1,
+                t -> switchedTrip(),
+                this::nextCountry,
+                this::editJourney);
+    }
+
+    private void switchedTrip() {
+        editItem.setText("");
+        editAmount.setText("");
+        editNote.setText("");
+        openDays.clear();   // new trip: every day closed
+        bind();
+    }
+
+    /**
+     * Starts the next country of this journey: a new Travel account in the
+     * same journey and home currency, with its own trip currency and rate.
+     */
+    private void nextCountry() {
+        if (trip == null) return;
+        LinearLayout form = new LinearLayout(this);
+        form.setOrientation(LinearLayout.VERTICAL);
+        form.setPadding(dp(20), dp(8), dp(20), 0);
+        EditText name = new EditText(this);
+        name.setHint("Country or trip name, e.g. Cambodia");
+        name.setSingleLine(true);
+        name.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+        form.addView(name);
+        EditText journey = new EditText(this);
+        journey.setHint("Journey, e.g. SE Asia 2026");
+        journey.setSingleLine(true);
+        journey.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+        String current = Journey.clean(trip.journey);
+        journey.setText(current != null ? current : "");
+        form.addView(journey);
+        TextView note = new TextView(this);
+        note.setText("Both trips go into this journey, and the new one keeps "
+                + Journey.homeOf(trip, AppPrefs.getCurrencyCode(this))
+                + " as its home currency. Next you choose its currency.");
+        note.setTextSize(13);
+        note.setPadding(dp(4), dp(8), dp(4), 0);
+        form.addView(note);
+
+        AlertDialog d = new AlertDialog.Builder(this)
+                .setTitle("Next country")
+                .setView(form)
+                .setPositiveButton("Next", null)
+                .setNegativeButton("Cancel", null)
+                .create();
+        d.setOnShowListener(x -> d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(b -> {
+            String n = Journey.clean(name.getText().toString());
+            String j = Journey.clean(journey.getText().toString());
+            AccountDao dao = ExpenseDatabase.getDatabase(this).accountDao();
+            if (n == null) { name.setError("Required"); return; }
+            if (dao.getAccountByName(n) != null) { name.setError("An account with this name exists"); return; }
+            if (j == null) { journey.setError("Name the journey"); return; }
+            d.dismiss();
+            chooseCurrencyForNext(n, j);
+        }));
+        d.show();
+    }
+
+    private void chooseCurrencyForNext(String name, String journey) {
+        String home = Journey.homeOf(trip, AppPrefs.getCurrencyCode(this));
+        TripCurrencyDialog.show(this, name + ": currency",
+                home, null, 0,
+                true, false,   // home currency carried over from the journey
+                (h, foreign, rate) -> {
+                    AccountDao dao = ExpenseDatabase.getDatabase(this).accountDao();
+                    setJourneyFor(trip, journey);
+                    dao.insert(new AccountEntity(name, "travel", false));
+                    AccountEntity created = dao.getAccountByName(name);
+                    if (created == null) return;
+                    dao.setCurrency(created.id, foreign, h, rate);
+                    dao.setJourney(created.id, journey);
+                    TravelMode.begin(this, created);
+                    Toast.makeText(this, "Now on " + name, Toast.LENGTH_SHORT).show();
+                    switchedTrip();
+                },
+                null, null);
+    }
+
+    /** Puts this trip in a journey, renames its journey, or takes it out (blank). */
+    private void editJourney() {
+        if (trip == null) return;
+        List<String> existing = Journey.names(
+                ExpenseDatabase.getDatabase(this).accountDao().getAllAccounts());
+        android.widget.AutoCompleteTextView field = new android.widget.AutoCompleteTextView(this);
+        field.setHint("e.g. SE Asia 2026");
+        field.setSingleLine(true);
+        field.setThreshold(1);
+        field.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+        field.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, existing));
+        String current = Journey.clean(trip.journey);
+        field.setText(current != null ? current : "");
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setPadding(dp(20), dp(8), dp(20), 0);
+        box.addView(field);
+        TextView note = new TextView(this);
+        note.setText(current != null
+                ? "A new name renames the journey for all its trips. Clear it to take "
+                    + trip.name + " out of the journey."
+                : "Give " + trip.name + " the same journey name as your other countries "
+                    + "to see them added up together.");
+        note.setTextSize(13);
+        note.setPadding(dp(4), dp(8), dp(4), 0);
+        box.addView(note);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Journey for " + trip.name)
+                .setView(box)
+                .setPositiveButton("Save", (d, w) -> {
+                    String typed = Journey.clean(field.getText().toString());
+                    AccountDao dao = ExpenseDatabase.getDatabase(this).accountDao();
+                    if (current != null && typed != null && !Journey.same(current, typed)) {
+                        // Renamed: the whole journey moves to the new name
+                        for (AccountEntity a : Journey.members(dao.getAllAccounts(), current)) {
+                            dao.setJourney(a.id, typed);
+                        }
+                    } else {
+                        dao.setJourney(trip.id, typed);
+                    }
+                    bind();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void setJourneyFor(AccountEntity a, String journey) {
+        if (!Journey.same(a.journey, journey)) {
+            ExpenseDatabase.getDatabase(this).accountDao().setJourney(a.id, journey);
+        }
     }
 
     /** "1,955,000 ₫ · 2,500 ฿", or the home amount for a trip without a currency. */

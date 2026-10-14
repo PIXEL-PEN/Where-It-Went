@@ -23,7 +23,7 @@ import java.util.Locale;
                 AccountEntity.class,
                 AccountItemEntity.class
         },
-        version = 6,
+        version = 7,
         exportSchema = false
 )
 public abstract class ExpenseDatabase extends RoomDatabase {
@@ -112,7 +112,8 @@ public abstract class ExpenseDatabase extends RoomDatabase {
                             MIGRATION_2_5,
                             MIGRATION_3_4,
                             MIGRATION_4_5,
-                            MIGRATION_5_6
+                            MIGRATION_5_6,
+                            MIGRATION_6_7
                     )
                     // v3.3: never wipe data on upgrade. A missing upgrade step
                     // now stops the app instead of silently erasing everything.
@@ -177,6 +178,17 @@ public abstract class ExpenseDatabase extends RoomDatabase {
             db.execSQL("ALTER TABLE `accounts` ADD COLUMN `rate` REAL NOT NULL DEFAULT 0");
             db.execSQL("ALTER TABLE `account_items` ADD COLUMN `foreignAmount` REAL");
             db.execSQL("ALTER TABLE `account_items` ADD COLUMN `rate` REAL");
+        }
+    };
+
+    // ----------------------------------------------------
+    // MIGRATION: v6 → v7 (v3.3: journey, grouping a trip's countries)
+    // Adds one column only; no existing value is changed.
+    // ----------------------------------------------------
+    static final Migration MIGRATION_6_7 = new Migration(6, 7) {
+        @Override
+        public void migrate(SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE `accounts` ADD COLUMN `journey` TEXT");
         }
     };
 

@@ -34,6 +34,12 @@ public class AccountEntity {
     @ColumnInfo(defaultValue = "0")
     public double rate;
 
+    /**
+     * Journey a Travel account belongs to (v3.3, database v7), e.g.
+     * "SE Asia 2026" for its Vietnam and Cambodia trips. Null = none.
+     */
+    public String journey;
+
     public boolean hasForeignCurrency() {
         return foreignCurrency != null && !foreignCurrency.isEmpty()
                 && homeCurrency != null && !homeCurrency.isEmpty() && rate > 0;

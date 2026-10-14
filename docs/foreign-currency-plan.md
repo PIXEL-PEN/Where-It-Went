@@ -179,3 +179,23 @@ show beneath it. The trip name and total are in the top bar.
   floating trip card"); replaced by the full screen for more room for entries.
 - State lives in the `travel_mode` preferences (`TravelMode`); no database
   change.
+
+## Journeys: multi-country trips (requested 14 Oct 2026)
+
+Each country stays its own Travel account with its own currency; a
+**journey** name (e.g. "SE Asia 2026") groups them. Database v7 adds
+`accounts.journey` (TEXT, null = none; `MIGRATION_6_7` adds the column only).
+
+- Travel screen → trip name ▾ → **Next country…**: name the country and the
+  journey, then choose its currency. The new trip keeps the journey's home
+  currency (locked), gets a suggested rate, and travel mode moves to it.
+- **Journey…** in the same picker: put the current trip in a journey (with
+  suggestions of existing names), rename the journey for all its trips, or
+  clear it to take the trip out.
+- The picker lists a journey's trips together: "SE Asia 2026 › Vietnam (VND)".
+- The top bar adds "SE Asia 2026 · 2 countries · 6,800 ฿": the trips in the
+  same home currency added up; a trip in another home currency is counted
+  apart ("+1 in another currency"), never mixed in.
+- Not yet: the journey in Accounts, Yearly Summary and the exports, and in
+  Full backup v2 (to add with the currency fields).
+

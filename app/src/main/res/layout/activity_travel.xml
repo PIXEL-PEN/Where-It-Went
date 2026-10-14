@@ -62,6 +62,16 @@
                 android:singleLine="true"
                 android:textColor="#EEF4F8"
                 android:textSize="13sp" />
+
+            <!-- "SE Asia 2026 · 2 countries · 6,800 ฿" when the trip is in a journey -->
+            <TextView
+                android:id="@+id/travel_journey_total"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:textColor="#EEF4F8"
+                android:textSize="12sp"
+                android:visibility="gone" />
         </LinearLayout>
 
         <TextView
