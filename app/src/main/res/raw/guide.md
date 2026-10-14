@@ -51,7 +51,7 @@ A Travel account can have its own currency. When you create it, turn on Foreign 
 
 Choose your home currency and the trip currency (tap a currency to search the list: "riel", "camb" or "KHR" finds the Cambodian Riel), then the rate. It is written the way banks show it, in whole numbers: 1 USD = 34 THB, 1 THB = 772 VND. A suggested rate is filled in (approximate, from the date shown); change it to your bank's or exchange booth's rate if you know it.
 
-Enter amounts in the trip currency. Each entry shows the home value underneath, in whole numbers, and keeps the rate it was entered at, so changing the rate later only affects new entries. A trip whose home currency differs from Settings is shown in its own currency and kept out of mixed totals.
+Enter amounts in the trip currency. Each entry shows the home value underneath, in whole numbers, and keeps the rate it was entered at, so changing the rate later only affects new entries. The home currency is fixed once a trip has entries; to change it, delete the trip and create it again. A trip whose home currency differs from Settings is shown in its own currency and kept out of mixed totals.
 
 A trip can also simply be kept in another currency, with no conversion: choose the same currency for home and trip (for example US Dollar and US Dollar for a visit to the US while Settings stays on Dong). You enter dollars, the trip shows dollars, and it stays apart from your Dong totals. Daily Living and your other accounts carry on in the Settings currency.
 
