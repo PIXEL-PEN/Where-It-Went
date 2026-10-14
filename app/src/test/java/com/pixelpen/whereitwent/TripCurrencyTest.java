@@ -38,10 +38,39 @@ public class TripCurrencyTest {
     }
 
     @Test
-    public void rateLabels() {
+    public void rateLabelsAreAlwaysWholeNumbers() {
         assertEquals("1 USD = 25,450 VND", TripCurrency.rateLabel("USD", 25_450, "VND"));
-        assertEquals("1 USD = 7.1 CNY", TripCurrency.rateLabel("USD", 7.10, "CNY"));
-        assertEquals("1 THB = 0.2085 CNY", TripCurrency.rateLabel("THB", 0.2085, "CNY"));
+        assertEquals("1 USD = 34 THB", TripCurrency.rateLabel("USD", 33.566, "THB"));
+        assertEquals("1 THB = 772 VND", TripCurrency.rateLabel("THB", 771.6, "VND"));
+        // Under 20: a round quantity of the stronger currency instead of decimals
+        assertEquals("10 USD = 67 CNY", TripCurrency.rateLabel("USD", 6.692, "CNY"));
+        // Home weaker than the trip currency: the trip currency becomes the base
+        assertEquals("10 CNY = 50 THB", TripCurrency.rateLabel("THB", 0.1994, "CNY"));
+        assertEquals("1 USD = 25,900 VND", TripCurrency.rateLabel("VND", 1 / 25_900.0, "USD"));
+        // Nearly equal currencies
+        assertEquals("100 CAD = 104 USD", TripCurrency.rateLabel("CAD", 1.04, "USD"));
+    }
+
+    @Test
+    public void quoteRoundTrip() {
+        TripCurrency.Quote q = TripCurrency.quote("THB", 0.1994, "CNY");
+        assertEquals("CNY", q.base);
+        assertEquals("THB", q.other);
+        assertEquals(10, q.qty);
+        // Typing "50" in "10 CNY = [50] THB" stores 0.2 CNY per baht
+        assertEquals(0.2, TripCurrency.rateFromQuote("THB", q, 50), 1e-12);
+
+        TripCurrency.Quote v = TripCurrency.quote("THB", 771.6, "VND");
+        assertTrue(v.homeIsBase("THB"));
+        assertEquals(1, v.qty);
+        assertEquals(780, TripCurrency.rateFromQuote("THB", v, 780), 1e-12);
+    }
+
+    @Test
+    public void wholeAmounts() {
+        assertEquals("3,000 ฿", TripCurrency.formatWhole(2999.61, "THB", false));
+        assertEquals("20 $", TripCurrency.formatWhole(19.65, "USD", false));
+        assertEquals("20 USD", TripCurrency.formatWhole(19.65, "USD", true));
     }
 
     @Test

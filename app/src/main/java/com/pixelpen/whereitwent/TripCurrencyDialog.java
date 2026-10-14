@@ -2,6 +2,7 @@ package com.pixelpen.whereitwent;
 
 import android.content.Context;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,6 +58,9 @@ public final class TripCurrencyDialog {
         v.findViewById(R.id.btn_cancel).setVisibility(View.GONE);
 
         titleView.setText(title);
+        // Whole numbers only (the rate is quoted so it never needs decimals)
+        editRate.setInputType(InputType.TYPE_CLASS_NUMBER);
+        editRate.setHint("");
 
         List<String> labels = new ArrayList<>();
         for (TripCurrency.Currency c : TripCurrency.ALL) labels.add(c.label());
@@ -70,20 +74,30 @@ public final class TripCurrencyDialog {
         spinnerHome.setSelection(homeIdx, false);
         spinnerTrip.setSelection(tripIdx, false);
 
-        // v3.3: a new trip gets an approximate built-in rate to start from;
-        // it follows currency changes until the user types their own
-        final boolean[] auto = {false};
-        final boolean[] settingText = {false};
+        // ---- Rate, quoted the way banks do and in whole numbers (v3.3) ----
+        // The row reads "<qty> <base> = [value] <other>", e.g. "1 THB = [772] VND"
+        // or "10 CNY = [50] THB": the stronger currency is the base, so the
+        // value is never a small decimal. The stored rate is converted from it.
+        final TripCurrency.Quote[] shape = new TripCurrency.Quote[1];
+        final boolean[] auto = {false};          // value is the built-in suggestion
+        final boolean[] settingText = {false};   // we are setting the field ourselves
+        final String origHome = homeCode, origTrip = foreignCode;
+        final String[] origText = {null};        // the existing rate as first shown
+
         Runnable suggest = () -> {
-            Double sug = ApproxRates.suggest(code(spinnerHome), code(spinnerTrip));
+            String home = code(spinnerHome), trip = code(spinnerTrip);
+            Double sug = ApproxRates.suggest(home, trip);
+            shape[0] = TripCurrency.quote(home, sug != null ? sug : 1, trip);
             settingText[0] = true;
-            editRate.setText(sug == null ? "" : BackupFormat.plainAmount(sug));
+            editRate.setText(sug == null ? "" : String.valueOf(Math.round(shape[0].value)));
             editRate.setSelection(editRate.getText().length());
             settingText[0] = false;
             auto[0] = sug != null;
         };
         if (rate > 0) {
-            editRate.setText(BackupFormat.plainAmount(rate));
+            shape[0] = TripCurrency.quote(homeCode, rate, foreignCode);
+            origText[0] = String.valueOf(Math.round(shape[0].value));
+            editRate.setText(origText[0]);
         } else {
             suggest.run();
         }
@@ -91,25 +105,42 @@ public final class TripCurrencyDialog {
         spinnerHome.setEnabled(!lockHome);
         spinnerTrip.setEnabled(!lockTrip);
 
+        // The stored rate (trip units per 1 home unit) for what is on screen, or null
+        final java.util.concurrent.Callable<Double> currentRate = () -> {
+            Double value = TripCurrency.parseRate(editRate.getText().toString());
+            if (value == null || shape[0] == null) return null;
+            String home = code(spinnerHome), trip = code(spinnerTrip);
+            // Unchanged existing rate: keep it exactly (the field shows it rounded)
+            if (rate > 0 && editRate.getText().toString().trim().equals(origText[0])
+                    && home.equals(origHome) && trip.equals(origTrip)) {
+                return rate;
+            }
+            return TripCurrency.rateFromQuote(home, shape[0], value);
+        };
+
         Runnable refresh = () -> {
             String home = code(spinnerHome);
             String trip = code(spinnerTrip);
-            rateLeft.setText("1 " + home + " = ");
-            rateRight.setText(" " + trip);
+            if (shape[0] != null) {
+                rateLeft.setText(String.format(java.util.Locale.US, "%,d", shape[0].qty)
+                        + " " + shape[0].base + " = ");
+                rateRight.setText(" " + shape[0].other);
+            }
 
             StringBuilder p = new StringBuilder();
-            Double r = TripCurrency.parseRate(editRate.getText().toString());
+            Double r = null;
+            try { r = currentRate.call(); } catch (Exception ignored) { }
+            boolean codes = TripCurrency.useCodes(home, trip);
             if (home.equals(trip)) {
                 p.append("Choose a trip currency different from the home currency.");
             } else if (r == null) {
-                p.append("Enter how many ").append(trip).append(" one ").append(home).append(" buys.");
+                p.append("Enter the rate in whole numbers, e.g. from your bank or exchange booth.");
             } else {
                 double example = roundToOneFigure(50 * r);
                 p.append("Example: ")
-                        .append(TripCurrency.format(example, trip, TripCurrency.useCodes(home, trip)))
+                        .append(TripCurrency.formatWhole(example, trip, codes))
                         .append(" = ")
-                        .append(TripCurrency.format(TripCurrency.toHome(example, r, home), home,
-                                TripCurrency.useCodes(home, trip)));
+                        .append(TripCurrency.formatWhole(TripCurrency.toHome(example, r, home), home, codes));
             }
             if (auto[0]) {
                 p.append("\n\nSuggested rate: approximate market rate, ")
@@ -130,7 +161,12 @@ public final class TripCurrencyDialog {
 
         AdapterView.OnItemSelectedListener onPick = new AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                if (auto[0] || editRate.getText().toString().trim().isEmpty()) suggest.run();
+                String home = code(spinnerHome), trip = code(spinnerTrip);
+                // A different currency pair needs a fresh rate (and quote direction)
+                boolean pairChanged = !(home.equals(origHome) && trip.equals(origTrip));
+                if (auto[0] || pairChanged || editRate.getText().toString().trim().isEmpty()) {
+                    suggest.run();
+                }
                 refresh.run();
             }
             @Override public void onNothingSelected(AdapterView<?> parent) { }
@@ -166,7 +202,8 @@ public final class TripCurrencyDialog {
             save.setOnClickListener(x -> {
                 String home = code(spinnerHome);
                 String trip = code(spinnerTrip);
-                Double r = TripCurrency.parseRate(editRate.getText().toString());
+                Double r = null;
+                try { r = currentRate.call(); } catch (Exception ignored) { }
                 if (home.equals(trip)) {
                     editRate.setError("Trip and home currency must differ");
                     return;

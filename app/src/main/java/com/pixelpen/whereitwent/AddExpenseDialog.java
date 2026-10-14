@@ -1142,7 +1142,7 @@ public class AddExpenseDialog extends DialogFragment {
         refreshConversionLine();
     }
 
-    /** "= 19.65 $   ·   1 USD = 25,450 VND" under the amount field. */
+    /** "= 20 $   ·   1 USD = 25,900 VND" under the amount field (whole numbers). */
     private void refreshConversionLine() {
         if (textAccountConversion == null) return;
         if (currencyAccount == null) {
@@ -1160,7 +1160,7 @@ public class AddExpenseDialog extends DialogFragment {
         if (typed != null && typed > 0) {
             double home = TripCurrency.toHome(typed, currencyAccount.rate,
                     currencyAccount.homeCurrency);
-            text = "= " + AccountCurrency.home(currencyAccount, home,
+            text = "= " + AccountCurrency.homeWhole(currencyAccount, home,
                     AppPrefs.getCurrencySymbol(requireContext())) + "   ·   " + rate;
         } else {
             text = rate + "   ·   tap to change";

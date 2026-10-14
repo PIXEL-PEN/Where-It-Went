@@ -251,9 +251,65 @@ public final class TripCurrency {
         return h != null && f != null && !h.code.equals(f.code) && h.symbol.equals(f.symbol);
     }
 
-    /** "1 USD = 25,450 VND", "1 THB = 0.21 CNY". */
+    // --------------------------------------------------------
+    // WHOLE-NUMBER RATES (v3.3: "always whole denominations")
+    // --------------------------------------------------------
+
+    /**
+     * A rate as people quote it: the stronger currency is the base, in a round
+     * quantity (1, 10, 100…) chosen so the other side is a whole number of at
+     * least 20 (so rounding to whole costs at most about 2.5%).
+     * "1 USD = 25,900 VND", "1 USD = 34 THB", "10 CNY = 50 THB", "100 CAD = 104 USD".
+     */
+    public static final class Quote {
+        public final String base, other;
+        public final long qty;
+        /** Exact amount of {@code other} for {@code qty} of {@code base}. */
+        public final double value;
+
+        Quote(String base, String other, long qty, double value) {
+            this.base = base;
+            this.other = other;
+            this.qty = qty;
+            this.value = value;
+        }
+
+        /** True when the home currency is the base (rate = value / qty). */
+        public boolean homeIsBase(String homeCode) {
+            return base.equalsIgnoreCase(homeCode);
+        }
+    }
+
+    /** Bank-style quote for a rate stored as foreign units per 1 home unit. */
+    public static Quote quote(String homeCode, double rate, String foreignCode) {
+        if (rate <= 0) throw new IllegalArgumentException("rate must be positive");
+        boolean homeBase = rate >= 1;
+        double per = homeBase ? rate : 1 / rate;   // other units per 1 base unit
+        long q = 1;
+        while (q * per < 20 && q < 1_000_000_000L) q *= 10;
+        return homeBase
+                ? new Quote(homeCode, foreignCode, q, q * per)
+                : new Quote(foreignCode, homeCode, q, q * per);
+    }
+
+    /** Stored rate (foreign per 1 home) from a quote's shape and a typed value. */
+    public static double rateFromQuote(String homeCode, Quote shape, double value) {
+        if (value <= 0) throw new IllegalArgumentException("value must be positive");
+        return shape.homeIsBase(homeCode) ? value / shape.qty : shape.qty / value;
+    }
+
+    /** "1 USD = 25,900 VND", "10 CNY = 50 THB": whole numbers only. */
     public static String rateLabel(String homeCode, double rate, String foreignCode) {
-        return "1 " + homeCode + " = " + rateNumber(rate) + " " + foreignCode;
+        Quote q = quote(homeCode, rate, foreignCode);
+        return number(q.qty, 0, 0) + " " + q.base + " = "
+                + number(Math.round(q.value), 0, 0) + " " + q.other;
+    }
+
+    /** An amount rounded to whole units: "3,000 ฿", "19 $". For converted amounts. */
+    public static String formatWhole(double amount, String code, boolean useCode) {
+        Currency c = byCode(code);
+        String sym = c == null ? String.valueOf(code) : (useCode ? c.code : c.symbol);
+        return number(amount, 0, 0) + " " + sym;
     }
 
     /** A rate with grouping and only the decimals it needs (up to 6). */

@@ -41,7 +41,7 @@ public final class AccountCurrency {
         return TripCurrency.format(amount, a.foreignCurrency, useCodes(a));
     }
 
-    /** "1 USD = 25,450 VND" for the account's current rate. */
+    /** Whole-number quote for the account's current rate: "1 USD = 25,900 VND". */
     public static String rateLabel(AccountEntity a) {
         return TripCurrency.rateLabel(a.homeCurrency, a.rate, a.foreignCurrency);
     }
@@ -60,13 +60,21 @@ public final class AccountCurrency {
     }
 
     /**
-     * Second line for an entry made at a rate other than the trip's current
-     * one, e.g. "@ 25,000"; empty otherwise.
+     * For an entry made at a rate other than the trip's current one, that rate
+     * as a whole-number quote ("1 THB = 780 VND"); empty otherwise.
      */
     public static String rateNote(AccountEntity a, AccountItemEntity it) {
         if (a == null || !a.hasForeignCurrency() || it == null || !it.hasForeignAmount()) return "";
         if (TripCurrency.sameRate(a.rate, it.rate)) return "";
-        return "@ " + TripCurrency.rateNumber(it.rate);
+        return TripCurrency.rateLabel(a.homeCurrency, it.rate, a.foreignCurrency);
+    }
+
+    /** A converted (home-currency) amount on a trip, without cents: "3,000 ฿". */
+    public static String homeWhole(AccountEntity a, double amount, String settingsSymbol) {
+        if (a != null && a.homeCurrency != null && TripCurrency.byCode(a.homeCurrency) != null) {
+            return TripCurrency.formatWhole(amount, a.homeCurrency, useCodes(a));
+        }
+        return TripCurrency.formatWhole(amount, TripCurrency.codeForSymbol(settingsSymbol), false);
     }
 
     /**

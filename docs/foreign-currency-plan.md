@@ -140,9 +140,15 @@ decimals such as "1 VND = 0.0000386 USD". Proposal:
    worth roughly 1–5 US dollars, picked from the built-in rate table
    (e.g. ₫100,000 · ฿100 · ¥20 (CNY) · ¥500 (JPY) · $5). The dialog example
    and a glance line on the trip use it: "₫100,000 ≈ ฿130".
-3. **Home amounts under entries in whole numbers** ("≈ 130 ฿") when the
-   amount is large enough that cents don't matter; trip totals stay exact.
-   (To confirm.)
+3. **Converted amounts in whole numbers** — confirmed: round off cents.
+
+Rule (confirmed 14 Oct 2026): **always whole denominations**, never decimal
+rates. Done: rates are quoted bank-style with the stronger currency as the
+base and a round quantity (1, 10, 100…) so the other side is a whole number
+≥ 20 ("1 USD = 34 THB", "10 CNY = 50 THB", "100 CAD = 104 USD"); the rate
+field takes whole numbers in that form; converted amounts under trip entries,
+trip totals and the entry line are whole. Still to do: the pocket-amount
+glance line (point 2).
 
 ## Open details (decide while building)
 

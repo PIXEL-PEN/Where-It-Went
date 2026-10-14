@@ -242,7 +242,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
                 // v3.3: trips with a currency show the trip total, home total beneath
                 String settingsSymbol = AppPrefs.getCurrencySymbol(this);
-                String homeTotal = AccountCurrency.home(account, displayTotal, settingsSymbol);
                 Double tripTotal = AccountCurrency.foreignTotal(account, shown);
 
                 View accountHeader = addAccountHeader(
@@ -250,8 +249,9 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                         container,
                         account.name,
                         tripTotal != null
-                                ? twoLines(AccountCurrency.foreign(account, tripTotal), homeTotal)
-                                : homeTotal
+                                ? lines(AccountCurrency.foreign(account, tripTotal),
+                                        AccountCurrency.homeWhole(account, displayTotal, settingsSymbol))
+                                : AccountCurrency.home(account, displayTotal, settingsSymbol)
                 );
 
                 accountHeader.setTag(TAG_ACCOUNT);
@@ -434,25 +434,32 @@ public class AccountsOverviewActivity extends AppCompatActivity {
     // v3.3 TRIP CURRENCY DISPLAY
     // =====================================================
 
-    /** One entry's amount: trip amount with the home amount beneath, or home only. */
+    /**
+     * One entry's amount. On a trip with a currency: the trip amount, the home
+     * amount in whole units beneath, and the entry's own rate if it differs
+     * from the trip's current one. Otherwise the home amount only.
+     */
     private CharSequence amountText(AccountEntity account, AccountItemEntity e) {
-        String home = AccountCurrency.home(account, e.amount, AppPrefs.getCurrencySymbol(this));
+        String symbol = AppPrefs.getCurrencySymbol(this);
         if (account.hasForeignCurrency() && e.hasForeignAmount()) {
             String note = AccountCurrency.rateNote(account, e);
-            return twoLines(AccountCurrency.foreign(account, e.foreignAmount),
-                    note.isEmpty() ? home : home + "  " + note);
+            String foreign = AccountCurrency.foreign(account, e.foreignAmount);
+            String home = AccountCurrency.homeWhole(account, e.amount, symbol);
+            return note.isEmpty() ? lines(foreign, home) : lines(foreign, home, note);
         }
-        return home;
+        return AccountCurrency.home(account, e.amount, symbol);
     }
 
-    /** First line as is; second line smaller and grey, right-aligned by the caller. */
-    private static CharSequence twoLines(String first, String second) {
+    /** First line as is; the following lines smaller and grey, right-aligned by the caller. */
+    private static CharSequence lines(String first, String... more) {
         SpannableStringBuilder sb = new SpannableStringBuilder(first);
-        sb.append('\n');
-        int start = sb.length();
-        sb.append(second);
-        sb.setSpan(new RelativeSizeSpan(0.82f), start, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        sb.setSpan(new ForegroundColorSpan(0xFF6E7B85), start, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        for (String m : more) {
+            sb.append('\n');
+            int start = sb.length();
+            sb.append(m);
+            sb.setSpan(new RelativeSizeSpan(0.82f), start, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            sb.setSpan(new ForegroundColorSpan(0xFF6E7B85), start, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
         return sb;
     }
 

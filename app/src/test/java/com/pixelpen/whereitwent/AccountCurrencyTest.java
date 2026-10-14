@@ -36,7 +36,7 @@ public class AccountCurrencyTest {
 
         // The trip's rate changes later: this entry keeps its own
         vn.rate = 790;
-        assertEquals("@ 780", AccountCurrency.rateNote(vn, dinner));
+        assertEquals("1 THB = 780 VND", AccountCurrency.rateNote(vn, dinner));
         AccountItemEntity lunch = entry(395_000, vn);
         assertEquals(500.00, lunch.amount, 0.0001);
         assertEquals("", AccountCurrency.rateNote(vn, lunch));
@@ -71,7 +71,9 @@ public class AccountCurrencyTest {
         assertTrue(AccountCurrency.isSeparate(cn, "AUD"));
         assertFalse(AccountCurrency.isSeparate(cn, "USD"));
         assertEquals("1,560,000 ₫", AccountCurrency.foreign(vn, 1_560_000));
-        assertEquals("1 USD = 7.1 CNY", AccountCurrency.rateLabel(cn));
+        assertEquals("10 USD = 71 CNY", AccountCurrency.rateLabel(cn));
+        assertEquals("2,000 ฿", AccountCurrency.homeWhole(vn, 1999.5, "฿"));
+        assertEquals("18 $", AccountCurrency.homeWhole(cn, 18.10, "฿"));
     }
 
     @Test
