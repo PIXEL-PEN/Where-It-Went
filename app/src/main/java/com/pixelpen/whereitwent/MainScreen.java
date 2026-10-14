@@ -21,7 +21,7 @@ public class MainScreen extends AppCompatActivity {
     private RecyclerView.Adapter<?> adapter;
 
     private boolean twelveMonthMode = false;
-    private TravelCard travelCard;
+    private android.widget.TextView travelPill;
     boolean summariesExpanded = false;
 
 
@@ -115,7 +115,15 @@ public class MainScreen extends AppCompatActivity {
         if (linkTravel != null) {
             linkTravel.setOnClickListener(v -> {
                 drawerLayout.closeDrawer(Gravity.END);
-                if (travelCard != null) travelCard.startFromDrawer();
+                AccountEntity trip = TravelMode.activeTrip(this);
+                if (trip != null) {
+                    TravelMode.open(this);
+                } else {
+                    TravelMode.pickTrip(this, -1, t -> {
+                        updateTravelPill();
+                        TravelMode.open(this);
+                    });
+                }
             });
         }
 
@@ -149,21 +157,31 @@ public class MainScreen extends AppCompatActivity {
             });
         }
 
-        // v3.3 Travel mode: reopens on the trip card when it was left on
-        travelCard = new TravelCard(this);
-        travelCard.restore();
+        // v3.3 Travel mode: while it is on, the app opens on the trip
+        travelPill = findViewById(R.id.travel_pill);
+        travelPill.setOnClickListener(v -> TravelMode.open(this));
+        updateTravelPill();
+        if (savedInstanceState == null && TravelMode.activeTrip(this) != null) {
+            TravelMode.open(this);
+            overridePendingTransition(0, 0);
+        }
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
-        // Back from Accounts or Settings: the trip may have changed
-        refreshTravelCard();
+        // Back from the travel screen (or Accounts): travel mode may have ended,
+        // and trip entries count in the Summaries
+        updateTravelPill();
+        refreshAfterAdd();
     }
 
-    /** Redraws the Travel mode card (after an entry was edited, say). */
-    public void refreshTravelCard() {
-        if (travelCard != null) travelCard.refresh();
+    /** "✈ trip" button on home while travel mode is on: one tap back to the trip. */
+    public void updateTravelPill() {
+        if (travelPill == null) return;
+        AccountEntity trip = TravelMode.activeTrip(this);
+        travelPill.setVisibility(trip == null ? View.GONE : View.VISIBLE);
+        if (trip != null) travelPill.setText("✈  " + trip.name);
     }
 
     @Override
@@ -173,9 +191,6 @@ public class MainScreen extends AppCompatActivity {
     }
 
     public void refreshAfterAdd() {
-
-        // The Travel mode card shows the trip total and latest entries
-        refreshTravelCard();
 
         List<MainRow> rows =
                 MainBuilder.build(

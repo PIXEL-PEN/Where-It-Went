@@ -161,16 +161,21 @@ glance line (point 2).
 ## Travel mode (requested 14 Oct 2026)
 
 On a trip, Daily Living can be left aside. Menu → **Travel mode** → pick a
-Travel account. A floating card on the main screen then holds quick entry for
-that trip: item, amount in the trip currency (with the "= 3,000 ฿ · 1 THB =
-772 VND" line, tap to change the rate), category and date, plus the trip total
-and its last three entries (tap one to edit).
+Travel account. A full screen for that trip (`TravelActivity`) shows its
+entries day by day (newest first, with day totals) and an entry card at the
+bottom: item, amount in the trip currency (with the "= 3,000 ฿ · 1 THB =
+772 VND" line, tap to change the rate), category, date, Add. While the
+keyboard is open the card moves up under the top bar and the newest entries
+show beneath it. The trip name and total are in the top bar.
 
 - **Opens where you left off**: while travel mode is on, the app starts on the
-  card, with the same trip, the last category used on that trip, and the date.
-  A date left on "today" moves with the calendar; a date picked by hand stays
-  until changed (`TravelDate`).
-- **Toggle**: ⌄ (or Back, or a tap outside the card) minimises it to a
-  "✈ trip" button above home; one tap brings it back. Tapping the trip name
-  switches trips. ✕ ends travel mode; the trip and entries stay in Accounts.
-- State lives in the `travel_mode` preferences; no database change.
+  travel screen, with the same trip, the last category used on that trip, and
+  the date. A date left on "today" moves with the calendar; a date picked by
+  hand stays until changed (`TravelDate`).
+- **Toggle**: the home button (or Back) goes to the main screen, which shows a
+  "✈ trip" button; one tap returns. Tapping the trip name switches trips.
+  ✕ ends travel mode; the trip and entries stay in Accounts.
+- First tried as a floating card over the main screen (commit "Travel mode:
+  floating trip card"); replaced by the full screen for more room for entries.
+- State lives in the `travel_mode` preferences (`TravelMode`); no database
+  change.

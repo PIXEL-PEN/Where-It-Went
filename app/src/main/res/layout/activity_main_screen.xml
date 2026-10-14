@@ -80,19 +80,7 @@
             android:tint="@android:color/white" />
     </LinearLayout>
 
-        <!-- Travel mode (v3.3): dims home while the card is open -->
-        <View
-            android:id="@+id/travel_scrim"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#66000000"
-            android:clickable="true"
-            android:focusable="true"
-            android:visibility="gone" />
-
-        <include layout="@layout/view_travel_card" />
-
-        <!-- Travel mode minimised: one tap back to the trip -->
+        <!-- Travel mode (v3.3) is on: one tap back to the trip screen -->
         <TextView
             android:id="@+id/travel_pill"
             android:layout_width="wrap_content"

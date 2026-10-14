@@ -28,6 +28,10 @@
 
 
 
+        <activity
+            android:name=".TravelActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity android:name=".MainScreenActivity" android:exported="false"/>
         <activity android:name=".AddExpenseActivity" android:exported="false"/>
         <activity android:name=".MainActivity" android:exported="false"/>
