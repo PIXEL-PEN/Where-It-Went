@@ -70,7 +70,23 @@ public final class TripCurrencyDialog {
         spinnerHome.setSelection(homeIdx, false);
         spinnerTrip.setSelection(tripIdx, false);
 
-        if (rate > 0) editRate.setText(BackupFormat.plainAmount(rate));
+        // v3.3: a new trip gets an approximate built-in rate to start from;
+        // it follows currency changes until the user types their own
+        final boolean[] auto = {false};
+        final boolean[] settingText = {false};
+        Runnable suggest = () -> {
+            Double sug = ApproxRates.suggest(code(spinnerHome), code(spinnerTrip));
+            settingText[0] = true;
+            editRate.setText(sug == null ? "" : BackupFormat.plainAmount(sug));
+            editRate.setSelection(editRate.getText().length());
+            settingText[0] = false;
+            auto[0] = sug != null;
+        };
+        if (rate > 0) {
+            editRate.setText(BackupFormat.plainAmount(rate));
+        } else {
+            suggest.run();
+        }
 
         spinnerHome.setEnabled(!lockHome);
         spinnerTrip.setEnabled(!lockTrip);
@@ -95,6 +111,11 @@ public final class TripCurrencyDialog {
                         .append(TripCurrency.format(TripCurrency.toHome(example, r, home), home,
                                 TripCurrency.useCodes(home, trip)));
             }
+            if (auto[0]) {
+                p.append("\n\nSuggested rate: approximate market rate, ")
+                        .append(ApproxRates.AS_OF_LABEL)
+                        .append(". Your bank's or exchange booth's rate will differ, so change it if you know it.");
+            }
             if (lockHome && lockTrip) {
                 p.append("\n\nThe currencies are fixed once the trip has entries. "
                         + "A new rate applies to new entries only.");
@@ -109,6 +130,7 @@ public final class TripCurrencyDialog {
 
         AdapterView.OnItemSelectedListener onPick = new AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                if (auto[0] || editRate.getText().toString().trim().isEmpty()) suggest.run();
                 refresh.run();
             }
             @Override public void onNothingSelected(AdapterView<?> parent) { }
@@ -118,7 +140,10 @@ public final class TripCurrencyDialog {
         editRate.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) { }
             @Override public void onTextChanged(CharSequence s, int a, int b, int c) { }
-            @Override public void afterTextChanged(Editable s) { refresh.run(); }
+            @Override public void afterTextChanged(Editable s) {
+                if (!settingText[0]) auto[0] = false;   // the user typed their own
+                refresh.run();
+            }
         });
         refresh.run();
 

@@ -13,6 +13,7 @@ import java.util.Locale;
  *
  *  - Vietnam trip (demo): dong, home currency = the Settings currency
  *    (baht on your phone), rate changed partway through the trip.
+ *    Rates are close to the Oct 2026 market rates.
  *  - China trip (demo): yuan, home currency US dollars, so it shows as a
  *    separate currency in the Yearly Summary.
  */
@@ -29,27 +30,29 @@ public final class DemoTrips {
         int[] added = {0};
 
         db.runInTransaction(() -> {
-            // Vietnam: 1 home = 780 dong, later 795 (rates for 1 THB; scaled if home differs)
-            double vnFirst = "THB".equals(settingsCode) ? 780 : 25_450;
-            double vnLater = "THB".equals(settingsCode) ? 795 : 25_900;
-            Long vn = create(db, "Vietnam trip (demo)", "VND", settingsCode, vnLater);
+            // Vietnam: rate changed partway through (near the Oct 2026 market rate)
+            String vnHome = "VND".equals(settingsCode) ? "USD" : settingsCode;
+            Double market = ApproxRates.suggest(vnHome, "VND");
+            double vnLater = market != null ? market : 25_900;
+            double vnFirst = Math.round(vnLater * 0.99 * 10) / 10.0;
+            Long vn = create(db, "Vietnam trip (demo)", "VND", vnHome, vnLater);
             if (vn != null) {
-                item(db, vn, 2026, Calendar.SEPTEMBER, 18, "Hotel, Hanoi", "Lodging", 2_340_000, vnFirst, settingsCode);
-                item(db, vn, 2026, Calendar.SEPTEMBER, 19, "Pho and coffee", "Meals", 185_000, vnFirst, settingsCode);
-                item(db, vn, 2026, Calendar.SEPTEMBER, 20, "Train to Hue", "Transportation", 1_120_000, vnFirst, settingsCode);
-                item(db, vn, 2026, Calendar.SEPTEMBER, 22, "Ha Long Bay cruise", "Activities", 3_900_000, vnFirst, settingsCode);
-                item(db, vn, 2026, Calendar.OCTOBER, 3, "Street food tour", "Meals", 650_000, vnLater, settingsCode);
-                item(db, vn, 2026, Calendar.OCTOBER, 4, "Grab rides", "Transportation", 240_000, vnLater, settingsCode);
+                item(db, vn, 2026, Calendar.SEPTEMBER, 18, "Hotel, Hanoi", "Lodging", 2_340_000, vnFirst, vnHome);
+                item(db, vn, 2026, Calendar.SEPTEMBER, 19, "Pho and coffee", "Meals", 185_000, vnFirst, vnHome);
+                item(db, vn, 2026, Calendar.SEPTEMBER, 20, "Train to Hue", "Transportation", 1_120_000, vnFirst, vnHome);
+                item(db, vn, 2026, Calendar.SEPTEMBER, 22, "Ha Long Bay cruise", "Activities", 3_900_000, vnFirst, vnHome);
+                item(db, vn, 2026, Calendar.OCTOBER, 3, "Street food tour", "Meals", 650_000, vnLater, vnHome);
+                item(db, vn, 2026, Calendar.OCTOBER, 4, "Grab rides", "Transportation", 240_000, vnLater, vnHome);
                 added[0]++;
             }
 
-            // China: 1 USD = 7.10 yuan, later 7.18
-            Long cn = create(db, "China trip (demo)", "CNY", "USD", 7.18);
+            // China: 1 USD = 6.75 yuan, later 6.69 (Oct 2026 market: 6.692)
+            Long cn = create(db, "China trip (demo)", "CNY", "USD", 6.69);
             if (cn != null) {
-                item(db, cn, 2026, Calendar.AUGUST, 10, "Hotel, Shanghai", "Lodging", 1_280, 7.10, "USD");
-                item(db, cn, 2026, Calendar.AUGUST, 11, "Dumplings", "Meals", 96.50, 7.10, "USD");
-                item(db, cn, 2026, Calendar.AUGUST, 12, "High-speed train to Beijing", "Transportation", 553, 7.10, "USD");
-                item(db, cn, 2026, Calendar.AUGUST, 14, "Forbidden City tickets", "Activities", 120, 7.18, "USD");
+                item(db, cn, 2026, Calendar.AUGUST, 10, "Hotel, Shanghai", "Lodging", 1_280, 6.75, "USD");
+                item(db, cn, 2026, Calendar.AUGUST, 11, "Dumplings", "Meals", 96.50, 6.75, "USD");
+                item(db, cn, 2026, Calendar.AUGUST, 12, "High-speed train to Beijing", "Transportation", 553, 6.75, "USD");
+                item(db, cn, 2026, Calendar.AUGUST, 14, "Forbidden City tickets", "Activities", 120, 6.69, "USD");
                 added[0]++;
             }
         });
