@@ -118,6 +118,8 @@ public final class TripCurrencyDialog {
 
         spinnerHome.setEnabled(!lockHome);
         spinnerTrip.setEnabled(!lockTrip);
+        CurrencyPicker.attach(spinnerHome);   // tap: list with a search box
+        CurrencyPicker.attach(spinnerTrip);
 
         // The stored rate (trip units per 1 home unit) for what is on screen, or null
         final java.util.concurrent.Callable<Double> currentRate = () -> {

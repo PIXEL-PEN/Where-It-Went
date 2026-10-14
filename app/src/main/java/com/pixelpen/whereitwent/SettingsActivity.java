@@ -130,6 +130,7 @@ public class SettingsActivity extends AppCompatActivity {
         );
         adapter.setDropDownViewResource(R.layout.spinner_item_dropdown);
         spinnerCurrency.setAdapter(adapter);
+        CurrencyPicker.attach(spinnerCurrency);   // v3.3: tap opens a searchable list
 
         // Restore by code (settings from before v3.3 had only a symbol;
         // getCurrencyCode works the code out from it)

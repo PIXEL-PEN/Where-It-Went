@@ -158,6 +158,56 @@ public final class TripCurrency {
     }
 
     /** Index in {@link #ALL}, or -1. */
+    /** Countries whose name isn't simply the start of the currency's name. */
+    private static final java.util.Map<String, String> COUNTRIES = new java.util.HashMap<>();
+    static {
+        COUNTRIES.put("USD", "united states america usa");
+        COUNTRIES.put("GBP", "united kingdom uk england britain");
+        COUNTRIES.put("EUR", "europe germany france italy spain netherlands portugal greece austria"
+                + " belgium ireland finland croatia slovakia slovenia estonia latvia lithuania"
+                + " luxembourg malta cyprus");
+        COUNTRIES.put("KRW", "korea");
+        COUNTRIES.put("CHF", "switzerland");
+        COUNTRIES.put("LAK", "laos");
+        COUNTRIES.put("MMK", "burma myanmar");
+        COUNTRIES.put("AED", "emirates uae dubai abu dhabi");
+        COUNTRIES.put("CZK", "czech republic czechia");
+        COUNTRIES.put("XOF", "senegal ivory coast cote d'ivoire mali burkina benin togo niger");
+        COUNTRIES.put("XAF", "cameroon gabon congo chad");
+        COUNTRIES.put("XPF", "french polynesia tahiti new caledonia");
+        COUNTRIES.put("TWD", "taiwan");
+        COUNTRIES.put("BAM", "bosnia herzegovina");
+        COUNTRIES.put("MOP", "macau macao");
+        COUNTRIES.put("TTD", "trinidad tobago");
+        COUNTRIES.put("PHP", "philippines");
+    }
+
+    /**
+     * Positions in {@link #ALL} matching a search, in list order: the code, a
+     * word of the name ("riel", "camb" for Cambodian), or a country ("laos").
+     * Blank = everything.
+     */
+    public static List<Integer> search(String query) {
+        List<Integer> out = new java.util.ArrayList<>();
+        String q = query == null ? "" : query.trim().toLowerCase(java.util.Locale.ROOT);
+        for (int i = 0; i < ALL.size(); i++) {
+            Currency c = ALL.get(i);
+            if (q.isEmpty() || matches(c, q)) out.add(i);
+        }
+        return out;
+    }
+
+    private static boolean matches(Currency c, String q) {
+        if (c.code.toLowerCase(java.util.Locale.ROOT).startsWith(q)) return true;
+        String words = c.name.toLowerCase(java.util.Locale.ROOT);
+        String extra = COUNTRIES.get(c.code);
+        if (extra != null) words += " " + extra;
+        for (String w : words.split("[\\s-]+")) {
+            if (w.startsWith(q)) return true;
+        }
+        return q.contains(" ") && words.contains(q);   // "new zealand", "south korean"
+    }
+
     public static int indexOf(String code) {
         Currency c = byCode(code);
         return c == null ? -1 : ALL.indexOf(c);
