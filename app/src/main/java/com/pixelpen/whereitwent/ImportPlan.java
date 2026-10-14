@@ -34,6 +34,24 @@ public final class ImportPlan {
     /** Existing categories whose tag a full backup changes, name (as in the app) -> new tag. */
     public final Map<String, String> categoriesToRetag = new LinkedHashMap<>();
 
+    /**
+     * v3.3: trip details from the file for accounts already in the app. The
+     * trip currency is only filled in for an account with no currency and no
+     * entries yet (so no stored amount changes meaning); a journey name only
+     * where the account has none.
+     */
+    public static final class TripUpdate {
+        public final long accountId;
+        public final String name;
+        public final BackupFormat.AccountRec from;
+        public final boolean currency, journey;
+        TripUpdate(long id, String name, BackupFormat.AccountRec from, boolean currency, boolean journey) {
+            this.accountId = id; this.name = name; this.from = from;
+            this.currency = currency; this.journey = journey;
+        }
+    }
+    public final List<TripUpdate> tripUpdates = new ArrayList<>();
+
     public int expensesSkipped;
     public int accountItemsSkipped;
     public final List<Integer> badLines;
@@ -41,6 +59,8 @@ public final class ImportPlan {
     /** Currency from a full backup, applied only when the app has no entries yet. */
     public String currencyToApply;
     public String currencyInFile;
+    /** Settings currency code to apply with it (full backup v2), or null. */
+    public String currencyCodeToApply;
 
     /** Earliest and latest ISO date of everything in the file, or null. */
     public String firstDate, lastDate;
@@ -68,6 +88,19 @@ public final class ImportPlan {
                                    Collection<AccountItemEntity> existingItems,
                                    Map<String, String> existingCategories,
                                    String currentCurrency,
+                                   String defaultTag) {
+        return build(parsed, existingExpenses, existingAccounts, existingItems,
+                existingCategories, currentCurrency, null, defaultTag);
+    }
+
+    /** @param currentCode the Settings currency code (v3.3), or null */
+    public static ImportPlan build(BackupFormat.Parsed parsed,
+                                   Collection<Expense> existingExpenses,
+                                   Collection<AccountEntity> existingAccounts,
+                                   Collection<AccountItemEntity> existingItems,
+                                   Map<String, String> existingCategories,
+                                   String currentCurrency,
+                                   String currentCode,
                                    String defaultTag) {
 
         ImportPlan plan = new ImportPlan(parsed);
@@ -116,14 +149,30 @@ public final class ImportPlan {
         // ---------- Accounts ----------
         Map<Long, String> nameById = new HashMap<>();
         Set<String> knownAccounts = new HashSet<>();
+        Map<String, AccountEntity> appAccount = new HashMap<>();
         if (existingAccounts != null) {
             for (AccountEntity a : existingAccounts) {
                 nameById.put(a.id, a.name);
                 knownAccounts.add(norm(a.name));
+                appAccount.put(norm(a.name), a);
             }
         }
+        Set<Long> withEntries = new HashSet<>();
+        if (existingItems != null) {
+            for (AccountItemEntity it : existingItems) withEntries.add(it.accountId);
+        }
         for (BackupFormat.AccountRec a : parsed.accounts) {
-            if (knownAccounts.add(norm(a.name))) plan.accountsToCreate.add(a);
+            if (knownAccounts.add(norm(a.name))) {
+                plan.accountsToCreate.add(a);
+                continue;
+            }
+            AccountEntity inApp = appAccount.get(norm(a.name));
+            if (inApp == null || !a.hasTripDetails()) continue;
+            boolean cur = (notBlank(a.foreignCurrency) || notBlank(a.homeCurrency))
+                    && !notBlank(inApp.foreignCurrency) && !notBlank(inApp.homeCurrency)
+                    && !withEntries.contains(inApp.id);
+            boolean jour = notBlank(a.journey) && !notBlank(inApp.journey);
+            if (cur || jour) plan.tripUpdates.add(new TripUpdate(inApp.id, inApp.name, a, cur, jour));
         }
 
         // ---------- Account items ----------
@@ -151,7 +200,14 @@ public final class ImportPlan {
         plan.currencyInFile = parsed.currencySymbol;
         boolean appEmpty = (existingExpenses == null || existingExpenses.isEmpty())
                 && (existingItems == null || existingItems.isEmpty());
-        if (parsed.currencySymbol != null && appEmpty
+        if (parsed.currencyCode != null && currentCode != null) {
+            // v2 backups name the currency exactly (US vs Australian dollar)
+            if (appEmpty && !parsed.currencyCode.equalsIgnoreCase(currentCode)) {
+                plan.currencyCodeToApply = parsed.currencyCode;
+                plan.currencyToApply = parsed.currencySymbol != null
+                        ? parsed.currencySymbol : parsed.currencyCode;
+            }
+        } else if (parsed.currencySymbol != null && appEmpty
                 && !parsed.currencySymbol.equals(currentCurrency)) {
             plan.currencyToApply = parsed.currencySymbol;
         }
@@ -196,6 +252,14 @@ public final class ImportPlan {
             }
             sb.append("\nNew accounts: ").append(list(names)).append('\n');
         }
+        List<String> trips = new ArrayList<>();
+        for (BackupFormat.AccountRec a : accountsToCreate) {
+            if (a.hasTripDetails()) trips.add(a.name);
+        }
+        for (TripUpdate u : tripUpdates) trips.add(u.name);
+        if (!trips.isEmpty()) {
+            sb.append("\nTrip currencies and journeys: ").append(list(trips)).append('\n');
+        }
         if (!categoriesToAdd.isEmpty()) {
             List<String> names = new ArrayList<>();
             for (Map.Entry<String, String> c : categoriesToAdd.entrySet()) {
@@ -234,9 +298,10 @@ public final class ImportPlan {
             sb.append(")\n");
         }
 
-        sb.append(categoriesToRetag.isEmpty()
+        sb.append(categoriesToRetag.isEmpty() && tripUpdates.isEmpty()
                 ? "\nNothing already in the app is changed or deleted."
-                : "\nNo entries are changed or deleted; only the tags listed above are updated.");
+                : "\nNo entries are changed or deleted; only the "
+                        + (tripUpdates.isEmpty() ? "tags" : "details") + " listed above are updated.");
         return sb.toString();
     }
 
@@ -278,6 +343,10 @@ public final class ImportPlan {
 
     private static String amountKey(double v) {
         return String.format(Locale.US, "%.2f", v);
+    }
+
+    private static boolean notBlank(String s) {
+        return s != null && !s.trim().isEmpty();
     }
 
     private static String norm(String s) {

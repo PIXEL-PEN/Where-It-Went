@@ -5,8 +5,8 @@ for testing on WIW-dev. Written 14 Oct 2026, after v3.2.
 
 Prototype notes:
 - Demo trips: WIW-dev Accounts menu → "Add demo trips (dev)" (debug builds only).
-- Not yet done: Full backup v2 and the Accounts CSV columns (a backup made now
-  keeps home amounts but not the dong/yuan amounts or rates), Guide text.
+- Done: Full backup v2 and the Accounts CSV columns (see "Backup v2" below),
+  Guide text.
 - Also fixed: database v2 (all releases before 3.0) had no upgrade path to
   v5, so updating 2.0 → 3.0 erased data. `MIGRATION_2_5` now covers it.
 
@@ -196,8 +196,7 @@ Each country stays its own Travel account with its own currency; a
 - The top bar adds "SE Asia 2026 · 2 countries · 6,800 ฿": the trips in the
   same home currency added up; a trip in another home currency is counted
   apart ("+1 in another currency"), never mixed in.
-- Not yet: the journey in Accounts, Yearly Summary and the exports, and in
-  Full backup v2 (to add with the currency fields).
+- Not yet: the journey in Accounts and Yearly Summary.
 
 ## Trips kept in their own currency (requested 14 Oct 2026)
 
@@ -210,4 +209,20 @@ from Settings out of mixed totals. The rate row is hidden for this choice.
 
 Still open: changing a trip's home currency after it has entries
 ("Change home currency…", re-converting every entry at one new rate).
+
+## Backup v2 (done 14 Oct 2026)
+
+- Header `Where It Went backup,2,<date>`; `SETTING,currency_code,<code>` next
+  to `currency_symbol`.
+- `ACCOUNT,name,type,archived[,foreignCurrency,homeCurrency,rate,journey]`;
+  `ACCOUNT_ITEM,…,note[,foreignAmount,rate]`. Extra fields are only written
+  when there is something in them, so ordinary lines keep the v1 shape and
+  3.2 can still read a v2 file (it ignores the extras).
+- Accounts CSV header gains `,ForeignAmount,ForeignCurrency,Rate,HomeCurrency,Journey`;
+  both headers import. A trip's current rate is taken from its latest entry.
+- Import: new accounts arrive with their trip details. An account already in
+  the app gets a trip currency only if it has none and no entries (so no
+  stored amount changes meaning), and a journey only if it has none.
+  A v2 backup restores the Settings currency by code (US vs Australian dollar)
+  when the app is empty.
 

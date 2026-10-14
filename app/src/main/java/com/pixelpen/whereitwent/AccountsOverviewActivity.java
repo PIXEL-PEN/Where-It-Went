@@ -544,7 +544,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                 List<AccountEntity> accounts = accountDao.getAllAccounts();
 
                 StringBuilder sb = new StringBuilder();
-                sb.append(BackupFormat.ACC_HEADER).append("\n");
+                sb.append(BackupFormat.ACC_HEADER_V2).append("\n");
 
                 // v3.2: fields quoted (notes keep their commas); importable
                 for (AccountEntity account : accounts) {
@@ -553,14 +553,14 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                             itemDao.getItemsForAccount(account.id);
 
                     for (AccountItemEntity item : items) {
-                        sb.append(BackupFormat.row(
+                        // v3.3: trip currency columns at the end
+                        sb.append(BackupFormat.accountsCsvRow(
                                 account.type,
                                 account.archived ? account.name + " (archived)" : account.name,
-                                item.date,
-                                item.item == null ? "" : item.item,
-                                item.category == null ? "" : item.category,
-                                BackupFormat.plainAmount(item.amount),
-                                item.note == null ? "" : item.note));
+                                item.date, item.item, item.category, item.amount, item.note,
+                                item.hasForeignAmount() ? item.foreignAmount : null,
+                                item.hasForeignAmount() ? item.rate : null,
+                                account.foreignCurrency, account.homeCurrency, account.journey));
                     }
                 }
 

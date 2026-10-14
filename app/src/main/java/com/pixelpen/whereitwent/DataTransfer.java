@@ -74,7 +74,12 @@ public final class DataTransfer {
         List<BackupFormat.AccountRec> accounts = new ArrayList<>();
         for (AccountEntity a : accountEntities) {
             nameById.put(a.id, a.name);
-            accounts.add(new BackupFormat.AccountRec(a.name, a.type, a.archived));
+            BackupFormat.AccountRec rec = new BackupFormat.AccountRec(a.name, a.type, a.archived);
+            rec.foreignCurrency = a.foreignCurrency;   // v3.3 trip details
+            rec.homeCurrency = a.homeCurrency;
+            rec.rate = a.rate;
+            rec.journey = a.journey;
+            accounts.add(rec);
         }
 
         List<Expense> expenseEntities = db.expenseDao().getAll();
@@ -95,12 +100,19 @@ public final class DataTransfer {
             if (name == null) continue;   // left behind by an account deleted before v3.2
             String iso = DateUtils.toIso(it.date);
             if (iso == null && it.dateMillis > 0) iso = isoFmt.format(new Date(it.dateMillis));
-            items.add(new BackupFormat.AccountItemRec(name, iso != null ? iso : String.valueOf(it.date),
+            BackupFormat.AccountItemRec rec = new BackupFormat.AccountItemRec(name,
+                    iso != null ? iso : String.valueOf(it.date),
                     it.item == null ? "" : it.item, it.category == null ? "" : it.category,
-                    it.amount, it.note == null ? "" : it.note));
+                    it.amount, it.note == null ? "" : it.note);
+            if (it.hasForeignAmount()) {   // v3.3: the amount as entered, and its rate
+                rec.foreignAmount = it.foreignAmount;
+                rec.rate = it.rate;
+            }
+            items.add(rec);
         }
 
         return BackupFormat.writeBackup(AppPrefs.getCurrencySymbol(activity),
+                AppPrefs.getCurrencyCode(activity),
                 categories, accounts, expenses, items, new Date());
     }
 
@@ -157,11 +169,12 @@ public final class DataTransfer {
                 db.accountItemDao().getAllItems(),
                 currentCategoryTags(activity),
                 currency,
+                AppPrefs.getCurrencyCode(activity),
                 CategoryManager.TAG_FIXED);
 
         boolean nothingNew = plan.totalToAdd() == 0 && plan.accountsToCreate.isEmpty()
                 && plan.categoriesToAdd.isEmpty() && plan.categoriesToRetag.isEmpty()
-                && plan.currencyToApply == null;
+                && plan.currencyToApply == null && plan.tripUpdates.isEmpty();
 
         AlertDialog.Builder b = new AlertDialog.Builder(activity)
                 .setTitle(plan.title())
@@ -181,7 +194,19 @@ public final class DataTransfer {
             db.runInTransaction(() -> {
                 AccountDao accountDao = db.accountDao();
                 for (BackupFormat.AccountRec a : plan.accountsToCreate) {
-                    accountDao.insert(new AccountEntity(a.name, a.type, a.archived));
+                    AccountEntity e = new AccountEntity(a.name, a.type, a.archived);
+                    e.foreignCurrency = a.foreignCurrency;   // v3.3 trip details
+                    e.homeCurrency = a.homeCurrency;
+                    e.rate = a.rate;
+                    e.journey = a.journey;
+                    accountDao.insert(e);
+                }
+                for (ImportPlan.TripUpdate u : plan.tripUpdates) {
+                    if (u.currency) {
+                        accountDao.setCurrency(u.accountId, u.from.foreignCurrency,
+                                u.from.homeCurrency, u.from.rate);
+                    }
+                    if (u.journey) accountDao.setJourney(u.accountId, u.from.journey);
                 }
 
                 Map<String, Long> idByName = new HashMap<>();
@@ -218,9 +243,12 @@ public final class DataTransfer {
                     c.set(Calendar.MINUTE, 0);
                     c.set(Calendar.SECOND, 0);
                     c.set(Calendar.MILLISECOND, 0);
-                    itemDao.insert(new AccountItemEntity(id, uiFmt.format(c.getTime()),
+                    AccountItemEntity entity = new AccountItemEntity(id, uiFmt.format(c.getTime()),
                             c.getTimeInMillis(), r.item, r.category, r.amount,
-                            r.note == null || r.note.isEmpty() ? null : r.note));
+                            r.note == null || r.note.isEmpty() ? null : r.note);
+                    entity.foreignAmount = r.foreignAmount;   // v3.3 (null for ordinary entries)
+                    entity.rate = r.rate;
+                    itemDao.insert(entity);
                 }
             });
         } catch (Exception e) {
@@ -236,7 +264,9 @@ public final class DataTransfer {
         for (Map.Entry<String, String> c : plan.categoriesToRetag.entrySet()) {
             CategoryManager.saveCategoryWithTag(activity, c.getKey(), c.getValue());
         }
-        if (plan.currencyToApply != null) {
+        if (plan.currencyCodeToApply != null) {
+            AppPrefs.setCurrency(activity, plan.currencyCodeToApply);   // exact (v2 backups)
+        } else if (plan.currencyToApply != null) {
             AppPrefs.setCurrencySymbol(activity, plan.currencyToApply);
         }
 

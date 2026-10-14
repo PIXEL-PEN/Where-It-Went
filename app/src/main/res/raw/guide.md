@@ -98,7 +98,7 @@ Use Export › to save a year's totals as a CSV file or send them by email.
 
 ### Backup and Restore
 
-Settings → Export → Full backup saves everything in one file: Daily Living, Accounts, your categories and their tags, and your currency. Keep a recent copy somewhere safe.
+Settings → Export → Full backup saves everything in one file: Daily Living, Accounts (with trip currencies, rates and journeys), your categories and their tags, and your currency. Keep a recent copy somewhere safe.
 
 Settings → Import restores a full backup. It can also bring in an "All items" CSV export from Daily Living or Accounts.
 
