@@ -77,9 +77,8 @@ public class TravelActivity extends AppCompatActivity {
     private boolean cardOnTop;
 
     // Days whose entries are showing (tap a day's banner to show or hide them).
-    // On opening only the newest day is open, so the list starts short.
+    // The screen opens with every day closed; adding an entry opens its day.
     private final java.util.Set<Long> openDays = new java.util.HashSet<>();
-    private boolean openDaysSet;
     private List<AccountItemEntity> items = new ArrayList<>();
 
     @Override
@@ -124,8 +123,7 @@ public class TravelActivity extends AppCompatActivity {
                     editItem.setText("");
                     editAmount.setText("");
                     editNote.setText("");
-                    openDays.clear();        // new trip: start with its newest day open
-                    openDaysSet = false;
+                    openDays.clear();        // new trip: every day closed
                     bind();
                 }));
         findViewById(R.id.travel_btn_add).setOnClickListener(v -> add());
@@ -212,10 +210,6 @@ public class TravelActivity extends AppCompatActivity {
         tripTotal.setText(all.isEmpty() ? "No spending yet" : "Total " + total(all));
 
         items = all;
-        if (!openDaysSet && !all.isEmpty()) {
-            openDays.add(dayOf(all.get(0)));   // newest first
-            openDaysSet = true;
-        }
         showList();
         emptyList.setVisibility(all.isEmpty() ? View.VISIBLE : View.GONE);
 
