@@ -181,8 +181,10 @@ public class TravelActivity extends AppCompatActivity {
     private void placeCard(boolean onTop) {
         if (onTop == cardOnTop) return;
         cardOnTop = onTop;
-        body.removeView(card);
-        body.addView(card, onTop ? 0 : body.getChildCount());
+        // Move the list, never the card: taking the card out of the layout
+        // would take focus (and the cursor) away from the field being typed in
+        body.removeView(listFrame);
+        body.addView(listFrame, onTop ? body.getChildCount() : 0);
         if (onTop) list.scrollToPosition(0);   // newest entries right under the card
     }
 
@@ -207,7 +209,7 @@ public class TravelActivity extends AppCompatActivity {
         if (trip.hasForeignCurrency()) {
             TripCurrency.Currency c = TripCurrency.byCode(trip.foreignCurrency);
             amountCurrency.setText(trip.foreignCurrency);
-            editAmount.setHint("Amount in " + (c != null ? c.name : trip.foreignCurrency));
+            editAmount.setHint("Amount");   // the currency code shows beside it
             editAmount.setInputType(c != null && c.decimals == 0
                     ? InputType.TYPE_CLASS_NUMBER
                     : InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
@@ -523,7 +525,7 @@ public class TravelActivity extends AppCompatActivity {
         editNote.setText("");
         editItem.setError(null);
         editAmount.setError(null);
-        editItem.requestFocus();   // ready for the next one; keyboard stays
+        hideKeyboard();   // the card drops back to the bottom, showing the new entry
 
         Toast.makeText(this, "Added: " + item, Toast.LENGTH_SHORT).show();
         bind();
@@ -532,12 +534,16 @@ public class TravelActivity extends AppCompatActivity {
 
     @Override
     public void finish() {
-        View f = getCurrentFocus();
-        if (f != null) {
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (imm != null) imm.hideSoftInputFromWindow(f.getWindowToken(), 0);
-        }
+        hideKeyboard();
         super.finish();
+    }
+
+    private void hideKeyboard() {
+        View f = getCurrentFocus();
+        if (f == null) return;
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) imm.hideSoftInputFromWindow(f.getWindowToken(), 0);
+        f.clearFocus();
     }
 
     private int dp(int v) {

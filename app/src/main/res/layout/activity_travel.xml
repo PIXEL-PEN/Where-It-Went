@@ -6,6 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/settings_page_bg"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     android:orientation="vertical">
 
     <!-- Top bar: home, trip (tap to switch), total, end -->
@@ -130,7 +132,7 @@
                 android:id="@+id/travel_edit_item"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Item (e.g. Dinner)"
+                android:hint="Item"
                 android:imeOptions="actionNext"
                 android:inputType="textCapSentences"
                 android:singleLine="true" />
