@@ -237,7 +237,7 @@ public class TravelActivity extends AppCompatActivity {
         return AccountCurrency.home(trip, home, settingsSymbol);
     }
 
-    /** A day's total for its banner, with the home-currency amount in bold. */
+    /** A day's total for its banner, with the home-currency amount emphasised. */
     private CharSequence dayTotal(List<AccountItemEntity> items) {
         double home = 0;
         for (AccountItemEntity it : items) home += it.amount;
@@ -247,8 +247,10 @@ public class TravelActivity extends AppCompatActivity {
                 : AccountCurrency.home(trip, home, settingsSymbol);
         String lead = foreign != null ? AccountCurrency.foreign(trip, foreign) + "  ·  " : "";
         android.text.SpannableString out = new android.text.SpannableString(lead + homeText);
-        out.setSpan(new android.text.style.StyleSpan(Typeface.BOLD), lead.length(), out.length(),
-                android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        // The whole banner is bold; the home amount is a little larger and heavier
+        int from = lead.length(), to = out.length(), f = android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE;
+        out.setSpan(new android.text.style.RelativeSizeSpan(1.15f), from, to, f);
+        out.setSpan(new android.text.style.TypefaceSpan("sans-serif-black"), from, to, f);
         return out;
     }
 
@@ -396,7 +398,7 @@ public class TravelActivity extends AppCompatActivity {
         int ink = ContextCompat.getColor(this, R.color.colorPrimary);
         TextView title = text(15, true, ink);
         row.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        TextView total = text(14, false, ink);   // home amount bolded by dayTotal()
+        TextView total = text(14, true, ink);   // home amount emphasised by dayTotal()
         total.setPadding(dp(8), 0, 0, 0);
         row.addView(total);
         return row;
