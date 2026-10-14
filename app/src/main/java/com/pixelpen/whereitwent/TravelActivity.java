@@ -99,6 +99,12 @@ public class TravelActivity extends AppCompatActivity {
 
         list.setLayoutManager(new LinearLayoutManager(this));
 
+        // Slightly stronger hints than the theme's default, for outdoor reading
+        android.content.res.ColorStateList hint =
+                ContextCompat.getColorStateList(this, R.color.travel_hint);
+        editItem.setHintTextColor(hint);
+        editAmount.setHintTextColor(hint);
+
         categoryAdapter = new ArrayAdapter<>(this, R.layout.spinner_item_selected, categories);
         categoryAdapter.setDropDownViewResource(R.layout.spinner_item_dropdown);
         spinnerCategory.setAdapter(categoryAdapter);
@@ -392,7 +398,7 @@ public class TravelActivity extends AppCompatActivity {
         left.setOrientation(LinearLayout.VERTICAL);
         left.addView(text(15, false, 0));
         TextView sub = text(12, false, 0);
-        sub.setAlpha(0.65f);
+        sub.setAlpha(0.78f);
         left.addView(sub);
         row.addView(left, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
@@ -402,20 +408,20 @@ public class TravelActivity extends AppCompatActivity {
         right.setPadding(dp(8), 0, 0, 0);
         right.addView(text(15, true, 0));
         TextView under = text(12, false, 0);
-        under.setAlpha(0.65f);
+        under.setAlpha(0.78f);
         right.addView(under);
         row.addView(right);
         return row;
     }
 
-    /** A TextView; colour 0 = the theme's text colour. */
+    /** A TextView; colour 0 = the travel screen's text colour. */
     private TextView text(int sp, boolean bold, int color) {
         TextView t = new TextView(this);
         t.setTextSize(sp);
         t.setSingleLine(true);
         t.setEllipsize(TextUtils.TruncateAt.END);
         if (bold) t.setTypeface(t.getTypeface(), Typeface.BOLD);
-        if (color != 0) t.setTextColor(color);
+        t.setTextColor(color != 0 ? color : ContextCompat.getColor(this, R.color.travel_text));
         return t;
     }
 

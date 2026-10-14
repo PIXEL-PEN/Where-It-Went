@@ -34,4 +34,9 @@
     <color name="settings_card_bg">#FFFFFF</color>
 
 
+
+    <!-- Travel screen (v3.3): a little stronger than the theme defaults -->
+    <color name="travel_text">#141414</color>
+    <color name="travel_hint">#8A8A8A</color>
+    <color name="travel_conversion">#025C93</color>
 </resources>

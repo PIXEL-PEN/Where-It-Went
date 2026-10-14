@@ -58,7 +58,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="1dp"
                 android:singleLine="true"
-                android:textColor="#D6E6F0"
+                android:textColor="#EEF4F8"
                 android:textSize="13sp" />
         </LinearLayout>
 
@@ -104,7 +104,7 @@
                 android:gravity="center"
                 android:padding="32dp"
                 android:text="No entries yet on this trip.\nAdd the first one below."
-                android:textColor="?android:attr/textColorSecondary"
+                android:textColor="@color/travel_hint"
                 android:textSize="15sp"
                 android:visibility="gone" />
         </FrameLayout>
@@ -156,7 +156,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingStart="8dp"
-                    android:textColor="?android:attr/textColorSecondary"
+                    android:textColor="@color/travel_hint"
                     android:textSize="15sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -169,7 +169,7 @@
                 android:background="?android:attr/selectableItemBackground"
                 android:paddingTop="2dp"
                 android:paddingBottom="6dp"
-                android:textColor="@color/colorAccent"
+                android:textColor="@color/travel_conversion"
                 android:textSize="13sp" />
 
             <LinearLayout
