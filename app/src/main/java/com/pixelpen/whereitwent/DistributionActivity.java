@@ -467,13 +467,14 @@ public class DistributionActivity extends AppCompatActivity {
         totalLabel.setLayoutParams(new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
         totalLabel.setText(anySeparate ? "Total (excl. other currencies)" : "Total");
-        totalLabel.setTextSize(14);
+        totalLabel.setTextSize(15);
         totalLabel.setTypeface(Typeface.DEFAULT_BOLD);
 
+        // The rows above are bold too: the total is larger and heavier to stand out
         TextView totalAmount = new TextView(this);
         totalAmount.setText(money.format(grandTotal) + " " + currencySymbol);
-        totalAmount.setTextSize(14);
-        totalAmount.setTypeface(Typeface.DEFAULT_BOLD);
+        totalAmount.setTextSize(16);
+        totalAmount.setTypeface(Typeface.create("sans-serif-black", Typeface.NORMAL));
 
         totalRow.addView(totalLabel);
         totalRow.addView(totalAmount);
