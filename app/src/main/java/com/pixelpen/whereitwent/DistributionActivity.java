@@ -376,8 +376,12 @@ public class DistributionActivity extends AppCompatActivity {
         List<AccountEntity> accounts = accountDao.getActiveAccounts();
 
         // Build per-account totals for this month
-        Map<String, Double> accountTotals = new LinkedHashMap<>();
+        // v3.3: formatted per account; trips kept in another currency are
+        // shown in it and left out of the total
+        Map<String, String> accountTotals = new LinkedHashMap<>();
         double grandTotal = 0.0;
+        boolean anyShown = false;
+        boolean anySeparate = false;
 
         for (AccountEntity account : accounts) {
             List<AccountItemEntity> items = itemDao.getItemsForAccount(account.id);
@@ -398,12 +402,18 @@ public class DistributionActivity extends AppCompatActivity {
                 if (inMonth) total += item.amount;
             }
             if (total > 0) {
-                accountTotals.put(account.name, total);
-                grandTotal += total;
+                accountTotals.put(account.name,
+                        AccountCurrency.home(account, total, currencySymbol));
+                anyShown = true;
+                if (AccountCurrency.isSeparate(account, currencySymbol)) {
+                    anySeparate = true;
+                } else {
+                    grandTotal += total;
+                }
             }
         }
 
-        if (grandTotal == 0) return; // nothing to show
+        if (!anyShown) return; // nothing to show
 
         // Divider
         View divider = new View(this);
@@ -421,7 +431,7 @@ public class DistributionActivity extends AppCompatActivity {
         container.addView(header);
 
         // Per-account rows
-        for (Map.Entry<String, Double> entry : accountTotals.entrySet()) {
+        for (Map.Entry<String, String> entry : accountTotals.entrySet()) {
             LinearLayout row = new LinearLayout(this);
             row.setOrientation(LinearLayout.HORIZONTAL);
             row.setPadding(0, dp(3), 0, dp(3));
@@ -433,7 +443,7 @@ public class DistributionActivity extends AppCompatActivity {
             left.setTextSize(14);
 
             TextView right = new TextView(this);
-            right.setText(money.format(entry.getValue()) + " " + currencySymbol);
+            right.setText(entry.getValue());
             right.setTextSize(14);
             right.setTypeface(Typeface.DEFAULT_BOLD);
 
@@ -456,7 +466,7 @@ public class DistributionActivity extends AppCompatActivity {
         TextView totalLabel = new TextView(this);
         totalLabel.setLayoutParams(new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-        totalLabel.setText("Total");
+        totalLabel.setText(anySeparate ? "Total (excl. other currencies)" : "Total");
         totalLabel.setTextSize(14);
         totalLabel.setTypeface(Typeface.DEFAULT_BOLD);
 

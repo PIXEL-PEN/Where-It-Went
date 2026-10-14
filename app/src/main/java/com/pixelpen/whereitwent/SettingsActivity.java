@@ -346,7 +346,8 @@ public class SettingsActivity extends AppCompatActivity {
                 .setTitle("Choose 12-month period")
                 .setItems(labels, (d, which) -> {
                     CategorySummary summary =
-                            CategorySummary.build(expenses, items, accounts, ends.get(which));
+                            CategorySummary.build(expenses, items, accounts, ends.get(which),
+                                    AppPrefs.getCurrencySymbol(this));
                     SummaryExport.show(this, summary);
                 })
                 .setNegativeButton("Cancel", null)

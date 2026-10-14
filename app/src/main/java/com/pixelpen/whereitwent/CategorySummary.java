@@ -45,11 +45,22 @@ public final class CategorySummary {
         public final boolean archived;
         public final Map<String, Double> categories = newCategoryMap();
         private double total;
+        /** v3.3: the account's home currency code, or null for the Settings currency. */
+        public String homeCode;
+        /** v3.3: kept in another currency, so left out of the Accounts and grand totals. */
+        public boolean separate;
 
         AccountGroup(long accountId, String name, boolean archived) {
             this.accountId = accountId;
             this.name = name;
             this.archived = archived;
+        }
+
+        /** An amount of this account, in its own currency. */
+        public String format(double v, String settingsSymbol) {
+            return homeCode != null && TripCurrency.byCode(homeCode) != null
+                    ? TripCurrency.format(v, homeCode)
+                    : CurrencyUtils.format(v, settingsSymbol);
         }
 
         public double total() {
@@ -71,7 +82,9 @@ public final class CategorySummary {
         this.accounts = accounts;
         this.dailyLivingTotal = sum(dailyLiving);
         double t = 0;
-        for (AccountGroup g : accounts) t += g.total;
+        for (AccountGroup g : accounts) {
+            if (!g.separate) t += g.total;   // other currencies aren't added in
+        }
         this.accountsTotal = t;
     }
 
@@ -96,6 +109,18 @@ public final class CategorySummary {
                                         Collection<AccountItemEntity> accountItems,
                                         Collection<AccountEntity> accountList,
                                         String endYm) {
+        return build(expenses, accountItems, accountList, endYm, null);
+    }
+
+    /**
+     * As above; with {@code settingsSymbol} given, accounts whose home currency
+     * differs from the Settings currency are kept separate (v3.3).
+     */
+    public static CategorySummary build(Collection<Expense> expenses,
+                                        Collection<AccountItemEntity> accountItems,
+                                        Collection<AccountEntity> accountList,
+                                        String endYm,
+                                        String settingsSymbol) {
 
         String startYm = addMonths(endYm, -(PERIOD_MONTHS - 1));
 
@@ -126,6 +151,10 @@ public final class CategorySummary {
                     g = (a != null)
                             ? new AccountGroup(a.id, a.name == null ? "Account" : a.name, a.archived)
                             : new AccountGroup(it.accountId, "Unknown account", false);
+                    if (a != null && settingsSymbol != null) {
+                        g.homeCode = a.homeCurrency;
+                        g.separate = AccountCurrency.isSeparate(a, settingsSymbol);
+                    }
                     groups.put(it.accountId, g);
                 }
                 add(g.categories, it.category, it.amount);
@@ -285,11 +314,13 @@ public final class CategorySummary {
 
         for (AccountGroup g : accounts) {
             String name = csv(g.displayName());
+            // v3.3: an account in another currency says so, and isn't in TOTAL
+            String section = g.separate ? csv("Accounts (" + g.homeCode + ", not in totals)") : "Accounts";
             for (Map.Entry<String, Double> en : g.categories.entrySet()) {
-                sb.append("Accounts,").append(name).append(",").append(csv(en.getKey()))
+                sb.append(section).append(",").append(name).append(",").append(csv(en.getKey()))
                         .append(",").append(plain(en.getValue())).append("\n");
             }
-            sb.append("Accounts,").append(name).append(",SUBTOTAL,")
+            sb.append(section).append(",").append(name).append(",SUBTOTAL,")
                     .append(plain(g.total)).append("\n");
         }
         sb.append("Accounts,,TOTAL,").append(plain(accountsTotal)).append("\n");
@@ -316,8 +347,16 @@ public final class CategorySummary {
             h.append("<p><i>No records in this period</i></p>");
         }
         for (AccountGroup g : accounts) {
-            h.append("<h4>").append(esc(g.displayName())).append("</h4>");
-            table(h, g.categories, "Subtotal", g.total, currencySymbol);
+            h.append("<h4>").append(esc(g.displayName()));
+            if (g.separate) {
+                h.append(" <small>(in ").append(esc(g.homeCode)).append(", not included in totals)</small>");
+            }
+            h.append("</h4>");
+            if (g.separate) {
+                tableIn(h, g.categories, g.total, g.homeCode);
+            } else {
+                table(h, g.categories, "Subtotal", g.total, currencySymbol);
+            }
         }
 
         h.append("<h3>Grand total: ")
@@ -325,6 +364,21 @@ public final class CategorySummary {
                 .append("</h3>");
         h.append("</body></html>");
         return h.toString();
+    }
+
+    /** v3.3: an account table in its own currency (code given). */
+    private static void tableIn(StringBuilder h, Map<String, Double> rows, double total, String code) {
+        h.append("<table border='1' cellpadding='4' cellspacing='0'>");
+        h.append("<tr><th>Category</th><th>Total</th></tr>");
+        for (Map.Entry<String, Double> en : rows.entrySet()) {
+            h.append("<tr><td>").append(esc(en.getKey())).append("</td>")
+                    .append("<td align='right'>").append(esc(TripCurrency.format(en.getValue(), code)))
+                    .append("</td></tr>");
+        }
+        h.append("<tr><td><b>Subtotal</b></td><td align='right'><b>")
+                .append(esc(TripCurrency.format(total, code)))
+                .append("</b></td></tr>");
+        h.append("</table><br>");
     }
 
     private static void table(StringBuilder h, Map<String, Double> rows,

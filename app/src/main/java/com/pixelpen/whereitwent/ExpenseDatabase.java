@@ -23,7 +23,7 @@ import java.util.Locale;
                 AccountEntity.class,
                 AccountItemEntity.class
         },
-        version = 5,
+        version = 6,
         exportSchema = false
 )
 public abstract class ExpenseDatabase extends RoomDatabase {
@@ -109,15 +109,76 @@ public abstract class ExpenseDatabase extends RoomDatabase {
                             "expense_db"
                     )
                     .addMigrations(
+                            MIGRATION_2_5,
                             MIGRATION_3_4,
-                            MIGRATION_4_5
+                            MIGRATION_4_5,
+                            MIGRATION_5_6
                     )
-                    .fallbackToDestructiveMigration()
+                    // v3.3: never wipe data on upgrade. A missing upgrade step
+                    // now stops the app instead of silently erasing everything.
+                    // (Database v1 only existed in early development builds.)
+                    .fallbackToDestructiveMigrationFrom(1)
                     .allowMainThreadQueries()
                     .build();
         }
         return INSTANCE;
     }
+
+    // ----------------------------------------------------
+    // MIGRATION: v2 → v5 (v3.3)
+    // Every public release before 3.0 (1.x, 2.0) used database v2: the
+    // expenses table only. 3.0 shipped v5 without this step, so updating
+    // from 2.0 erased the data. Expenses are kept as they are; the account
+    // tables are created exactly as v5 has them.
+    // ----------------------------------------------------
+    static final Migration MIGRATION_2_5 = new Migration(2, 5) {
+        @Override
+        public void migrate(SupportSQLiteDatabase db) {
+            db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `accounts` (" +
+                            "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                            "`name` TEXT, " +
+                            "`type` TEXT, " +
+                            "`archived` INTEGER NOT NULL)"
+            );
+            db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_accounts_name` " +
+                            "ON `accounts` (`name`)"
+            );
+            db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `account_items` (" +
+                            "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                            "`accountId` INTEGER NOT NULL, " +
+                            "`date` TEXT, " +
+                            "`dateMillis` INTEGER NOT NULL DEFAULT 0, " +
+                            "`item` TEXT, " +
+                            "`category` TEXT, " +
+                            "`amount` REAL NOT NULL, " +
+                            "`note` TEXT)"
+            );
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_account_items_accountId` " +
+                    "ON `account_items` (`accountId`)");
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_account_items_date` " +
+                    "ON `account_items` (`date`)");
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_account_items_dateMillis` " +
+                    "ON `account_items` (`dateMillis`)");
+        }
+    };
+
+    // ----------------------------------------------------
+    // MIGRATION: v5 → v6 (v3.3: foreign currency)
+    // Adds columns only; no existing value is changed.
+    // ----------------------------------------------------
+    static final Migration MIGRATION_5_6 = new Migration(5, 6) {
+        @Override
+        public void migrate(SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE `accounts` ADD COLUMN `foreignCurrency` TEXT");
+            db.execSQL("ALTER TABLE `accounts` ADD COLUMN `homeCurrency` TEXT");
+            db.execSQL("ALTER TABLE `accounts` ADD COLUMN `rate` REAL NOT NULL DEFAULT 0");
+            db.execSQL("ALTER TABLE `account_items` ADD COLUMN `foreignAmount` REAL");
+            db.execSQL("ALTER TABLE `account_items` ADD COLUMN `rate` REAL");
+        }
+    };
 
     // ----------------------------------------------------
     // MIGRATION: v3 → v4 (ADD account_items)

@@ -17,7 +17,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Home / Base Currency" />
+        android:text="Home currency (totals are shown in this)" />
 
     <Spinner
         android:id="@+id/spinner_domestic"
@@ -27,7 +27,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Expense Entry Currency"
+        android:text="Trip currency (you enter amounts in this)"
         android:paddingTop="12dp" />
 
     <Spinner
@@ -38,7 +38,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Conversion Rate"
+        android:text="Exchange rate"
         android:paddingTop="12dp" />
 
     <LinearLayout

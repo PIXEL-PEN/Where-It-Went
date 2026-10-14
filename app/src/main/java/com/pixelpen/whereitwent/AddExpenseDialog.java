@@ -15,6 +15,8 @@ import androidx.fragment.app.DialogFragment;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import android.text.InputType;
+import android.text.Editable;
+import android.text.TextWatcher;
 
 import android.content.DialogInterface;
 
@@ -127,6 +129,14 @@ public class AddExpenseDialog extends DialogFragment {
     private EditText editAccountItem;
     private EditText editAccountAmount;
     private EditText editAccountNote;
+
+    // ---- v3.3 trip currency ----
+    private TextView textAccountConversion;
+    /** The selected account when it has a trip currency, else null. */
+    private AccountEntity currencyAccount;
+    /** Settings chosen in the new-account dialog, applied once it is created. */
+    private String pendingHome, pendingForeign;
+    private double pendingRate;
 
     private static final String ARG_MANAGE_ONLY = "manage_only";
 
@@ -378,6 +388,18 @@ public class AddExpenseDialog extends DialogFragment {
         editAccountItem = v.findViewById(R.id.input_account_item);
         editAccountAmount = v.findViewById(R.id.input_account_amount);
         editAccountNote = v.findViewById(R.id.input_account_note);
+
+        // v3.3: live conversion for Travel accounts with a trip currency
+        textAccountConversion = v.findViewById(R.id.text_account_conversion);
+        if (textAccountConversion != null) {
+            textAccountConversion.setOnClickListener(vv -> editTripRateFromEntry());
+        }
+        editAccountAmount.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) { }
+            @Override public void onTextChanged(CharSequence s, int a, int b, int c) { }
+            @Override public void afterTextChanged(Editable s) { refreshConversionLine(); }
+        });
+        updateCurrencyUi(lastValidAccount);
 
         // -----------------------------
         // EDIT / NEW LOGIC (unchanged)
@@ -711,6 +733,7 @@ public class AddExpenseDialog extends DialogFragment {
 
                 lastValidAccount = selected;
                 populateAccountCategoriesFor(lastValidAccount);
+                updateCurrencyUi(lastValidAccount);
             }
 
             @Override
@@ -723,6 +746,16 @@ public class AddExpenseDialog extends DialogFragment {
             spinnerAccount.setSelection(0);
             lastValidAccount = accountItems.get(0);
             populateAccountCategoriesFor(lastValidAccount);
+            updateCurrencyUi(lastValidAccount);
+        }
+    }
+
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+        // v3.3: e.g. a trip's currency changed via Manage Accounts
+        if (getActivity() instanceof AccountsOverviewActivity) {
+            ((AccountsOverviewActivity) getActivity()).refreshAccounts();
         }
     }
 
@@ -806,6 +839,16 @@ public class AddExpenseDialog extends DialogFragment {
             else type = "custom";
 
             addAccount(name, type);
+
+            // v3.3: trip currency chosen with the switch
+            if ("travel".equals(type) && pendingForeign != null) {
+                AccountDao dao = ExpenseDatabase.getDatabase(requireContext()).accountDao();
+                AccountEntity created = dao.getAccountByName(name);
+                if (created != null) {
+                    dao.setCurrency(created.id, pendingForeign, pendingHome, pendingRate);
+                }
+                updateCurrencyUi(lastValidAccount);
+            }
             dialog.dismiss();
         });
 
@@ -822,9 +865,17 @@ public class AddExpenseDialog extends DialogFragment {
                 foreignSwitch.setChecked(false);
             }
         });
+        pendingHome = null;
+        pendingForeign = null;
+        pendingRate = 0;
         foreignSwitch.setOnCheckedChangeListener((btn, isChecked) -> {
             if (isChecked) {
-                showForeignCurrencyDialog();
+                showForeignCurrencyDialog(foreignSwitch);
+            } else {
+                pendingHome = null;
+                pendingForeign = null;
+                pendingRate = 0;
+                foreignSwitch.setText("");
             }
         });
 
@@ -841,6 +892,8 @@ public class AddExpenseDialog extends DialogFragment {
 
         if (acc.archived) {
             options = new String[]{"Unarchive", "Delete", "Cancel"};
+        } else if ("travel".equalsIgnoreCase(acc.type)) {
+            options = new String[]{"Rename", "Currency…", "Archive", "Delete", "Cancel"};
         } else {
             options = new String[]{"Rename", "Archive", "Delete", "Cancel"};
         }
@@ -848,6 +901,15 @@ public class AddExpenseDialog extends DialogFragment {
         new AlertDialog.Builder(requireContext())
                 .setTitle(acc.name)
                 .setItems(options, (d, which) -> {
+
+                    // v3.3: Travel accounts have an extra "Currency…" option
+                    if ("Currency…".equals(options[which])) {
+                        showAccountCurrencyDialog(acc);
+                        return;
+                    }
+                    if (!acc.archived && "travel".equalsIgnoreCase(acc.type) && which > 1) {
+                        which--;   // map back to Rename/Archive/Delete positions
+                    }
 
                     if (acc.archived) {
                         switch (which) {
@@ -1002,8 +1064,110 @@ public class AddExpenseDialog extends DialogFragment {
     }
 
 
-    private void showForeignCurrencyDialog() {
-        // placeholder — currency, rate, base currency
+    // =====================================================
+    // v3.3 TRIP CURRENCY
+    // =====================================================
+
+    /** New Travel account: choose currencies and rate; applied when it's created. */
+    private void showForeignCurrencyDialog(Switch foreignSwitch) {
+        String settingsCode = TripCurrency.codeForSymbol(
+                AppPrefs.getCurrencySymbol(requireContext()));
+        TripCurrencyDialog.show(requireContext(), "Trip currency",
+                pendingHome != null ? pendingHome : settingsCode,
+                pendingForeign, pendingRate, false, false,
+                (home, foreign, rate) -> {
+                    pendingHome = home;
+                    pendingForeign = foreign;
+                    pendingRate = rate;
+                    foreignSwitch.setText(foreign + " ");
+                },
+                () -> {
+                    if (pendingForeign == null) foreignSwitch.setChecked(false);
+                },
+                null);
+    }
+
+    /** Existing Travel account: change the rate, set currencies, or turn off. */
+    private void showAccountCurrencyDialog(AccountEntity acc) {
+        ExpenseDatabase db = ExpenseDatabase.getDatabase(requireContext());
+        AccountEntity fresh = db.accountDao().getById(acc.id);
+        if (fresh == null) return;
+
+        boolean hasEntries = !db.accountItemDao().getItemsForAccount(fresh.id).isEmpty();
+        // Stored amounts are in the home currency, so once the trip has entries
+        // the home currency is fixed. (Entries made before a trip currency was
+        // set are in the Settings currency, which then becomes the home.)
+        // The trip currency is fixed once it has been set on a trip with entries.
+        boolean lockHome = hasEntries;
+        boolean lockTrip = hasEntries && fresh.foreignCurrency != null;
+        String home = fresh.homeCurrency != null ? fresh.homeCurrency
+                : TripCurrency.codeForSymbol(AppPrefs.getCurrencySymbol(requireContext()));
+
+        TripCurrencyDialog.show(requireContext(), fresh.name + ": currency",
+                home, fresh.foreignCurrency, fresh.rate, lockHome, lockTrip,
+                (h, f, r) -> {
+                    db.accountDao().setCurrency(fresh.id, f, h, r);
+                    updateCurrencyUi(lastValidAccount);
+                    Toast.makeText(requireContext(), "Trip currency saved",
+                            Toast.LENGTH_SHORT).show();
+                },
+                null,
+                fresh.hasForeignCurrency() ? () -> {
+                    // Keep the currencies (entries depend on them); rate 0 = off
+                    db.accountDao().setCurrency(fresh.id, fresh.foreignCurrency,
+                            fresh.homeCurrency, 0);
+                    updateCurrencyUi(lastValidAccount);
+                    Toast.makeText(requireContext(), "Trip currency turned off",
+                            Toast.LENGTH_SHORT).show();
+                } : null);
+    }
+
+    /** Tap on the conversion line: change the selected trip's rate. */
+    private void editTripRateFromEntry() {
+        if (currencyAccount != null) showAccountCurrencyDialog(currencyAccount);
+    }
+
+    /** Shows or hides the trip-currency parts of the entry form for this account. */
+    private void updateCurrencyUi(String accountName) {
+        currencyAccount = null;
+        if (accountName != null && !isSeparator(accountName)) {
+            AccountEntity a = ExpenseDatabase.getDatabase(requireContext())
+                    .accountDao().getAccountByName(accountName);
+            if (a != null && a.hasForeignCurrency()) currencyAccount = a;
+        }
+        if (editAccountAmount != null) {
+            editAccountAmount.setHint(currencyAccount != null
+                    ? "Amount (" + currencyAccount.foreignCurrency + ")"
+                    : "Amount");
+        }
+        refreshConversionLine();
+    }
+
+    /** "= 19.65 $   ·   1 USD = 25,450 VND" under the amount field. */
+    private void refreshConversionLine() {
+        if (textAccountConversion == null) return;
+        if (currencyAccount == null) {
+            textAccountConversion.setVisibility(View.GONE);
+            return;
+        }
+        String rate = AccountCurrency.rateLabel(currencyAccount);
+        Double typed = null;
+        try {
+            String t = editAccountAmount.getText().toString().trim();
+            if (!t.isEmpty()) typed = Double.parseDouble(t);
+        } catch (Exception ignored) { }
+
+        String text;
+        if (typed != null && typed > 0) {
+            double home = TripCurrency.toHome(typed, currencyAccount.rate,
+                    currencyAccount.homeCurrency);
+            text = "= " + AccountCurrency.home(currencyAccount, home,
+                    AppPrefs.getCurrencySymbol(requireContext())) + "   ·   " + rate;
+        } else {
+            text = rate + "   ·   tap to change";
+        }
+        textAccountConversion.setText(text);
+        textAccountConversion.setVisibility(View.VISIBLE);
     }
 
 
@@ -1743,6 +1907,10 @@ public class AddExpenseDialog extends DialogFragment {
                         amount,
                         note
                 );
+
+        // v3.3: on a trip with a currency, the typed amount is in the trip
+        // currency; store it with the rate and the converted home amount
+        AccountCurrency.applyForeign(account, entity, amount);
 
         db.accountItemDao().insert(entity);
 

@@ -30,6 +30,12 @@ public interface AccountDao {
     @Query("UPDATE accounts SET archived = :archived WHERE id = :id")
     void setArchived(long id, boolean archived);
 
+    @Query("UPDATE accounts SET foreignCurrency = :foreignCurrency, homeCurrency = :homeCurrency, rate = :rate WHERE id = :id")
+    void setCurrency(long id, String foreignCurrency, String homeCurrency, double rate);
+
+    @Query("SELECT * FROM accounts WHERE id = :id LIMIT 1")
+    AccountEntity getById(long id);
+
     @Query("SELECT COUNT(*) FROM accounts")
     int countAccounts();
 

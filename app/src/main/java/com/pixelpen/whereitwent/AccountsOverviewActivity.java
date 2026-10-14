@@ -32,6 +32,14 @@ import androidx.core.content.FileProvider;
 
 import android.widget.Toast;
 
+import android.content.pm.ApplicationInfo;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
+import android.view.Gravity;
+import java.util.ArrayList;
+
 
 
 
@@ -81,6 +89,11 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
             popup.getMenu().add("Export Accounts");
 
+            // v3.3 prototype: demo trips, only in debug builds (WIW-dev)
+            boolean debuggable =
+                    (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+            if (debuggable) popup.getMenu().add(DemoTrips.MENU_TITLE);
+
 
             popup.setOnMenuItemClickListener(item -> {
 
@@ -101,6 +114,15 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
                 if ("Export Accounts".equals(title)) {
                     showExportAccountsDialog();
+                    return true;
+                }
+
+                if (DemoTrips.MENU_TITLE.equals(title)) {
+                    int added = DemoTrips.add(this);
+                    Toast.makeText(this,
+                            added == 0 ? "Demo trips already exist" : "Added " + added + " demo trips",
+                            Toast.LENGTH_SHORT).show();
+                    rebuildAccounts();
                     return true;
                 }
 
@@ -207,6 +229,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
                 List<AccountItemEntity> totalItems =
                         itemDao.getItemsForAccount(account.id);
+                List<AccountItemEntity> shown = new ArrayList<>();
 
                 for (AccountItemEntity e : totalItems) {
                     if (filterCategory != null &&
@@ -214,16 +237,21 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                         continue;
                     }
                     displayTotal += e.amount;
+                    shown.add(e);
                 }
+
+                // v3.3: trips with a currency show the trip total, home total beneath
+                String settingsSymbol = AppPrefs.getCurrencySymbol(this);
+                String homeTotal = AccountCurrency.home(account, displayTotal, settingsSymbol);
+                Double tripTotal = AccountCurrency.foreignTotal(account, shown);
 
                 View accountHeader = addAccountHeader(
                         inflater,
                         container,
                         account.name,
-                        CurrencyUtils.format(
-                                displayTotal,
-                                AppPrefs.getCurrencySymbol(this)
-                        )
+                        tripTotal != null
+                                ? twoLines(AccountCurrency.foreign(account, tripTotal), homeTotal)
+                                : homeTotal
                 );
 
                 accountHeader.setTag(TAG_ACCOUNT);
@@ -245,10 +273,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                                     e.dateMillis,
                                     capitalize(e.item),
                                     e.category,
-                                    CurrencyUtils.format(
-                                            e.amount,
-                                            AppPrefs.getCurrencySymbol(this)
-                                    ),
+                                    amountText(account, e),
                                     e.note
                             )
                     );
@@ -329,7 +354,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
     private View addAccountHeader(LayoutInflater inflater,
                                   LinearLayout container,
                                   String name,
-                                  String total) {
+                                  CharSequence total) {
 
         View v = inflater.inflate(
                 R.layout.row_account_item,
@@ -342,6 +367,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
         nameView.setText(name);
         totalView.setText(total);
+        totalView.setGravity(Gravity.END);
 
         container.addView(v);
         return v;
@@ -379,6 +405,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         itemView.setText(item.item);
         categoryView.setText(item.category);
         amountView.setText(item.amount);
+        amountView.setGravity(Gravity.END);
 
         block.addView(header);
 
@@ -401,6 +428,37 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
         container.addView(block);
         return block;
+    }
+
+    // =====================================================
+    // v3.3 TRIP CURRENCY DISPLAY
+    // =====================================================
+
+    /** One entry's amount: trip amount with the home amount beneath, or home only. */
+    private CharSequence amountText(AccountEntity account, AccountItemEntity e) {
+        String home = AccountCurrency.home(account, e.amount, AppPrefs.getCurrencySymbol(this));
+        if (account.hasForeignCurrency() && e.hasForeignAmount()) {
+            String note = AccountCurrency.rateNote(account, e);
+            return twoLines(AccountCurrency.foreign(account, e.foreignAmount),
+                    note.isEmpty() ? home : home + "  " + note);
+        }
+        return home;
+    }
+
+    /** First line as is; second line smaller and grey, right-aligned by the caller. */
+    private static CharSequence twoLines(String first, String second) {
+        SpannableStringBuilder sb = new SpannableStringBuilder(first);
+        sb.append('\n');
+        int start = sb.length();
+        sb.append(second);
+        sb.setSpan(new RelativeSizeSpan(0.82f), start, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        sb.setSpan(new ForegroundColorSpan(0xFF6E7B85), start, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return sb;
+    }
+
+    /** Rebuilds the list, e.g. after an entry or a trip's currency was edited. */
+    public void refreshAccounts() {
+        rebuildAccounts();
     }
 
     private String capitalize(String s) {

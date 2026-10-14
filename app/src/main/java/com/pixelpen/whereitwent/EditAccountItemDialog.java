@@ -57,6 +57,7 @@ public class EditAccountItemDialog extends DialogFragment {
         // Load item
         // --------------------
         final AccountItemEntity[] loaded = new AccountItemEntity[1];
+        final AccountEntity[] account = new AccountEntity[1];   // v3.3
 
         ExpenseDatabase db = ExpenseDatabase.getDatabase(requireContext());
         AccountItemDao dao = db.accountItemDao();
@@ -70,7 +71,15 @@ public class EditAccountItemDialog extends DialogFragment {
                 loaded[0] = e;
 
                 editItem.setText(e.item);
-                editAmount.setText(String.valueOf(e.amount));
+                account[0] = db.accountDao().getById(e.accountId);
+                if (e.hasForeignAmount() && account[0] != null
+                        && account[0].foreignCurrency != null) {
+                    // v3.3: edit the amount as entered, in the trip currency
+                    editAmount.setText(BackupFormat.plainAmount(e.foreignAmount));
+                    editAmount.setHint("Amount (" + account[0].foreignCurrency + ")");
+                } else {
+                    editAmount.setText(BackupFormat.plainAmount(e.amount));
+                }
                 editNote.setText(e.note != null ? e.note : "");
                 editDate.setText(e.date);
 
@@ -159,12 +168,19 @@ public class EditAccountItemDialog extends DialogFragment {
             loaded[0].note =
                     editNote.getText().toString().trim();
 
+            double typed;
             try {
-                loaded[0].amount = Double.parseDouble(
+                typed = Double.parseDouble(
                         editAmount.getText().toString().trim()
                 );
             } catch (Exception ex) {
                 return;
+            }
+            if (loaded[0].hasForeignAmount() && account[0] != null) {
+                // v3.3: re-convert at the rate this entry was made at
+                AccountCurrency.reapplyForeign(account[0], loaded[0], typed);
+            } else {
+                loaded[0].amount = typed;
             }
 
             loaded[0].category =
@@ -207,6 +223,15 @@ public class EditAccountItemDialog extends DialogFragment {
         btnCancel.setOnClickListener(view1 -> dismiss());
 
         return dialog;
+    }
+
+    @Override
+    public void onDismiss(@NonNull android.content.DialogInterface dialog) {
+        super.onDismiss(dialog);
+        // v3.3: show the change straight away
+        if (getActivity() instanceof AccountsOverviewActivity) {
+            ((AccountsOverviewActivity) getActivity()).refreshAccounts();
+        }
     }
 
     @Override

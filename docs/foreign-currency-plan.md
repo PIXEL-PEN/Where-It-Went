@@ -1,6 +1,14 @@
 # Foreign Currency for Travel Accounts — Build Plan
 
-Status: agreed design, not yet built. Written 14 Oct 2026, after v3.2.
+Status: prototype built (steps 1–5, plus Yearly Summary and Distribution),
+for testing on WIW-dev. Written 14 Oct 2026, after v3.2.
+
+Prototype notes:
+- Demo trips: WIW-dev Accounts menu → "Add demo trips (dev)" (debug builds only).
+- Not yet done: Full backup v2 and the Accounts CSV columns (a backup made now
+  keeps home amounts but not the dong/yuan amounts or rates), Guide text.
+- Also fixed: database v2 (all releases before 3.0) had no upgrade path to
+  v5, so updating 2.0 → 3.0 erased data. `MIGRATION_2_5` now covers it.
 
 ## What it does
 

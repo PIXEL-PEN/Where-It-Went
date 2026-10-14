@@ -141,6 +141,38 @@ public class CategorySummaryTest {
     }
 
     @Test
+    public void tripInAnotherCurrencyIsKeptOutOfTotals() {
+        AccountEntity vn = acct(1, "Vietnam trip", false);
+        vn.foreignCurrency = "VND"; vn.homeCurrency = "THB"; vn.rate = 780;
+        AccountEntity cn = acct(2, "China trip", false);
+        cn.foreignCurrency = "CNY"; cn.homeCurrency = "USD"; cn.rate = 7.10;
+        List<AccountItemEntity> items = Arrays.asList(
+                item(1, "Lodging", 3000, "18 Sep 2026", 0),     // baht
+                item(2, "Lodging", 180.28, "10 Aug 2026", 0));  // dollars
+        CategorySummary s = CategorySummary.build(null, items, Arrays.asList(vn, cn), "2027-07", "฿");
+
+        assertEquals(3000.0, s.accountsTotal, 0.001);           // dollars not added to baht
+        assertEquals(3000.0, s.grandTotal(), 0.001);
+        CategorySummary.AccountGroup china = s.accounts.get(0);
+        assertEquals("China trip", china.name);
+        assertTrue(china.separate);
+        assertEquals("180.28 $", china.format(china.total(), "฿"));
+        assertFalse(s.accounts.get(1).separate);
+        assertEquals("3,000.00 ฿", s.accounts.get(1).format(3000, "฿"));
+
+        String csv = s.toCsv("2026-10");
+        assertTrue(csv, csv.contains("\"Accounts (USD, not in totals)\",China trip,SUBTOTAL,180.28\n"));
+        assertTrue(csv, csv.contains("Accounts,,TOTAL,3000.00\n"));
+        String html = s.toHtml("฿", "2026-10");
+        assertTrue(html, html.contains("(in USD, not included in totals)"));
+        assertTrue(html, html.contains("180.28 $"));
+
+        // Without the Settings symbol (older callers) nothing is separated
+        assertEquals(3180.28, CategorySummary.build(null, items, Arrays.asList(vn, cn), "2027-07")
+                .accountsTotal, 0.001);
+    }
+
+    @Test
     public void csvAndHtmlListEachAccount() {
         List<AccountItemEntity> items = Arrays.asList(
                 item(1, "Lodging", 100, "02 Oct 2026", 0),

@@ -97,8 +97,10 @@ public class MainBuilder {
                     acctTotal += item.amount;
                 }
 
+                // v3.3: a trip with its own home currency is shown in it
                 String acctFormatted =
-                        CurrencyUtils.format(
+                        AccountCurrency.home(
+                                acct,
                                 acctTotal,
                                 AppPrefs.getCurrencySymbol(ctx)
                         );

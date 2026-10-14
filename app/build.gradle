@@ -11,8 +11,8 @@ android {
         applicationId "com.pixelpen.whereitwent"
         minSdk 24
         targetSdk 36
-        versionCode 30200
-        versionName "3.2"
+        versionCode 30300
+        versionName "3.3"
     }
 
     buildTypes {

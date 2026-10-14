@@ -88,7 +88,8 @@ public class YearlySummaryActivity extends AppCompatActivity {
         }
 
         for (String endYm : ends) {
-            CategorySummary s = CategorySummary.build(expenses, items, accounts, endYm);
+            CategorySummary s = CategorySummary.build(expenses, items, accounts, endYm,
+                    AppPrefs.getCurrencySymbol(this));
             addPeriod(container, s, nowYm, sym);
         }
     }
@@ -260,7 +261,7 @@ public class YearlySummaryActivity extends AppCompatActivity {
         TextView name = text(g.displayName(), 14, COLOR_TEXT, true);
         name.setLayoutParams(new LinearLayout.LayoutParams(0,
                 LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-        TextView total = text(CurrencyUtils.format(g.total(), sym), 14, COLOR_TEXT, true);
+        TextView total = text(g.format(g.total(), sym), 14, COLOR_TEXT, true);
         total.setGravity(Gravity.END);
         TextView arrow = text(open ? "▲" : "▼", 11, COLOR_SECTION_TEXT, false);
         arrow.setPadding(dp(8), 0, 0, 0);
@@ -270,15 +271,24 @@ public class YearlySummaryActivity extends AppCompatActivity {
         r.addView(arrow);
         if (g.archived) r.setAlpha(0.55f);   // matches dimmed archived accounts elsewhere
         r.setContentDescription(g.displayName() + ", total "
-                + CurrencyUtils.format(g.total(), sym));
+                + g.format(g.total(), sym));
         body.addView(r);
+
+        // v3.3: an account in another currency isn't added into the totals
+        if (g.separate) {
+            TextView note = text("In " + g.homeCode + ", not included in totals",
+                    12, 0xFF888888, false);
+            note.setTypeface(null, Typeface.ITALIC);
+            note.setPadding(dp(26), 0, dp(14), dp(6));
+            body.addView(note);
+        }
 
         LinearLayout cats = new LinearLayout(this);
         cats.setOrientation(LinearLayout.VERTICAL);
         cats.setVisibility(open ? View.VISIBLE : View.GONE);
         if (g.archived) cats.setAlpha(0.55f);
         for (Map.Entry<String, Double> en : g.categories.entrySet()) {
-            LinearLayout c = row(en.getKey(), CurrencyUtils.format(en.getValue(), sym),
+            LinearLayout c = row(en.getKey(), g.format(en.getValue(), sym),
                     COLOR_TEXT, false, dp(44));
             c.setPadding(dp(44), dp(5), dp(14 + ARROW_DP), dp(5)); // amounts line up in one column
             cats.addView(c);

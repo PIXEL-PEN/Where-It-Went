@@ -31,6 +31,19 @@ public class AccountItemEntity {
 
     public String note;
 
+    // ---- Foreign currency (v3.3, database v6) ----
+    // When set, the entry was made in the account's trip currency:
+    // foreignAmount is what was typed (e.g. 500000 dong), rate is the rate
+    // used, and amount holds the home-currency value (foreignAmount / rate).
+
+    public Double foreignAmount;
+
+    public Double rate;
+
+    public boolean hasForeignAmount() {
+        return foreignAmount != null && rate != null && rate > 0;
+    }
+
     public AccountItemEntity(
             long accountId,
             String date,
