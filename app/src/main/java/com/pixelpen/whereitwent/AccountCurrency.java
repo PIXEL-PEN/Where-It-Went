@@ -17,9 +17,9 @@ public final class AccountCurrency {
     private AccountCurrency() { }
 
     /** True when the account's amounts are in a currency other than Settings'. */
-    public static boolean isSeparate(AccountEntity a, String settingsSymbol) {
+    public static boolean isSeparate(AccountEntity a, String settingsCode) {
         return a != null && a.homeCurrency != null && !a.homeCurrency.isEmpty()
-                && !TripCurrency.matchesSettings(a.homeCurrency, settingsSymbol);
+                && !a.homeCurrency.equalsIgnoreCase(settingsCode);
     }
 
     /** Codes rather than symbols when home and trip currencies share a symbol. */

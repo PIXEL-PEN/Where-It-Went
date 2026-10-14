@@ -38,7 +38,12 @@ public final class TripCurrency {
         }
     }
 
-    /** Settings currencies first (same order), then common travel currencies. */
+    /**
+     * World currencies (v3.3). The 13 that Settings has always listed come
+     * first, in the same order; the rest follow alphabetically by code.
+     * Decimals are what people use day to day (0 for dong, yen, won, rupiah…;
+     * 3 for the Gulf dinars).
+     */
     public static final List<Currency> ALL = Collections.unmodifiableList(Arrays.asList(
             new Currency("USD", "US Dollar", "$", 2),
             new Currency("EUR", "Euro", "€", 2),
@@ -53,15 +58,89 @@ public final class TripCurrency {
             new Currency("HKD", "Hong Kong Dollar", "$", 2),
             new Currency("MYR", "Malaysian Ringgit", "RM", 2),
             new Currency("VND", "Vietnamese Dong", "₫", 0),
-            new Currency("KRW", "South Korean Won", "₩", 0),
+            new Currency("AED", "UAE Dirham", "AED", 2),
+            new Currency("ALL", "Albanian Lek", "L", 2),
+            new Currency("AMD", "Armenian Dram", "֏", 0),
+            new Currency("ARS", "Argentine Peso", "$", 2),
+            new Currency("AZN", "Azerbaijani Manat", "₼", 2),
+            new Currency("BAM", "Bosnian Convertible Mark", "KM", 2),
+            new Currency("BDT", "Bangladeshi Taka", "৳", 2),
+            new Currency("BGN", "Bulgarian Lev", "лв", 2),
+            new Currency("BHD", "Bahraini Dinar", "BD", 3),
+            new Currency("BND", "Brunei Dollar", "$", 2),
+            new Currency("BOB", "Bolivian Boliviano", "Bs", 2),
+            new Currency("BRL", "Brazilian Real", "R$", 2),
+            new Currency("BWP", "Botswana Pula", "P", 2),
+            new Currency("CHF", "Swiss Franc", "CHF", 2),
+            new Currency("CLP", "Chilean Peso", "$", 0),
+            new Currency("COP", "Colombian Peso", "$", 0),
+            new Currency("CRC", "Costa Rican Colón", "₡", 0),
+            new Currency("CZK", "Czech Koruna", "Kč", 2),
+            new Currency("DKK", "Danish Krone", "kr", 2),
+            new Currency("DOP", "Dominican Peso", "RD$", 2),
+            new Currency("DZD", "Algerian Dinar", "DA", 2),
+            new Currency("EGP", "Egyptian Pound", "E£", 2),
+            new Currency("ETB", "Ethiopian Birr", "Br", 2),
+            new Currency("FJD", "Fijian Dollar", "$", 2),
+            new Currency("GEL", "Georgian Lari", "₾", 2),
+            new Currency("GHS", "Ghanaian Cedi", "GH₵", 2),
+            new Currency("GTQ", "Guatemalan Quetzal", "Q", 2),
+            new Currency("HNL", "Honduran Lempira", "L", 2),
+            new Currency("HUF", "Hungarian Forint", "Ft", 0),
             new Currency("IDR", "Indonesian Rupiah", "Rp", 0),
-            new Currency("PHP", "Philippine Peso", "₱", 2),
-            new Currency("TWD", "New Taiwan Dollar", "NT$", 2),
-            new Currency("LAK", "Lao Kip", "₭", 0),
+            new Currency("ILS", "Israeli Shekel", "₪", 2),
+            new Currency("ISK", "Icelandic Króna", "kr", 0),
+            new Currency("JMD", "Jamaican Dollar", "$", 2),
+            new Currency("JOD", "Jordanian Dinar", "JD", 3),
+            new Currency("KES", "Kenyan Shilling", "KSh", 2),
             new Currency("KHR", "Cambodian Riel", "៛", 0),
+            new Currency("KRW", "South Korean Won", "₩", 0),
+            new Currency("KWD", "Kuwaiti Dinar", "KD", 3),
+            new Currency("KZT", "Kazakhstani Tenge", "₸", 2),
+            new Currency("LAK", "Lao Kip", "₭", 0),
+            new Currency("LKR", "Sri Lankan Rupee", "Rs", 2),
+            new Currency("MAD", "Moroccan Dirham", "MAD", 2),
+            new Currency("MMK", "Myanmar Kyat", "K", 0),
+            new Currency("MNT", "Mongolian Tögrög", "₮", 0),
+            new Currency("MOP", "Macanese Pataca", "MOP$", 2),
+            new Currency("MUR", "Mauritian Rupee", "Rs", 2),
+            new Currency("MVR", "Maldivian Rufiyaa", "Rf", 2),
+            new Currency("MXN", "Mexican Peso", "$", 2),
+            new Currency("NGN", "Nigerian Naira", "₦", 2),
+            new Currency("NIO", "Nicaraguan Córdoba", "C$", 2),
+            new Currency("NOK", "Norwegian Krone", "kr", 2),
+            new Currency("NPR", "Nepalese Rupee", "Rs", 2),
             new Currency("NZD", "New Zealand Dollar", "$", 2),
-            new Currency("CHF", "Swiss Franc", "CHF", 2)
+            new Currency("OMR", "Omani Rial", "OMR", 3),
+            new Currency("PEN", "Peruvian Sol", "S/", 2),
+            new Currency("PHP", "Philippine Peso", "₱", 2),
+            new Currency("PKR", "Pakistani Rupee", "Rs", 2),
+            new Currency("PLN", "Polish Złoty", "zł", 2),
+            new Currency("PYG", "Paraguayan Guaraní", "₲", 0),
+            new Currency("QAR", "Qatari Riyal", "QAR", 2),
+            new Currency("RON", "Romanian Leu", "lei", 2),
+            new Currency("RSD", "Serbian Dinar", "din", 2),
+            new Currency("RUB", "Russian Ruble", "₽", 2),
+            new Currency("SAR", "Saudi Riyal", "SAR", 2),
+            new Currency("SEK", "Swedish Krona", "kr", 2),
+            new Currency("TND", "Tunisian Dinar", "DT", 3),
+            new Currency("TRY", "Turkish Lira", "₺", 2),
+            new Currency("TTD", "Trinidad and Tobago Dollar", "$", 2),
+            new Currency("TWD", "New Taiwan Dollar", "NT$", 2),
+            new Currency("TZS", "Tanzanian Shilling", "TSh", 0),
+            new Currency("UAH", "Ukrainian Hryvnia", "₴", 2),
+            new Currency("UGX", "Ugandan Shilling", "USh", 0),
+            new Currency("UYU", "Uruguayan Peso", "$", 2),
+            new Currency("UZS", "Uzbekistani Som", "soʻm", 0),
+            new Currency("XAF", "Central African CFA Franc", "FCFA", 0),
+            new Currency("XOF", "West African CFA Franc", "CFA", 0),
+            new Currency("XPF", "CFP Franc", "₣", 0),
+            new Currency("ZAR", "South African Rand", "R", 2),
+            new Currency("ZMW", "Zambian Kwacha", "ZK", 2)
     ));
+
+    /** How many of {@link #ALL} were in the original Settings list. */
+    public static final int ORIGINAL_SETTINGS_COUNT = 13;
 
     private TripCurrency() { }
 
@@ -85,8 +164,8 @@ public final class TripCurrency {
     }
 
     /**
-     * Code for the Settings currency, which the app stores only as a symbol.
-     * "$" is ambiguous; the first match (USD) is used.
+     * Code for a currency symbol, for settings saved before v3.3 (which stored
+     * only the symbol). "$" is ambiguous; the first match (USD) is used.
      */
     public static String codeForSymbol(String symbol) {
         if (symbol != null) {
@@ -95,12 +174,6 @@ public final class TripCurrency {
             }
         }
         return "USD";
-    }
-
-    /** True when this currency uses the same symbol as the Settings currency. */
-    public static boolean matchesSettings(String code, String settingsSymbol) {
-        Currency c = byCode(code);
-        return c != null && settingsSymbol != null && c.symbol.equals(settingsSymbol.trim());
     }
 
     // --------------------------------------------------------

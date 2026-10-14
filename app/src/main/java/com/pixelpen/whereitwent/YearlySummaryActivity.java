@@ -89,7 +89,7 @@ public class YearlySummaryActivity extends AppCompatActivity {
 
         for (String endYm : ends) {
             CategorySummary s = CategorySummary.build(expenses, items, accounts, endYm,
-                    AppPrefs.getCurrencySymbol(this));
+                    AppPrefs.getCurrencyCode(this));
             addPeriod(container, s, nowYm, sym);
         }
     }

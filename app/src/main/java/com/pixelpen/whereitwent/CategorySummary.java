@@ -113,14 +113,14 @@ public final class CategorySummary {
     }
 
     /**
-     * As above; with {@code settingsSymbol} given, accounts whose home currency
-     * differs from the Settings currency are kept separate (v3.3).
+     * As above; with {@code settingsCode} given (e.g. "THB"), accounts whose
+     * home currency differs from the Settings currency are kept separate (v3.3).
      */
     public static CategorySummary build(Collection<Expense> expenses,
                                         Collection<AccountItemEntity> accountItems,
                                         Collection<AccountEntity> accountList,
                                         String endYm,
-                                        String settingsSymbol) {
+                                        String settingsCode) {
 
         String startYm = addMonths(endYm, -(PERIOD_MONTHS - 1));
 
@@ -151,9 +151,9 @@ public final class CategorySummary {
                     g = (a != null)
                             ? new AccountGroup(a.id, a.name == null ? "Account" : a.name, a.archived)
                             : new AccountGroup(it.accountId, "Unknown account", false);
-                    if (a != null && settingsSymbol != null) {
+                    if (a != null && settingsCode != null) {
                         g.homeCode = a.homeCurrency;
-                        g.separate = AccountCurrency.isSeparate(a, settingsSymbol);
+                        g.separate = AccountCurrency.isSeparate(a, settingsCode);
                     }
                     groups.put(it.accountId, g);
                 }

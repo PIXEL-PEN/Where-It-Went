@@ -1070,8 +1070,7 @@ public class AddExpenseDialog extends DialogFragment {
 
     /** New Travel account: choose currencies and rate; applied when it's created. */
     private void showForeignCurrencyDialog(Switch foreignSwitch) {
-        String settingsCode = TripCurrency.codeForSymbol(
-                AppPrefs.getCurrencySymbol(requireContext()));
+        String settingsCode = AppPrefs.getCurrencyCode(requireContext());
         TripCurrencyDialog.show(requireContext(), "Trip currency",
                 pendingHome != null ? pendingHome : settingsCode,
                 pendingForeign, pendingRate, false, false,
@@ -1101,7 +1100,7 @@ public class AddExpenseDialog extends DialogFragment {
         boolean lockHome = hasEntries;
         boolean lockTrip = hasEntries && fresh.foreignCurrency != null;
         String home = fresh.homeCurrency != null ? fresh.homeCurrency
-                : TripCurrency.codeForSymbol(AppPrefs.getCurrencySymbol(requireContext()));
+                : AppPrefs.getCurrencyCode(requireContext());
 
         TripCurrencyDialog.show(requireContext(), fresh.name + ": currency",
                 home, fresh.foreignCurrency, fresh.rate, lockHome, lockTrip,

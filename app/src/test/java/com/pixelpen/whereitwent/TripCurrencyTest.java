@@ -78,12 +78,33 @@ public class TripCurrencyTest {
     }
 
     @Test
+    public void worldTable() {
+        assertEquals(92, TripCurrency.ALL.size());
+        java.util.Set<String> codes = new java.util.HashSet<>();
+        for (TripCurrency.Currency c : TripCurrency.ALL) {
+            assertTrue("duplicate " + c.code, codes.add(c.code));
+            assertEquals(3, c.code.length());
+            assertTrue(c.decimals >= 0 && c.decimals <= 3);
+        }
+        // The original Settings list keeps its order, so saved choices still match
+        String[] original = {"USD","EUR","GBP","THB","JPY","CNY","INR","AUD","CAD","SGD","HKD","MYR","VND"};
+        for (int i = 0; i < original.length; i++) {
+            assertEquals(original[i], TripCurrency.ALL.get(i).code);
+        }
+        // Then alphabetical by code
+        for (int i = TripCurrency.ORIGINAL_SETTINGS_COUNT + 1; i < TripCurrency.ALL.size(); i++) {
+            assertTrue(TripCurrency.ALL.get(i - 1).code.compareTo(TripCurrency.ALL.get(i).code) < 0);
+        }
+        assertEquals("1.250 KD", TripCurrency.format(1.25, "KWD"));
+        assertEquals("125,000 Rp", TripCurrency.format(125000, "IDR"));
+        assertEquals("MXN — Mexican Peso ($)", TripCurrency.byCode("MXN").label());
+    }
+
+    @Test
     public void settingsSymbolLookups() {
         assertEquals("THB", TripCurrency.codeForSymbol("฿"));
         assertEquals("USD", TripCurrency.codeForSymbol("$"));
         assertEquals("VND", TripCurrency.codeForSymbol("₫"));
-        assertTrue(TripCurrency.matchesSettings("THB", "฿"));
-        assertFalse(TripCurrency.matchesSettings("USD", "฿"));
         assertEquals(12, TripCurrency.indexOf("VND"));
         assertEquals(-1, TripCurrency.indexOf("XYZ"));
     }

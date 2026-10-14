@@ -405,7 +405,7 @@ public class DistributionActivity extends AppCompatActivity {
                 accountTotals.put(account.name,
                         AccountCurrency.home(account, total, currencySymbol));
                 anyShown = true;
-                if (AccountCurrency.isSeparate(account, currencySymbol)) {
+                if (AccountCurrency.isSeparate(account, AppPrefs.getCurrencyCode(this))) {
                     anySeparate = true;
                 } else {
                     grandTotal += total;

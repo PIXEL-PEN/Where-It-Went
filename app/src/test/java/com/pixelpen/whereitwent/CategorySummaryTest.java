@@ -149,7 +149,7 @@ public class CategorySummaryTest {
         List<AccountItemEntity> items = Arrays.asList(
                 item(1, "Lodging", 3000, "18 Sep 2026", 0),     // baht
                 item(2, "Lodging", 180.28, "10 Aug 2026", 0));  // dollars
-        CategorySummary s = CategorySummary.build(null, items, Arrays.asList(vn, cn), "2027-07", "฿");
+        CategorySummary s = CategorySummary.build(null, items, Arrays.asList(vn, cn), "2027-07", "THB");
 
         assertEquals(3000.0, s.accountsTotal, 0.001);           // dollars not added to baht
         assertEquals(3000.0, s.grandTotal(), 0.001);

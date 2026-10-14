@@ -25,7 +25,7 @@ public final class DemoTrips {
     /** @return number of demo trips added (0 if they already exist). */
     public static int add(Context ctx) {
         ExpenseDatabase db = ExpenseDatabase.getDatabase(ctx);
-        String settingsCode = TripCurrency.codeForSymbol(AppPrefs.getCurrencySymbol(ctx));
+        String settingsCode = AppPrefs.getCurrencyCode(ctx);
         int[] added = {0};
 
         db.runInTransaction(() -> {

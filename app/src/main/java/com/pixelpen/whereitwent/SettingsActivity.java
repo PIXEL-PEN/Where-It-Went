@@ -117,21 +117,11 @@ public class SettingsActivity extends AppCompatActivity {
         // -------------------------------
         spinnerCurrency = findViewById(R.id.spinner_currency);
 
-        final List<String> currencies = Arrays.asList(
-                "USD — US Dollar ($)",
-                "EUR — Euro (€)",
-                "GBP — British Pound (£)",
-                "THB — Thai Baht (฿)",
-                "JPY — Japanese Yen (¥)",
-                "CNY — Chinese Yuan (¥)",
-                "INR — Indian Rupee (₹)",
-                "AUD — Australian Dollar ($)",
-                "CAD — Canadian Dollar ($)",
-                "SGD — Singapore Dollar ($)",
-                "HKD — Hong Kong Dollar ($)",
-                "MYR — Malaysian Ringgit (RM)",
-                "VND — Vietnamese Dong (₫)"
-        );
+        // v3.3: the full world currency list (the original 13 first)
+        final List<String> currencies = new java.util.ArrayList<>();
+        for (TripCurrency.Currency c : TripCurrency.ALL) {
+            currencies.add(c.label());
+        }
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this,
@@ -141,31 +131,16 @@ public class SettingsActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(R.layout.spinner_item_dropdown);
         spinnerCurrency.setAdapter(adapter);
 
-        // Load saved symbol (or default)
-        String savedSymbol = AppPrefs.getCurrencySymbol(this);
-
-
-        // Restore spinner selection based on symbol
-        int restoredIndex = 0;
-        for (int i = 0; i < currencies.size(); i++) {
-            String entry = currencies.get(i);
-            if (entry.contains("(" + savedSymbol + ")")) {
-                restoredIndex = i;
-                break;
-            }
-        }
+        // Restore by code (settings from before v3.3 had only a symbol;
+        // getCurrencyCode works the code out from it)
+        int restoredIndex = Math.max(0, TripCurrency.indexOf(AppPrefs.getCurrencyCode(this)));
         spinnerCurrency.setSelection(restoredIndex, false);
 
         spinnerCurrency.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String entry = currencies.get(position);
-
-                // Extract symbol from final "(...)"
-                String symbol = entry.substring(entry.lastIndexOf('(') + 1, entry.lastIndexOf(')'));
-
-                AppPrefs.setCurrencySymbol(SettingsActivity.this, symbol);
-
+                AppPrefs.setCurrency(SettingsActivity.this,
+                        TripCurrency.ALL.get(position).code);
             }
 
             @Override
@@ -347,7 +322,7 @@ public class SettingsActivity extends AppCompatActivity {
                 .setItems(labels, (d, which) -> {
                     CategorySummary summary =
                             CategorySummary.build(expenses, items, accounts, ends.get(which),
-                                    AppPrefs.getCurrencySymbol(this));
+                                    AppPrefs.getCurrencyCode(this));
                     SummaryExport.show(this, summary);
                 })
                 .setNegativeButton("Cancel", null)

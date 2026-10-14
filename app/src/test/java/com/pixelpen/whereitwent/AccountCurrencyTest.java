@@ -55,7 +55,7 @@ public class AccountCurrencyTest {
         assertNull(it.foreignAmount);
         assertEquals(1200, it.amount, 0.0001);
         assertEquals("1,200.00 ฿", AccountCurrency.home(project, 1200, "฿"));
-        assertFalse(AccountCurrency.isSeparate(project, "฿"));
+        assertFalse(AccountCurrency.isSeparate(project, "THB"));
         assertNull(AccountCurrency.foreignTotal(project, Arrays.asList(it)));
     }
 
@@ -65,8 +65,11 @@ public class AccountCurrencyTest {
         AccountEntity cn = trip("CNY", "USD", 7.10);
         assertEquals("2,000.00 ฿", AccountCurrency.home(vn, 2000, "฿"));
         assertEquals("18.10 $", AccountCurrency.home(cn, 18.10, "฿"));
-        assertFalse(AccountCurrency.isSeparate(vn, "฿"));
-        assertTrue(AccountCurrency.isSeparate(cn, "฿"));
+        assertFalse(AccountCurrency.isSeparate(vn, "THB"));
+        assertTrue(AccountCurrency.isSeparate(cn, "THB"));
+        // Same symbol is not enough: Australian vs US dollars are separate
+        assertTrue(AccountCurrency.isSeparate(cn, "AUD"));
+        assertFalse(AccountCurrency.isSeparate(cn, "USD"));
         assertEquals("1,560,000 ₫", AccountCurrency.foreign(vn, 1_560_000));
         assertEquals("1 USD = 7.1 CNY", AccountCurrency.rateLabel(cn));
     }
