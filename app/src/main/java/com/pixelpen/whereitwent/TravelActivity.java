@@ -237,6 +237,21 @@ public class TravelActivity extends AppCompatActivity {
         return AccountCurrency.home(trip, home, settingsSymbol);
     }
 
+    /** A day's total for its banner, with the home-currency amount in bold. */
+    private CharSequence dayTotal(List<AccountItemEntity> items) {
+        double home = 0;
+        for (AccountItemEntity it : items) home += it.amount;
+        Double foreign = AccountCurrency.foreignTotal(trip, items);
+        String homeText = foreign != null
+                ? AccountCurrency.homeWhole(trip, home, settingsSymbol)
+                : AccountCurrency.home(trip, home, settingsSymbol);
+        String lead = foreign != null ? AccountCurrency.foreign(trip, foreign) + "  ·  " : "";
+        android.text.SpannableString out = new android.text.SpannableString(lead + homeText);
+        out.setSpan(new android.text.style.StyleSpan(Typeface.BOLD), lead.length(), out.length(),
+                android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return out;
+    }
+
     private void bindCategories() {
         bindingCategories = true;
         categories.clear();
@@ -292,9 +307,10 @@ public class TravelActivity extends AppCompatActivity {
 
     /** A day header, or an entry. */
     private static final class Row {
-        final String dayTitle, dayTotal;
+        final String dayTitle;
+        final CharSequence dayTotal;
         final AccountItemEntity item;
-        Row(String title, String total) { dayTitle = title; dayTotal = total; item = null; }
+        Row(String title, CharSequence total) { dayTitle = title; dayTotal = total; item = null; }
         Row(AccountItemEntity it) { dayTitle = null; dayTotal = null; item = it; }
     }
 
@@ -313,7 +329,7 @@ public class TravelActivity extends AppCompatActivity {
             long day = e.getKey();
             String title = day == 0 ? e.getValue().get(0).date
                     : (day == today ? "Today · " : "") + fmt.format(day);
-            rows.add(new Row(title, total(e.getValue())));
+            rows.add(new Row(title, dayTotal(e.getValue())));
             for (AccountItemEntity it : e.getValue()) rows.add(new Row(it));
         }
         return rows;
@@ -380,7 +396,7 @@ public class TravelActivity extends AppCompatActivity {
         int ink = ContextCompat.getColor(this, R.color.colorPrimary);
         TextView title = text(15, true, ink);
         row.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        TextView total = text(14, true, ink);
+        TextView total = text(14, false, ink);   // home amount bolded by dayTotal()
         total.setPadding(dp(8), 0, 0, 0);
         row.addView(total);
         return row;
