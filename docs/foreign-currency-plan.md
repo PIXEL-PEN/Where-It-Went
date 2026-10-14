@@ -127,6 +127,23 @@ Each step is tested on WIW-dev before the next.
 6. **Yearly Summary, Distribution, exports, Full backup v2, Import.**
 7. **Guide, changelogs, store text**, version bump, release.
 
+## Next pass: everyday denominations (requested 14 Oct 2026)
+
+People think in familiar whole amounts: 250,000 dong, 25 baht for a coffee,
+a dollar. Big-number currencies like dong should never turn into cryptic
+decimals such as "1 VND = 0.0000386 USD". Proposal:
+
+1. **Quote rates the way banks do: the stronger currency is the "1".**
+   "1 USD = 25,900 VND", "1 CNY = 5.02 THB" — never 0.0000x. The rate field
+   in the dialog follows the same direction; the app converts internally.
+2. **Everyday reference amounts.** Each currency gets a round "pocket" amount
+   worth roughly 1–5 US dollars, picked from the built-in rate table
+   (e.g. ₫100,000 · ฿100 · ¥20 (CNY) · ¥500 (JPY) · $5). The dialog example
+   and a glance line on the trip use it: "₫100,000 ≈ ฿130".
+3. **Home amounts under entries in whole numbers** ("≈ 130 ฿") when the
+   amount is large enough that cents don't matter; trip totals stay exact.
+   (To confirm.)
+
 ## Open details (decide while building)
 
 - Currency list: the Settings list (12 currencies) is short for travel; likely
