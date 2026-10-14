@@ -68,7 +68,7 @@ public class TravelActivity extends AppCompatActivity {
     private View listFrame, card;
     private RecyclerView list;
     private TextView emptyList, tripName, tripTotal, amountCurrency, conversion, dateView;
-    private EditText editItem, editAmount;
+    private EditText editItem, editAmount, editNote;
     private Spinner spinnerCategory;
     private final List<String> categories = new ArrayList<>();
     private ArrayAdapter<String> categoryAdapter;
@@ -95,6 +95,7 @@ public class TravelActivity extends AppCompatActivity {
         dateView = findViewById(R.id.travel_date);
         editItem = findViewById(R.id.travel_edit_item);
         editAmount = findViewById(R.id.travel_edit_amount);
+        editNote = findViewById(R.id.travel_edit_note);
         spinnerCategory = findViewById(R.id.travel_spinner_category);
 
         list.setLayoutManager(new LinearLayoutManager(this));
@@ -104,6 +105,7 @@ public class TravelActivity extends AppCompatActivity {
                 ContextCompat.getColorStateList(this, R.color.travel_hint);
         editItem.setHintTextColor(hint);
         editAmount.setHintTextColor(hint);
+        editNote.setHintTextColor(hint);
 
         categoryAdapter = new ArrayAdapter<>(this, R.layout.spinner_item_selected, categories);
         categoryAdapter.setDropDownViewResource(R.layout.spinner_item_dropdown);
@@ -115,6 +117,7 @@ public class TravelActivity extends AppCompatActivity {
                 TravelMode.pickTrip(this, trip != null ? trip.id : -1, t -> {
                     editItem.setText("");
                     editAmount.setText("");
+                    editNote.setText("");
                     bind();
                 }));
         findViewById(R.id.travel_btn_add).setOnClickListener(v -> add());
@@ -134,7 +137,8 @@ public class TravelActivity extends AppCompatActivity {
             @Override public void onTextChanged(CharSequence s, int a, int b, int c) { }
             @Override public void afterTextChanged(Editable s) { refreshConversion(); }
         });
-        editAmount.setOnEditorActionListener((v, actionId, e) -> {
+        // Done on the note (the last field) adds the entry
+        editNote.setOnEditorActionListener((v, actionId, e) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) { add(); return true; }
             return false;
         });
@@ -504,8 +508,10 @@ public class TravelActivity extends AppCompatActivity {
         long dayMillis = TravelDate.midnight(date.getTimeInMillis());
         String dateText = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(dayMillis);
 
+        String note = editNote.getText().toString().trim();
+
         AccountItemEntity entity = new AccountItemEntity(
-                trip.id, dateText, dayMillis, item, category, amount, "");
+                trip.id, dateText, dayMillis, item, category, amount, note);
         // On a trip with a currency the typed amount is in the trip currency
         AccountCurrency.applyForeign(trip, entity, amount);
         ExpenseDatabase.getDatabase(this).accountItemDao().insert(entity);
@@ -514,6 +520,7 @@ public class TravelActivity extends AppCompatActivity {
 
         editItem.setText("");
         editAmount.setText("");
+        editNote.setText("");
         editItem.setError(null);
         editAmount.setError(null);
         editItem.requestFocus();   // ready for the next one; keyboard stays
