@@ -4,6 +4,37 @@ All notable changes to this project will be documented here.
 
 ---
 
+## v3.3
+
+### Added
+- Trip currencies: a Travel account can have its own currency, chosen from 92
+  world currencies (tap a list to search it). Amounts are entered in the trip
+  currency and shown with their home value; rates are quoted the way banks do,
+  in whole numbers ("1 USD = 34 THB"), with a suggested approximate rate.
+  Each entry keeps the rate it was entered at.
+- Trips kept in their own currency, with no conversion (e.g. a US visit in
+  dollars while Settings stays on Dong). A trip in a home currency other than
+  Settings is kept out of mixed totals.
+- Travel mode (menu → Travel mode): a full screen for one trip, with its
+  entries day by day and an entry card (item, amount, category, date, note).
+  While it is on, the app opens there with the same trip, category and date.
+  A ✈ button on the main screen returns to it.
+- Journeys: several country trips grouped under one name, with a journey
+  total; "Next country…" starts the next one in the same home currency.
+
+### Improved
+- Full backup (version 2) and the Accounts CSV export keep trip currencies,
+  rates, trip-currency amounts and journeys, and the Settings currency by code.
+  Older backups still import, and 3.2 can still read a new backup.
+- Distribution: the accounts total stands out more.
+- Guide: sections on trip currencies, Travel mode and journeys.
+
+### Fixed
+- Updating from 2.x to 3.x could erase all data (the database had no upgrade
+  path from version 2). Upgrades now never wipe data.
+
+---
+
 ## v3.2
 
 ### Added
