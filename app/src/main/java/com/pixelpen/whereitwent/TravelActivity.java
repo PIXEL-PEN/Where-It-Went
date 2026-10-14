@@ -76,6 +76,12 @@ public class TravelActivity extends AppCompatActivity {
     private boolean bindingCategories;
     private boolean cardOnTop;
 
+    // Days whose entries are showing (tap a day's banner to show or hide them).
+    // On opening only the newest day is open, so the list starts short.
+    private final java.util.Set<Long> openDays = new java.util.HashSet<>();
+    private boolean openDaysSet;
+    private List<AccountItemEntity> items = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,6 +124,8 @@ public class TravelActivity extends AppCompatActivity {
                     editItem.setText("");
                     editAmount.setText("");
                     editNote.setText("");
+                    openDays.clear();        // new trip: start with its newest day open
+                    openDaysSet = false;
                     bind();
                 }));
         findViewById(R.id.travel_btn_add).setOnClickListener(v -> add());
@@ -203,7 +211,12 @@ public class TravelActivity extends AppCompatActivity {
         tripName.setText("✈  " + trip.name + "  ▾");
         tripTotal.setText(all.isEmpty() ? "No spending yet" : "Total " + total(all));
 
-        list.setAdapter(new EntriesAdapter(rows(all)));
+        items = all;
+        if (!openDaysSet && !all.isEmpty()) {
+            openDays.add(dayOf(all.get(0)));   // newest first
+            openDaysSet = true;
+        }
+        showList();
         emptyList.setVisibility(all.isEmpty() ? View.VISIBLE : View.GONE);
 
         if (trip.hasForeignCurrency()) {
@@ -311,15 +324,33 @@ public class TravelActivity extends AppCompatActivity {
     private static final class Row {
         final String dayTitle;
         final CharSequence dayTotal;
+        final long day;
         final AccountItemEntity item;
-        Row(String title, CharSequence total) { dayTitle = title; dayTotal = total; item = null; }
-        Row(AccountItemEntity it) { dayTitle = null; dayTotal = null; item = it; }
+        Row(long day, String title, CharSequence total) {
+            this.day = day; dayTitle = title; dayTotal = total; item = null;
+        }
+        Row(AccountItemEntity it) { day = 0; dayTitle = null; dayTotal = null; item = it; }
+    }
+
+    private static long dayOf(AccountItemEntity it) {
+        return it.dateMillis > 0 ? TravelDate.midnight(it.dateMillis) : 0;
+    }
+
+    private void showList() {
+        list.setAdapter(new EntriesAdapter(rows(items)));
+    }
+
+    private void toggleDay(long day) {
+        if (!openDays.remove(day)) openDays.add(day);
+        int first = ((LinearLayoutManager) list.getLayoutManager()).findFirstVisibleItemPosition();
+        showList();
+        if (first > 0) list.scrollToPosition(first);
     }
 
     private List<Row> rows(List<AccountItemEntity> all) {
         Map<Long, List<AccountItemEntity>> byDay = new LinkedHashMap<>();
         for (AccountItemEntity it : all) {
-            long day = it.dateMillis > 0 ? TravelDate.midnight(it.dateMillis) : 0;
+            long day = dayOf(it);
             List<AccountItemEntity> l = byDay.get(day);
             if (l == null) { l = new ArrayList<>(); byDay.put(day, l); }
             l.add(it);
@@ -329,10 +360,16 @@ public class TravelActivity extends AppCompatActivity {
         List<Row> rows = new ArrayList<>();
         for (Map.Entry<Long, List<AccountItemEntity>> e : byDay.entrySet()) {
             long day = e.getKey();
-            String title = day == 0 ? e.getValue().get(0).date
-                    : (day == today ? "Today · " : "") + fmt.format(day);
-            rows.add(new Row(title, dayTotal(e.getValue())));
-            for (AccountItemEntity it : e.getValue()) rows.add(new Row(it));
+            boolean open = openDays.contains(day);
+            int n = e.getValue().size();
+            String title = (open ? "▾  " : "▸  ")
+                    + (day == 0 ? e.getValue().get(0).date
+                    : (day == today ? "Today · " : "") + fmt.format(day))
+                    + (open ? "" : "  (" + n + ")");
+            rows.add(new Row(day, title, dayTotal(e.getValue())));
+            if (open) {
+                for (AccountItemEntity it : e.getValue()) rows.add(new Row(it));
+            }
         }
         return rows;
     }
@@ -357,7 +394,7 @@ public class TravelActivity extends AppCompatActivity {
             if (r.item == null) {
                 ((TextView) v.getChildAt(0)).setText(r.dayTitle);
                 ((TextView) v.getChildAt(1)).setText(r.dayTotal);
-                v.setOnClickListener(null);
+                v.setOnClickListener(x -> toggleDay(r.day));
                 return;
             }
             AccountItemEntity it = r.item;
@@ -389,6 +426,9 @@ public class TravelActivity extends AppCompatActivity {
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setBackgroundColor(ContextCompat.getColor(this, R.color.header_bg_blue));
+        android.util.TypedValue tap = new android.util.TypedValue();
+        getTheme().resolveAttribute(android.R.attr.selectableItemBackground, tap, true);
+        row.setForeground(ContextCompat.getDrawable(this, tap.resourceId));
         row.setPadding(dp(12), dp(7), dp(12), dp(7));
         RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -535,6 +575,7 @@ public class TravelActivity extends AppCompatActivity {
         // On a trip with a currency the typed amount is in the trip currency
         AccountCurrency.applyForeign(trip, entity, amount);
         ExpenseDatabase.getDatabase(this).accountItemDao().insert(entity);
+        openDays.add(dayMillis);   // show the day the entry went into
 
         TravelMode.setCategory(this, trip.id, category);
 
