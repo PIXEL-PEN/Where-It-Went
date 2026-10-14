@@ -216,6 +216,10 @@ public class TravelActivity extends AppCompatActivity {
             editAmount.setInputType(c != null && c.decimals == 0
                     ? InputType.TYPE_CLASS_NUMBER
                     : InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        } else if (trip.homeCurrency != null && !trip.homeCurrency.isEmpty()) {
+            amountCurrency.setText(trip.homeCurrency);   // kept in its own currency
+            editAmount.setHint("Amount");
+            editAmount.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
         } else {
             amountCurrency.setText(settingsSymbol);
             editAmount.setHint("Amount");

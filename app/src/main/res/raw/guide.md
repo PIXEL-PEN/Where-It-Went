@@ -53,6 +53,8 @@ Choose your home currency and the trip currency, then the rate. It is written th
 
 Enter amounts in the trip currency. Each entry shows the home value underneath, in whole numbers, and keeps the rate it was entered at, so changing the rate later only affects new entries. A trip whose home currency differs from Settings is shown in its own currency and kept out of mixed totals.
 
+A trip can also simply be kept in another currency, with no conversion: choose the same currency for home and trip (for example US Dollar and US Dollar for a visit to the US while Settings stays on Dong). You enter dollars, the trip shows dollars, and it stays apart from your Dong totals. Daily Living and your other accounts carry on in the Settings currency.
+
 ---
 
 ### Travel mode

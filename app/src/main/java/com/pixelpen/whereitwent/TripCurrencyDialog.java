@@ -25,6 +25,11 @@ import java.util.List;
  */
 public final class TripCurrencyDialog {
 
+    /**
+     * Saved currencies. When the trip and home currency are the same
+     * ("recorded as spent, no conversion"), foreignCode is null and rate 0:
+     * the trip simply keeps its amounts in that currency.
+     */
     public interface OnSave {
         void onSave(String homeCode, String foreignCode, double rate);
     }
@@ -69,8 +74,16 @@ public final class TripCurrencyDialog {
         spinnerTrip.setAdapter(adapter(ctx, labels));
 
         int homeIdx = Math.max(0, TripCurrency.indexOf(homeCode));
+        // No trip currency yet: start on the home currency only for a trip that
+        // already keeps its own (non-Settings) currency; otherwise anything else
         int tripIdx = TripCurrency.indexOf(foreignCode);
-        if (tripIdx < 0) tripIdx = homeIdx == 0 ? 1 : 0;   // anything but the home currency
+        String settingsCode = AppPrefs.getCurrencyCode(ctx);
+        if (tripIdx < 0 && foreignCode == null && homeCode != null
+                && !homeCode.equalsIgnoreCase(settingsCode) && rate <= 0) {
+            tripIdx = homeIdx;
+        }
+        if (tripIdx < 0) tripIdx = homeIdx == 0 ? 1 : 0;
+        final View rateRow = (View) rateLeft.getParent();
         spinnerHome.setSelection(homeIdx, false);
         spinnerTrip.setSelection(tripIdx, false);
 
@@ -86,6 +99,7 @@ public final class TripCurrencyDialog {
 
         Runnable suggest = () -> {
             String home = code(spinnerHome), trip = code(spinnerTrip);
+            if (home.equals(trip)) { auto[0] = false; return; }   // no rate needed
             Double sug = ApproxRates.suggest(home, trip);
             shape[0] = TripCurrency.quote(home, sug != null ? sug : 1, trip);
             settingText[0] = true;
@@ -128,12 +142,25 @@ public final class TripCurrencyDialog {
             }
 
             StringBuilder p = new StringBuilder();
+            boolean same = home.equals(trip);
+            rateRow.setVisibility(same ? View.GONE : View.VISIBLE);
+            if (same) {
+                TripCurrency.Currency c = TripCurrency.byCode(home);
+                p.append("Recorded in ").append(c != null ? c.name : home)
+                        .append(" as spent: no conversion.");
+                if (!home.equalsIgnoreCase(settingsCode)) {
+                    p.append("\n\nKept apart from your ").append(settingsCode)
+                            .append(" totals; Daily Living and other accounts stay in ")
+                            .append(settingsCode).append(".");
+                }
+                p.append("\n\nTo enter amounts in another currency, choose it as the trip currency.");
+                preview.setText(p.toString());
+                return;
+            }
             Double r = null;
             try { r = currentRate.call(); } catch (Exception ignored) { }
             boolean codes = TripCurrency.useCodes(home, trip);
-            if (home.equals(trip)) {
-                p.append("Choose a trip currency different from the home currency.");
-            } else if (r == null) {
+            if (r == null) {
                 p.append("Enter the rate in whole numbers, e.g. from your bank or exchange booth.");
             } else {
                 double example = roundToOneFigure(50 * r);
@@ -202,12 +229,13 @@ public final class TripCurrencyDialog {
             save.setOnClickListener(x -> {
                 String home = code(spinnerHome);
                 String trip = code(spinnerTrip);
-                Double r = null;
-                try { r = currentRate.call(); } catch (Exception ignored) { }
-                if (home.equals(trip)) {
-                    editRate.setError("Trip and home currency must differ");
+                if (home.equals(trip)) {   // kept in its own currency, no conversion
+                    dialog.dismiss();
+                    onSave.onSave(home, null, 0);
                     return;
                 }
+                Double r = null;
+                try { r = currentRate.call(); } catch (Exception ignored) { }
                 if (r == null) {
                     editRate.setError("Enter a rate above 0");
                     return;

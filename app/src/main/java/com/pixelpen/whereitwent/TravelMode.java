@@ -121,7 +121,9 @@ public final class TravelMode {
             AccountEntity t = trips.get(i);
             String j = Journey.clean(t.journey);
             names[i] = (j != null ? j + "  ›  " : "") + t.name
-                    + (t.hasForeignCurrency() ? "  (" + t.foreignCurrency + ")" : "");
+                    + (t.hasForeignCurrency() ? "  (" + t.foreignCurrency + ")"
+                    : t.homeCurrency != null && !t.homeCurrency.equalsIgnoreCase(
+                            AppPrefs.getCurrencyCode(a)) ? "  (" + t.homeCurrency + ")" : "");
             if (t.id == currentId) checked = i;
         }
         AlertDialog.Builder b = new AlertDialog.Builder(a)

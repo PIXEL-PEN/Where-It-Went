@@ -841,7 +841,7 @@ public class AddExpenseDialog extends DialogFragment {
             addAccount(name, type);
 
             // v3.3: trip currency chosen with the switch
-            if ("travel".equals(type) && pendingForeign != null) {
+            if ("travel".equals(type) && pendingHome != null) {   // foreign null = own currency
                 AccountDao dao = ExpenseDatabase.getDatabase(requireContext()).accountDao();
                 AccountEntity created = dao.getAccountByName(name);
                 if (created != null) {
@@ -1078,10 +1078,10 @@ public class AddExpenseDialog extends DialogFragment {
                     pendingHome = home;
                     pendingForeign = foreign;
                     pendingRate = rate;
-                    foreignSwitch.setText(foreign + " ");
+                    foreignSwitch.setText((foreign != null ? foreign : home) + " ");
                 },
                 () -> {
-                    if (pendingForeign == null) foreignSwitch.setChecked(false);
+                    if (pendingHome == null) foreignSwitch.setChecked(false);
                 },
                 null);
     }
@@ -1135,9 +1135,16 @@ public class AddExpenseDialog extends DialogFragment {
             if (a != null && a.hasForeignCurrency()) currencyAccount = a;
         }
         if (editAccountAmount != null) {
+            String own = null;   // a trip kept in its own currency, e.g. USD
+            if (currencyAccount == null && accountName != null && !isSeparator(accountName)) {
+                AccountEntity a = ExpenseDatabase.getDatabase(requireContext())
+                        .accountDao().getAccountByName(accountName);
+                if (a != null && AccountCurrency.isSeparate(a,
+                        AppPrefs.getCurrencyCode(requireContext()))) own = a.homeCurrency;
+            }
             editAccountAmount.setHint(currencyAccount != null
                     ? "Amount (" + currencyAccount.foreignCurrency + ")"
-                    : "Amount");
+                    : own != null ? "Amount (" + own + ")" : "Amount");
         }
         refreshConversionLine();
     }

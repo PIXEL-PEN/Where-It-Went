@@ -199,3 +199,15 @@ Each country stays its own Travel account with its own currency; a
 - Not yet: the journey in Accounts, Yearly Summary and the exports, and in
   Full backup v2 (to add with the currency fields).
 
+## Trips kept in their own currency (requested 14 Oct 2026)
+
+Case: an expat with Settings in VND visits the US and wants that trip in
+US dollars, without changing Settings. The currency dialog now accepts the
+same currency for home and trip ("Recorded in US Dollar as spent: no
+conversion"). Stored as `foreignCurrency` null, `homeCurrency` "USD", rate 0,
+so amounts are dollars and the existing rule keeps a trip whose home differs
+from Settings out of mixed totals. The rate row is hidden for this choice.
+
+Still open: changing a trip's home currency after it has entries
+("Change home currency…", re-converting every entry at one new rate).
+
