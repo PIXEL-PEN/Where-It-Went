@@ -19,3 +19,5 @@ ExpenseTracker-release-key.jks
 *.keystore
 
 /backups/
+# Signed release builds (attached to GitHub releases, not kept in the repo)
+app/stable/release/

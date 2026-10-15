@@ -6,6 +6,11 @@ All notable changes to this project will be documented here.
 
 ## v3.3
 
+### License
+- From this version the app is licensed under the GNU General Public License,
+  version 3 or later (GPL-3.0-or-later). Versions up to 3.2 remain under the
+  MIT License.
+
 ### Added
 - Trip currencies: a Travel account can have its own currency, chosen from 92
   world currencies (tap a list to search it). Amounts are entered in the trip

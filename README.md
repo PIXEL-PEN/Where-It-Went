@@ -117,4 +117,19 @@ v3.x – Accounts architecture expansion
 
 ## License
 
-[Insert your license here]
+Copyright © 2025–2026 PIXEL-PEN
+
+From version 3.3, Where It Went is free software: you can redistribute it
+and/or modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation, either version 3 of the License,
+or (at your option) any later version. See [LICENSE](LICENSE) for the full
+text. (SPDX: `GPL-3.0-or-later`)
+
+It is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.
+
+Versions up to and including 3.2 were released under the MIT License, and
+those releases remain available under it.
+
+The name "Where It Went" and the app icon are not covered by the license.
