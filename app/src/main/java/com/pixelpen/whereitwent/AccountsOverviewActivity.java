@@ -77,6 +77,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         expandAccountId = -1L;
         currentlyExpandedId = accountId;   // open, and closes again on a tap
         rebuildAccounts();
+        hintTapToEdit();
     }
     public static long filterAccountId = -1L;
     @Nullable
@@ -356,26 +357,15 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                     }
 
 
+                    // v3.4: a tap edits the entry (long-press still works too)
+                    itemView.setOnClickListener(v -> editItem(e.id));
                     itemView.setOnLongClickListener(v -> {
-
-                        EditAccountItemDialog dialog =
-                                new EditAccountItemDialog();
-
-                        Bundle args = new Bundle();
-                        args.putLong(
-                                EditAccountItemDialog.ARG_ACCOUNT_ITEM_ID,
-                                e.id
-                        );
-
-                        dialog.setArguments(args);
-
-                        dialog.show(
-                                getSupportFragmentManager(),
-                                "EDIT_ACCOUNT_ITEM"
-                        );
-
+                        editItem(e.id);
                         return true;
                     });
+                    android.util.TypedValue tap = new android.util.TypedValue();
+                    getTheme().resolveAttribute(android.R.attr.selectableItemBackground, tap, true);
+                    itemView.setForeground(androidx.core.content.ContextCompat.getDrawable(this, tap.resourceId));
 
                 }
 
@@ -389,6 +379,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                                         || expandAccountId == account.id;
                                 expandAccountId = -1L;   // only applies until the first tap
                                 currentlyExpandedId = open ? -1L : account.id;
+                                if (!open) hintTapToEdit();
 
                                 rebuildAccounts();
                             });
@@ -545,6 +536,23 @@ public class AccountsOverviewActivity extends AppCompatActivity {
             pill.setText("✈  " + trip.name);
             pill.setOnClickListener(v -> TravelMode.open(this));
         }
+    }
+
+    /** Opens an entry for editing or deleting. */
+    private void editItem(long itemId) {
+        EditAccountItemDialog dialog = new EditAccountItemDialog();
+        Bundle args = new Bundle();
+        args.putLong(EditAccountItemDialog.ARG_ACCOUNT_ITEM_ID, itemId);
+        dialog.setArguments(args);
+        dialog.show(getSupportFragmentManager(), "EDIT_ACCOUNT_ITEM");
+    }
+
+    /** The first time an account is opened: say that entries can be tapped. */
+    private void hintTapToEdit() {
+        android.content.SharedPreferences p = getSharedPreferences("ui_hints", MODE_PRIVATE);
+        if (p.getBoolean("tap_to_edit_shown", false)) return;
+        p.edit().putBoolean("tap_to_edit_shown", true).apply();
+        Toast.makeText(this, "Tap an entry to change or delete it", Toast.LENGTH_LONG).show();
     }
 
     /** Home menu items (Accounts only); true if handled. */

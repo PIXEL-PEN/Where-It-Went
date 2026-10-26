@@ -36,7 +36,7 @@ You can create:
 
 Each account stands on its own and does not affect Daily Living totals or the Distribution graph.
 
-Accounts can be expanded or collapsed.
+Accounts can be expanded or collapsed. Tap an entry to change or delete it.
 If a filter is active, a small ✕ indicator appears in the top bar — tap it to return to the full view.
 
 Archived accounts remain visible in summaries but no longer accept new entries.
