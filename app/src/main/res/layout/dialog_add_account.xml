@@ -69,7 +69,9 @@
         <Switch
             android:id="@+id/switch_foreign_currency"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:thumbTint="@color/switch_thumb_settings"
+            android:trackTint="@color/switch_track_settings" />
     </LinearLayout>
 
 
