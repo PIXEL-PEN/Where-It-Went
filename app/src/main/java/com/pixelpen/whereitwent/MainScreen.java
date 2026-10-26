@@ -38,6 +38,16 @@ public class MainScreen extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // v3.4 Accounts only: the Accounts screen is home instead of this one
+        if (AppPrefs.isAccountsOnly(this)) {
+            ExpenseDatabase.migrateAccountsFromPrefsIfNeeded(this);
+            startActivity(AccountsOverviewActivity.homeIntent(this));
+            if (TravelMode.activeTrip(this) != null) TravelMode.open(this);
+            overridePendingTransition(0, 0);
+            finish();
+            return;
+        }
+
         ExpenseDatabase.migrateAccountsFromPrefsIfNeeded(this);
 
         setContentView(R.layout.activity_main_screen);

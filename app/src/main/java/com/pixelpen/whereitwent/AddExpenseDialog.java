@@ -207,6 +207,14 @@ public class AddExpenseDialog extends DialogFragment {
                 : ActiveModule.DAILY;
 
 
+        // v3.4 Accounts only: no Daily Living card at all
+        if (AppPrefs.isAccountsOnly(requireContext())) {
+            activeModule = ActiveModule.ACCOUNTS;
+            dailyContainer.setVisibility(View.GONE);
+            View gap = v.findViewById(R.id.cards_gap);
+            if (gap != null) gap.setVisibility(View.GONE);
+        }
+
         applyActiveState(dailyContainer, accountsContainer);
 
         dailyContainer.setOnClickListener(vv -> {
@@ -255,6 +263,14 @@ public class AddExpenseDialog extends DialogFragment {
                 long id = getSelectedAccountId();
 
                 insertAccountExpense();
+
+                // v3.4: added from the Accounts screen itself (Accounts only):
+                // open the account there rather than stacking a second copy
+                if (getActivity() instanceof AccountsOverviewActivity) {
+                    ((AccountsOverviewActivity) getActivity()).showAccount(id);
+                    dismiss();
+                    return;
+                }
 
                 Intent intent = new Intent(
                         requireContext(),

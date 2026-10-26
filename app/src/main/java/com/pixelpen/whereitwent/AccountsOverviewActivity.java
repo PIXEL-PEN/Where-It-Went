@@ -57,6 +57,26 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
     public static boolean needsRefresh = false;
     public static long expandAccountId = -1L;
+
+    // ---- v3.4: Accounts as the home screen (Settings → Accounts only) ----
+    private static final String EXTRA_HOME = "accounts_home";
+    private static final String M_TRAVEL = "Travel mode";
+    private static final String M_YEARLY = "Yearly Summary";
+    private static final String M_DISTRIBUTION = "Distribution";
+    private static final String M_SETTINGS = "Settings";
+    private static final String M_GUIDE = "Guide";
+    private boolean home;
+
+    /** Opens this screen as the app's home (no back arrow, with + and the app menu). */
+    public static Intent homeIntent(android.content.Context c) {
+        return new Intent(c, AccountsOverviewActivity.class).putExtra(EXTRA_HOME, true);
+    }
+
+    /** After an entry is added from this screen's +: open its account and redraw. */
+    public void showAccount(long accountId) {
+        expandAccountId = accountId;
+        rebuildAccounts();
+    }
     public static long filterAccountId = -1L;
     @Nullable
     public static String filterCategory = null;
@@ -79,6 +99,18 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
 
+        home = getIntent().getBooleanExtra(EXTRA_HOME, false) && AppPrefs.isAccountsOnly(this);
+        if (home) {
+            findViewById(R.id.btn_back).setVisibility(View.GONE);
+            View fab = findViewById(R.id.fab_add_account);
+            fab.setVisibility(View.VISIBLE);
+            fab.setOnClickListener(v ->
+                    new AddExpenseDialog().show(getSupportFragmentManager(), "ADD_EXPENSE"));
+            View list = findViewById(R.id.accounts_container);   // room for the + button
+            list.setPadding(list.getPaddingLeft(), list.getPaddingTop(), list.getPaddingRight(),
+                    Math.round(96 * getResources().getDisplayMetrics().density));
+        }
+
         findViewById(R.id.btn_menu).setOnClickListener(v -> {
 
             PopupMenu popup = new PopupMenu(this, v);
@@ -94,10 +126,21 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                     (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
             if (debuggable) popup.getMenu().add(DemoTrips.MENU_TITLE);
 
+            // v3.4: as home, this menu also leads to the rest of the app
+            if (home) {
+                popup.getMenu().add(M_TRAVEL);
+                popup.getMenu().add(M_YEARLY);
+                popup.getMenu().add(M_DISTRIBUTION);
+                popup.getMenu().add(M_SETTINGS);
+                popup.getMenu().add(M_GUIDE);
+            }
+
 
             popup.setOnMenuItemClickListener(item -> {
 
                 String title = item.getTitle().toString();
+
+                if (home && openAppScreen(title)) return true;
 
                 if ("Show / Hide Notes".equals(title)) {
                     showNotes = !showNotes;
@@ -191,6 +234,20 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         LayoutInflater inflater = LayoutInflater.from(this);
 
         List<AccountEntity> accounts = accountDao.getActiveAccounts();
+
+        // v3.4: Accounts as home with nothing in it yet: say where to start
+        if (home && accounts.isEmpty()) {
+            TextView hint = new TextView(this);
+            hint.setText("No accounts yet.\n\nTap + to create your first one: a project such as a "
+                    + "renovation, a trip, or anything you want to keep track of on its own.");
+            hint.setTextSize(15);
+            hint.setTextColor(0xFF455A64);
+            int pad = Math.round(24 * getResources().getDisplayMetrics().density);
+            hint.setPadding(pad, pad * 2, pad, pad);
+            hint.setGravity(android.view.Gravity.CENTER);
+            container.addView(hint);
+            return;
+        }
 
         String[] ACCOUNT_TYPES = {"PROJECT", "TRAVEL", "CUSTOM"};
 
@@ -461,6 +518,30 @@ public class AccountsOverviewActivity extends AppCompatActivity {
             sb.setSpan(new ForegroundColorSpan(0xFF6E7B85), start, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         return sb;
+    }
+
+    /** Home menu items (Accounts only); true if handled. */
+    private boolean openAppScreen(String title) {
+        switch (title) {
+            case M_TRAVEL:
+                if (TravelMode.activeTrip(this) != null) TravelMode.open(this);
+                else TravelMode.pickTrip(this, -1, t -> TravelMode.open(this));
+                return true;
+            case M_YEARLY:
+                startActivity(new Intent(this, YearlySummaryActivity.class));
+                return true;
+            case M_DISTRIBUTION:
+                startActivity(new Intent(this, DistributionActivity.class));
+                return true;
+            case M_SETTINGS:
+                startActivity(new Intent(this, SettingsActivity.class));
+                return true;
+            case M_GUIDE:
+                startActivity(new Intent(this, TutorialActivity.class));
+                return true;
+            default:
+                return false;
+        }
     }
 
     /** Rebuilds the list, e.g. after an entry or a trip's currency was edited. */

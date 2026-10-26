@@ -45,6 +45,16 @@ Deleting an account removes it together with all of its entries.
 
 ---
 
+### Accounts only
+
+Not everyone wants to log daily spending. If you only want to follow a renovation, a trip or another project, turn on Settings → Opening Screen → Accounts only.
+
+The app then opens on Accounts, and + adds an entry to one of your accounts; the Daily Living part of the entry form is hidden. The ⋯ menu on the Accounts screen also leads to Travel mode, Yearly Summary, Distribution, Settings and the Guide.
+
+Nothing is deleted. Any Daily Living entries you already have are kept, and turning Accounts only off brings back the full app.
+
+---
+
 ### Travel: spending in another currency
 
 A Travel account can have its own currency. When you create it, turn on Foreign currency; for an existing trip use Manage Accounts → the trip → Currency….

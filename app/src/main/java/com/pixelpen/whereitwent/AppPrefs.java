@@ -39,6 +39,20 @@ public final class AppPrefs {
      * v3.3: ISO code of the Settings currency. Settings saved before v3.3
      * have only a symbol, so the code is worked out from it ("$" -> USD).
      */
+    // ---- v3.4: Accounts only ----
+    private static final String KEY_ACCOUNTS_ONLY = "accounts_only";
+
+    /** True when the app is set to track Accounts only (no Daily Living). */
+    public static boolean isAccountsOnly(Context context) {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .getBoolean(KEY_ACCOUNTS_ONLY, false);
+    }
+
+    public static void setAccountsOnly(Context context, boolean on) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit().putBoolean(KEY_ACCOUNTS_ONLY, on).apply();
+    }
+
     public static String getCurrencyCode(Context context) {
         String code = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .getString(KEY_CURRENCY_CODE, null);

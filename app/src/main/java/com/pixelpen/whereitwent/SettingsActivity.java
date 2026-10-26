@@ -132,6 +132,22 @@ public class SettingsActivity extends AppCompatActivity {
         spinnerCurrency.setAdapter(adapter);
         CurrencyPicker.attach(spinnerCurrency);   // v3.3: tap opens a searchable list
 
+        // v3.4: Accounts only. The app restarts on its new opening screen.
+        androidx.appcompat.widget.SwitchCompat accountsOnly = findViewById(R.id.switch_accounts_only);
+        if (accountsOnly != null) {
+            accountsOnly.setChecked(AppPrefs.isAccountsOnly(this));
+            accountsOnly.setOnCheckedChangeListener((b, on) -> {
+                if (on == AppPrefs.isAccountsOnly(this)) return;
+                AppPrefs.setAccountsOnly(this, on);
+                Toast.makeText(this, on ? "Accounts only: on" : "Accounts only: off",
+                        Toast.LENGTH_SHORT).show();
+                Intent restart = new Intent(this, MainScreen.class);
+                restart.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(restart);
+                finish();
+            });
+        }
+
         // Restore by code (settings from before v3.3 had only a symbol;
         // getCurrencyCode works the code out from it)
         int restoredIndex = Math.max(0, TripCurrency.indexOf(AppPrefs.getCurrencyCode(this)));

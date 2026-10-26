@@ -78,8 +78,14 @@
 
     </RelativeLayout>
 
-    <!-- CONTENT -->
+    <!-- CONTENT (v3.4: framed, so the Accounts-only + button can float over it) -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
     <ScrollView
+        android:id="@+id/accounts_scroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true">
@@ -94,5 +100,21 @@
             android:paddingTop="12dp"
             android:paddingBottom="12dp" />
     </ScrollView>
+
+        <!-- v3.4: shown only when Accounts is the home screen -->
+        <ImageButton
+            android:id="@+id/fab_add_account"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="17dp"
+            android:layout_marginBottom="40dp"
+            android:background="@drawable/fab_button_flat"
+            android:contentDescription="Add an entry"
+            android:elevation="6dp"
+            android:src="@drawable/ic_add_plus"
+            android:tint="@android:color/white"
+            android:visibility="gone" />
+    </FrameLayout>
 
 </LinearLayout>
