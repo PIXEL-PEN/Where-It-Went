@@ -118,10 +118,10 @@ public class AccountsOverviewActivity extends AppCompatActivity {
             PopupMenu popup = new PopupMenu(this, v);
             if (home) popup.getMenu().add(M_SETTINGS);   // v3.4: first, as home
 
-            popup.getMenu().add("Filter Accounts");
+            popup.getMenu().add("Add Account");          // v3.4
             popup.getMenu().add("Manage Accounts");
+            popup.getMenu().add("Filter Accounts");
             popup.getMenu().add("Show / Hide Notes");
-
             popup.getMenu().add("Export Accounts");
 
             // v3.3 prototype: demo trips, only in debug builds (WIW-dev)
@@ -147,6 +147,12 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                 if ("Show / Hide Notes".equals(title)) {
                     showNotes = !showNotes;
                     rebuildAccounts();
+                    return true;
+                }
+
+                if ("Add Account".equals(title)) {
+                    AddExpenseDialog.newAddAccountInstance()
+                            .show(getSupportFragmentManager(), "ADD_ACCOUNT");
                     return true;
                 }
 

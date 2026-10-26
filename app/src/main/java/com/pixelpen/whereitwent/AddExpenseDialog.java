@@ -139,6 +139,8 @@ public class AddExpenseDialog extends DialogFragment {
     private double pendingRate;
 
     private static final String ARG_MANAGE_ONLY = "manage_only";
+    private static final String ARG_ADD_ACCOUNT_ONLY = "add_account_only";   // v3.4
+    private boolean addAccountOnly;
 
 
 
@@ -146,6 +148,15 @@ public class AddExpenseDialog extends DialogFragment {
         AddExpenseDialog d = new AddExpenseDialog();
         Bundle b = new Bundle();
         b.putInt("expense_id", expenseId);
+        d.setArguments(b);
+        return d;
+    }
+
+    /** v3.4: just the "new account" dialog (Accounts menu → Add Account). */
+    public static AddExpenseDialog newAddAccountInstance() {
+        AddExpenseDialog d = new AddExpenseDialog();
+        Bundle b = new Bundle();
+        b.putBoolean(ARG_ADD_ACCOUNT_ONLY, true);
         d.setArguments(b);
         return d;
     }
@@ -804,6 +815,15 @@ public class AddExpenseDialog extends DialogFragment {
             showManageAccountsDialog();
             dismiss();
         }
+
+        // ---- ADD ACCOUNT ONLY (v3.4) ----
+        // The entry form stays hidden behind the new-account dialog and closes with it
+        if (getArguments() != null && getArguments().getBoolean(ARG_ADD_ACCOUNT_ONLY, false)) {
+            getArguments().remove(ARG_ADD_ACCOUNT_ONLY);
+            addAccountOnly = true;
+            if (getDialog() != null) getDialog().hide();
+            showAddAccountDialog();
+        }
     }
 
 
@@ -867,6 +887,10 @@ public class AddExpenseDialog extends DialogFragment {
             }
             dialog.dismiss();
         });
+
+        if (addAccountOnly) {
+            dialog.setOnDismissListener(x -> dismissAllowingStateLoss());
+        }
 
         dialog.show();
 
