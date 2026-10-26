@@ -48,6 +48,7 @@ public class DistributionActivity extends AppCompatActivity {
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         setContentView(R.layout.activity_distribution);
+        EdgeInsets.padBottom(this);   // v3.4: clear of the navigation bar
 
         ImageButton btnBack = findViewById(R.id.btn_back);
         if (btnBack != null) {

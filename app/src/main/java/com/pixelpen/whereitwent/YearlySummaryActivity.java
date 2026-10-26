@@ -42,6 +42,7 @@ public class YearlySummaryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_yearly_summary);
+        EdgeInsets.padBottom(this);   // v3.4: clear of the navigation bar
 
         ImageButton btnBack = findViewById(R.id.btn_back);
         if (btnBack != null) {

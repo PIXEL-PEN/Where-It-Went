@@ -39,4 +39,6 @@
     <color name="travel_text">#141414</color>
     <color name="travel_hint">#8A8A8A</color>
     <color name="travel_conversion">#025C93</color>
+    <!-- v3.4: Settings currency field -->
+    <color name="settings_field_bg">#F4F8FB</color>
 </resources>

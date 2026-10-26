@@ -44,70 +44,30 @@
         </RelativeLayout>
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="16dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp"
-            android:text="Select Currency"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:background="@color/settings_header_bg"
-            android:textColor="@color/settings_header_text" />
+            style="@style/SettingsHeader"
+            android:text="Currency" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="6dp"
-            android:background="@color/settings_card_bg"
-            android:elevation="2dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
-            android:paddingStart="2dp"
-            android:paddingEnd="2dp">
+        <LinearLayout style="@style/SettingsCard">
 
             <Spinner
                 android:id="@+id/spinner_currency"
-                android:layout_width="190dp"
-                android:layout_height="38dp"
-                android:layout_marginStart="5dp"
-                android:layout_gravity="start"
-                android:spinnerMode="dropdown"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
                 android:background="@drawable/spinner_background_settings"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp" />
+                android:spinnerMode="dropdown" />
         </LinearLayout>
 
-        <!-- v3.4: Accounts only -->
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="16dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp"
-            android:text="Opening Screen"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:background="@color/settings_header_bg"
-            android:textColor="@color/settings_header_text" />
+            style="@style/SettingsHeader"
+            android:text="Opening Screen" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="6dp"
-            android:background="@color/settings_card_bg"
-            android:elevation="2dp"
-            android:orientation="vertical"
-            android:paddingStart="12dp"
-            android:paddingTop="10dp"
-            android:paddingEnd="12dp"
-            android:paddingBottom="12dp">
+        <LinearLayout style="@style/SettingsCard">
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/switch_accounts_only"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="44dp"
+                android:minHeight="40dp"
                 android:text="Accounts only"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -121,81 +81,50 @@
         </LinearLayout>
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="16dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp"
-            android:text="Database Management"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:background="@color/settings_header_bg"
-            android:textColor="@color/settings_header_text" />
+            style="@style/SettingsHeader"
+            android:text="Database Management" />
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginVertical="8dp"
-            android:orientation="horizontal"
-            android:gravity="start"
-            android:paddingVertical="10dp">
+            style="@style/SettingsCard"
+            android:orientation="horizontal">
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_export"
-                android:layout_width="88dp"
-                android:layout_height="40dp"
-                android:text="Export"
-                android:layout_marginEnd="12dp"
-                android:backgroundTint="@color/colorAccent2"
-                android:textColor="@android:color/white"
-                android:textAllCaps="false" />
+                style="@style/SettingsButton"
+                android:layout_marginEnd="10dp"
+                android:text="Export" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_import"
-                android:layout_width="88dp"
-                android:layout_height="40dp"
-                android:text="Import"
-                android:layout_marginEnd="12dp"
-                android:backgroundTint="@color/colorAccent2"
-                android:textColor="@android:color/white"
-                android:textAllCaps="false" />
+                style="@style/SettingsButton"
+                android:layout_marginEnd="10dp"
+                android:text="Import" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_reset"
-                android:layout_width="88dp"
-                android:layout_height="40dp"
-                android:text="Reset"
-                android:backgroundTint="@color/colorAccent2"
-                android:textColor="@android:color/white"
-                android:textAllCaps="false" />
+                style="@style/SettingsButton"
+                android:text="Reset" />
         </LinearLayout>
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="16dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp"
-            android:text="About"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:background="@color/settings_header_bg"
-            android:textColor="@color/settings_header_text" />
+            style="@style/SettingsHeader"
+            android:text="About" />
 
-        <TextView
-            android:id="@+id/text_about"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="24dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="16dp"
-            android:text="Where It Went — a simple, opinionated expense tracker.\n\n• Tag categories as Fixed, Necessity, or Discretionary.\n• View by Date, Month, or Category.\n• Distribution pie aggregates the three tags.\n\nThis is a living description. Content will evolve as features stabilize."
-            android:textSize="16sp"
-            android:gravity="top|start"
-            android:linksClickable="true"
-            android:textColorLink="@color/settings_header_text"
-            android:focusable="true"
-            android:clickable="true" />
+        <LinearLayout
+            style="@style/SettingsCard"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/text_about"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="top|start"
+                android:linksClickable="true"
+                android:text=""
+                android:textColorLink="@color/settings_header_text"
+                android:textSize="15sp" />
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

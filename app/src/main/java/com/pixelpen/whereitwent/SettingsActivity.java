@@ -40,6 +40,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+        EdgeInsets.padBottom(this);   // v3.4: clear of the navigation bar
 
         // Top forward button
         ImageButton btnForward = findViewById(R.id.btn_forward);
@@ -125,7 +126,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this,
-                R.layout.spinner_item_selected,
+                R.layout.spinner_item_settings,
                 currencies
         );
         adapter.setDropDownViewResource(R.layout.spinner_item_dropdown);

@@ -17,6 +17,7 @@ public class TutorialActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tutorial);
+        EdgeInsets.padBottom(this);   // v3.4: clear of the navigation bar
 
         // Load markdown text from raw resource
         TextView tv = findViewById(R.id.tv_readme);

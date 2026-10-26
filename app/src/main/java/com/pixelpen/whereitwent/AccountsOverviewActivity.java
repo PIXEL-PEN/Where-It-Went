@@ -91,6 +91,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_accounts_overview);
+        EdgeInsets.padBottom(this);   // v3.4: clear of the navigation bar
 
         expandAccountId =
                 getIntent().getLongExtra("expand_account_id", -1L);
