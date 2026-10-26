@@ -523,6 +523,24 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         return sb;
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateTravelPill();   // back from the trip, or travel mode just started or ended
+    }
+
+    /** "✈ trip" button when Accounts is home and Travel mode is on. */
+    private void updateTravelPill() {
+        TextView pill = findViewById(R.id.travel_pill);
+        if (pill == null) return;
+        AccountEntity trip = home ? TravelMode.activeTrip(this) : null;
+        pill.setVisibility(trip == null ? View.GONE : View.VISIBLE);
+        if (trip != null) {
+            pill.setText("✈  " + trip.name);
+            pill.setOnClickListener(v -> TravelMode.open(this));
+        }
+    }
+
     /** Home menu items (Accounts only); true if handled. */
     private boolean openAppScreen(String title) {
         switch (title) {
