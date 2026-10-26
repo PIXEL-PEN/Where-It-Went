@@ -1,0 +1,6 @@
+New: Accounts only. For tracking a renovation, a trip or another project without daily bookkeeping: Settings → Opening Screen → Accounts only. The app then opens on Accounts, with its own + button and menu.
+
+• Tap an entry to edit or delete it (no more long-press).
+• Add Account is now in the Accounts menu.
+• Tidier Settings; the Guide shows proper headings.
+• Fix: screen bottoms no longer hidden behind the navigation bar.

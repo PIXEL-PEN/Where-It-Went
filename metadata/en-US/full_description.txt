@@ -17,6 +17,7 @@ Features:
 - Travel accounts in any of 92 currencies, with suggested rates and whole-number conversions
 - Travel mode: a full-screen trip view that opens where you left off
 - Journeys: group the countries of one trip
+- Accounts only: track a renovation, trip or project without daily bookkeeping
 - Monthly account totals on the Distribution page
 - Export to CSV or HTML
 - Fully offline — no ads, no tracking, no cloud

@@ -4,6 +4,34 @@ All notable changes to this project will be documented here.
 
 ---
 
+## v3.4
+
+### Added
+- Accounts only (Settings → Opening Screen): for tracking projects and trips
+  without Daily Living. The app opens on the Accounts screen, which gets a +
+  button, a "✈ trip" button while Travel mode is on, and a menu that also
+  leads to Settings, Travel mode, Yearly Summary, Distribution and the Guide.
+  The entry dialog shows only the Accounts card. Daily Living entries are
+  kept; turning it off restores the full app.
+- "Add Account" in the Accounts menu, which is now ordered: Add Account,
+  Manage Accounts, Filter Accounts, Show / Hide Notes, Export Accounts.
+
+### Improved
+- Tap an account entry to edit or delete it (long-press still works); a
+  one-time hint points this out.
+- Settings: consistent section headers and cards, a compact amber currency
+  field, blue on-state for switches, and a shorter About.
+- Guide: rendered with headings, dividers and bullet points; new sections on
+  Accounts only.
+- Smaller "✈ trip" button; larger home icon on the travel screen.
+
+### Fixed
+- On newer Android, the bottom of Settings, Accounts, Yearly Summary,
+  Distribution and the Guide was hidden behind the navigation bar.
+- An account opened by adding an entry to it would not close on tap.
+
+---
+
 ## v3.3
 
 ### License
