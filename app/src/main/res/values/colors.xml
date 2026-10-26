@@ -39,4 +39,8 @@
     <color name="travel_text">#141414</color>
     <color name="travel_hint">#8A8A8A</color>
     <color name="travel_conversion">#025C93</color>
+    <!-- v3.4: Settings switch (on = colorAccent thumb) -->
+    <color name="switch_thumb_off">#ECEFF1</color>
+    <color name="switch_track_on">#8CC2E6</color>
+    <color name="switch_track_off">#B0BEC5</color>
 </resources>
