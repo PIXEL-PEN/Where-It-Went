@@ -74,7 +74,8 @@ public class AccountsOverviewActivity extends AppCompatActivity {
 
     /** After an entry is added from this screen's +: open its account and redraw. */
     public void showAccount(long accountId) {
-        expandAccountId = accountId;
+        expandAccountId = -1L;
+        currentlyExpandedId = accountId;   // open, and closes again on a tap
         rebuildAccounts();
     }
     public static long filterAccountId = -1L;
@@ -115,6 +116,7 @@ public class AccountsOverviewActivity extends AppCompatActivity {
         findViewById(R.id.btn_menu).setOnClickListener(v -> {
 
             PopupMenu popup = new PopupMenu(this, v);
+            if (home) popup.getMenu().add(M_SETTINGS);   // v3.4: first, as home
 
             popup.getMenu().add("Filter Accounts");
             popup.getMenu().add("Manage Accounts");
@@ -132,7 +134,6 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                 popup.getMenu().add(M_TRAVEL);
                 popup.getMenu().add(M_YEARLY);
                 popup.getMenu().add(M_DISTRIBUTION);
-                popup.getMenu().add(M_SETTINGS);
                 popup.getMenu().add(M_GUIDE);
             }
 
@@ -376,11 +377,12 @@ public class AccountsOverviewActivity extends AppCompatActivity {
                     accountHeader
                             .setOnClickListener(v -> {
 
-                                if (currentlyExpandedId == account.id) {
-                                    currentlyExpandedId = -1L;
-                                } else {
-                                    currentlyExpandedId = account.id;
-                                }
+                                // Open now, whether by a tap or because an entry was
+                                // just added to it (expandAccountId); a tap closes it
+                                boolean open = currentlyExpandedId == account.id
+                                        || expandAccountId == account.id;
+                                expandAccountId = -1L;   // only applies until the first tap
+                                currentlyExpandedId = open ? -1L : account.id;
 
                                 rebuildAccounts();
                             });
