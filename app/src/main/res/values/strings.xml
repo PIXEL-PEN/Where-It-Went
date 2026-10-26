@@ -28,11 +28,11 @@
 
     <string name="about_text">
     <![CDATA[
-    © 2025 by SpokenFor (TST) PIXEL-PEN, Vancouver, BC<br/><br/>
-    Where It Went is a simple, offline expense app with no ads, no cloud and no tracking.
-    It deliberately leaves income out, keeping the focus on where your money goes, and the
-    Guide (menu → Guide) explains every feature. Feedback is welcome: if you find the app
-    useful, or something could be better, it’s good to hear from you.<br/><br/>
+    © 2025 by Tom S. Thomas (SpokenFor) Vancouver, BC <small>🇨🇦</small><br/><br/>
+    Private by design: offline, with no ads, no cloud and no tracking. Where It Went
+    follows your spending only; income is left out on purpose, as that belongs with your bank.<br/><br/>
+    Feedback is welcome: if you find the app useful, or something could be better,
+    it’s good to hear from you.<br/><br/>
     Email: <b><a href="mailto:wiw-feedback@hotmail.com?subject={SUBJECT}">wiw-feedback@hotmail.com</a></b><br/>
     GitHub: <b><a href="https://github.com/PIXEL-PEN/Where-It-Went/discussions">Discussions</a></b>
     ]]>
